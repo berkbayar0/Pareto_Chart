@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hata Kodu Analizi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f4f3;
+      padding: 40px;
+      color: #212121;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #1b5e20;
+    }
+
+    #drop-area {
+      border: 2px dashed #66bb6a;
+      background-color: #e8f5e9;
+      padding: 40px;
+      text-align: center;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      background-color: #43a047;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    #controls {
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    select {
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+    }
+
+    th {
+      background-color: #c8e6c9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📅 Hata Kodu Analizi</h2>
+
+    <div id="drop-area">
+      <p>Excel dosyasını buraya sürükleyin veya</p>
+      <button class="button" onclick="document.getElementById('fileInput').click()">Dosya Seç</button>
+      <input type="file" id="fileInput" accept=".xlsx" />
+    </div>
+
+    <div id="controls" style="display:none;">
+      <label><strong>Tarih Seç:</strong></label>
+      <select id="dateSelect"></select>
+    </div>
+
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const dropArea = document.getElementById("drop-area");
+    const fileInput = document.getElementById("fileInput");
+    const dateSelect = document.getElementById("dateSelect");
+    const controls = document.getElementById("controls");
+    const output = document.getElementById("output");
+
+    let fullData = [];
+
+    dropArea.addEventListener("dragover", e => e.preventDefault());
+    dropArea.addEventListener("drop", async e => {
+      e.preventDefault();
+      await handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener("change", async e => {
+      await handleFile(e.target.files[0]);
+    });
+
+    function excelDateToString(serial) {
+      const excelEpoch = new Date(1899, 11, 30);
+      const date = new Date(excelEpoch.getTime() + serial * 86400000);
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      return `${dd}.${mm}.${yyyy}`;
+    }
+
+    async function handleFile(file) {
+      if (!file || !file.name.endsWith(".xlsx")) return alert("Lütfen .xlsx dosyası yükleyin.");
+
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets["Form1"];
+      if (!sheet) return alert("Form1 sayfası bulunamadı.");
+
+      const range = XLSX.utils.decode_range(sheet["!ref"]);
+      fullData = [];
+
+      for (let r = 1; r <= range.e.r; r++) { // A1 başlık satırı
+        const row = [];
+        for (let c = 0; c < 17; c++) {
+          const cell = sheet[XLSX.utils.encode_cell({ r, c })];
+          row.push(cell ? cell.v : "");
+        }
+        fullData.push(row);
+      }
+
+      const uniqueDates = [...new Set(
+        fullData.map(row => {
+          const raw = row[6];
+          if (!raw) return null;
+          return typeof raw === "number" ? excelDateToString(raw) : raw;
+        })
+      )].filter(Boolean).sort();
+
+      dateSelect.innerHTML = `<option value="">-- Tarih Seçin --</option>`;
+      uniqueDates.forEach(date => {
+        const opt = document.createElement("option");
+        opt.value = date;
+        opt.textContent = date;
+        dateSelect.appendChild(opt);
+      });
+
+      controls.style.display = "flex";
+    }
+
+    dateSelect.addEventListener("change", () => {
+      const selectedDate = dateSelect.value;
+      if (!selectedDate) return;
+
+      const errorCounts = {};
+
+      fullData.forEach(row => {
+        let date = row[6];
+        if (typeof date === "number") date = excelDateToString(date);
+        if (date !== selectedDate || !row[12]) return;
+
+        const entries = row[12].toString().split("+");
+        entries.forEach(entry => {
+          const [countStr, code] = entry.split("*");
+          const count = parseInt(countStr.trim());
+          const key = code.trim().toUpperCase();
+          if (!isNaN(count)) {
+            errorCounts[key] = (errorCounts[key] || 0) + count;
+          }
+        });
+      });
+
+      let html = `<table><thead><tr><th>Hata Kodu</th><th>Adet</th></tr></thead><tbody>`;
+      Object.entries(errorCounts).forEach(([code, count]) => {
+        html += `<tr><td>${code}</td><td>${count}</td></tr>`;
+      });
+      html += "</tbody></table>";
+
+      output.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
