@@ -1,0 +1,317 @@
+:root {
+      --bg: #f9f9fb;
+      --box: #ffffff;
+      --border: #ddd;
+      --primary: #4CAF50;
+      --danger: #ffdddd;
+      --text: #333;
+      --shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      --progress-bg: #e0e0e0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    #drop-zone {
+      border: 2px dashed var(--primary);
+      background: #eaf7ed;
+      padding: 40px;
+      text-align: center;
+      color: var(--primary);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #drop-zone:hover {
+      background: #d8f5e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    #drop-zone.drag-over {
+      background: #c8f2d0;
+      border-color: #2e7d32;
+      transform: scale(1.02);
+    }
+
+    .drop-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .drop-icon {
+      font-size: 48px;
+      opacity: 0.7;
+    }
+
+    .drop-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .drop-subtext {
+      font-size: 14px;
+      opacity: 0.8;
+      margin: 0;
+    }
+
+    #file-input {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .progress-container {
+      margin: 20px 0;
+      display: none;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: var(--progress-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #66bb6a);
+      border-radius: 10px;
+      transition: width 0.3s ease;
+      width: 0%;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        45deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 65%
+      );
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-text {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .table-section {
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      background:#242424;
+      color: white;
+      border-radius: 10px 10px 0 0;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .table-header.error-header {
+      background: #222222;
+    }
+
+    .table-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .table-count {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .table-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .export-button, .toggle-button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .export-button:hover, .toggle-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .export-button {
+      background: rgba(76, 175, 80, 0.8);
+    }
+
+    .export-button:hover {
+      background: rgba(76, 175, 80, 1);
+    }
+
+    .toggle-icon {
+      font-size: 14px;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-button.collapsed .toggle-icon {
+      transform: rotate(-90deg);
+    }
+
+    .table-wrapper {
+      max-width: 100%;
+      max-height: 550px;
+      overflow-x: auto;
+      overflow-y: auto;
+      border-radius: 0 0 8px 8px;
+      box-shadow: var(--shadow);
+      background: var(--box);
+      padding: 10px;
+      border-top: none;
+      transition: all 0.3s ease;
+    }
+
+    .table-wrapper.collapsed {
+      display: none;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 900px;
+      background-color: var(--box);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th:first-child, td:first-child {
+      width: 32px;
+      text-align: center;
+      background-color: #f1f1f1;
+    }
+
+    thead {
+      background-color: #f3f3f3;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f3f3f3;
+      z-index: 1;
+    }
+
+    .error {
+      background-color: var(--danger);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      #drop-zone {
+        padding: 30px 20px;
+      }
+
+      .drop-icon {
+        font-size: 36px;
+      }
+
+      .drop-text {
+        font-size: 16px;
+      }
+
+      .table-header {
+        padding: 12px 15px;
+      }
+
+      .table-title {
+        font-size: 16px;
+      }
+
+      .table-controls {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .export-button, .toggle-button {
+        font-size: 14px;
+        padding: 6px 10px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+    }
