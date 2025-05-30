@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     :root {
@@ -497,20 +496,6 @@
         padding: 8px;
       }
     }
-
-    .export-dropdown {
-        padding: 8px 12px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        font-size: 14px;
-        background: white;
-        margin-left: 20px;
-        cursor: pointer;
-    }
-
-    .export-dropdown:hover {
-        border-color: #4CAF50;
-    }
   </style>
 </head>
 <body>
@@ -552,86 +537,26 @@
         
         // Hata kodları referans listesi - key-value şeklinde tutuyoruz
         const errorReferences = {
-        'H0': 'Diğer (Lütfen açıklama giriniz)',
-        'H1': 'Oksitli Malzeme',
-        'H2': 'Tam Oturmamış Malzeme',
-        'H3': 'Soğuk Lehim',
-        'H4': 'Ters Malzeme',
-        'H5': 'Kayık Malzeme',
-        'H6': 'Eksik Malzeme',
-        'H7': 'Lehimsiz',
-        'H8': 'Dik Malzeme',
-        'H9': 'Hasarlı Malzeme',
-        'H10': 'Kısa Devre',
-        'H11': 'Bozuk Malzeme',
-        'H12': 'Kırık/Çatlak Malzeme',
-        'H13': 'Yanlış Malzeme',
-        'H14': 'Çıkık Malzeme',
-        'H15': 'Fazla Lehim',
-        'H16': 'Fazla Malzeme',
-        'H17': 'Top Lehim',
-        'H18': 'Soket Pinleri Eğik',
-        'H19': 'Yetersiz Lehim',
-        'H20': 'Hatalı Bacak Kesımı',
-        'H21': 'Yapıştırıcı Uygun Değil (Az)',
-        'H22': 'Yapıştırıcı Uygun Değil (Fazla)',
-        'H23': 'Odak Uygun Değil',
-        'H24': 'Eksik Enjeksiyon',
-        'H25': 'Alüminyum Soğutucu Bacak Eksik',
-        'H26': 'Yanlış Montaj',
-        'H27': 'Led Aydınlatma Yetersiz',
-        'H28': 'Yüksek Akım',
-        'H29': 'EOL NOK',
-        'H30': 'Görüntü Gelmiyor',
-        'H31': 'Lehim Doluluk Uygun Değil',
-        'H32': 'Sızdırmazlık Uygun Değil',
-        'H33': 'UV Kürleme Hatası',
-        'H34': 'PCB de Çapak',
-        'H35': 'Depanalling Kesim Hatası',
-        'H36': 'Yanlış Vida',
-        'H37': 'Vida Takılmamış',
-        'H38': 'Montaj Sıralaması uygun değil',
-        'H39': 'Conta Yok',
-        'H40': 'Rubber Yok',
-        'H41': 'Led Çalışmıyor',
-        'H42': 'Led Lens Eksik',
-        'H43': 'Alüminyum Soğutucu Vida Delikleri Kayık',
-        'H44': 'Lens Montaj Programlama Yapılmamış',
-        'H45': 'EOL Programı Yapılmamış (White Box)',
-        'H46': 'Lazer Markalama Bilgileri Eksik',
-        'H47': 'Lazer Markalama Okunmuyor',
-        'H48': 'Lazer Markalama Hatalı',
-        'H49': 'Program Atılamama (White Box/EOL)',
-        'H50': 'Bozuk Kart (Bad\'li Kart)',
-        'H51': 'Tork Değeri Uygun Değil',
-        'H52': 'Vida Sıkılmamış',
-        'H67': 'Panel Test Hatası',
-        'H68': 'Proses Hatası',
-        'H69': 'Mtf Nok',
-        'H70': 'Fov Nok',
-        'H71': 'Snr Nok',
-        'H72': 'Homegenity Nok',
-        'H73': 'ID Hatası',
-        'H74': 'Lens Çevresi Boşluk (50° üzeri)',
-        'H75': 'Konnektör Merkezi Yamuk',
-        'H76': 'Shift Hatası',
-        'H77': '406/Dispense İstasyonu Prob Up hatası',
-        'H78': '105/Align İstasyonu Görüntü Gelmeme Hatası',
-        'H79': '107/Align İstasyonu Merkez Kaçıklık Hatası',
-        'H80': '108/Align İstasyonu Maksimum Tarama Hatası',
-        'H81': '155/Align İstasyonu Kürleme Sonrası MTF Düşme Hatası',
-        'H82': '222/Dispense İstasyonu Görüntü Eşleşmeme Hatası',
-        'H83': '231/Dispense İstasyonu Connection Hatası',
-        'H84': '233/Dispense İstasyonu Kötü Yapıştırıcı Hatası',
-        'H85': '242/Dispense İstaysonu Tozlu Ürün Hatası',
-        'H86': '131/Align İstasyonu Köşelerde Odaklama Hatası',
-        'H87': 'Robot Aşırı Yük Hatası',
-        'H88': 'Fazla Magazin Hatası',
-        'H89': 'Bağlantı Hatası (Üst üste min.2 kere bağlantı hatası)',
-        'H90': 'TCP Nok / Mıu Board',
-        'H91': 'Work ID Ön Bellek Depolama Hatası',
-        'H92': 'Zaman Aşımı Hatası(Allign İstaysonu Görüntü Açılmadığı için)'
-    };
+            'H0': 'Diğer (Lütfen açıklama giriniz)',
+            'H9': 'Hasarlı Malzeme',
+            'H30': 'Görüntü Gelmiyor',
+            'H32': 'Sızdırmazlık Uygun Değil',
+            'H45': 'EOL Programı Yapılmamış (White Box)',
+            'H49': 'Program Atılamama (White Box/EOL)',
+            'H54': 'Görüntü Bulanık',
+            'H55': 'Leke var',
+            'H60': 'XY Hatası',
+            'H61': 'Z Hatası',
+            'H62': '2S/S Hatası',
+            'H63': 'F Sweep Hatası',
+            'H64': 'Error Valitadion Failed Hatası',
+            'H66': 'Yapıştırıcı Uygun Değil (Camsı Ürün)',
+            'H68': 'Proses Hatası',
+            'H69': 'Mtf Nok',
+            'H73': 'ID Hatası',
+            'H74': 'Lens Çevresi Boşluk (50° üzeri)',
+            'H76': 'Shift Hatası'
+        };
         
         const errorTotals = {};
         const allMatches = errorString.match(/(\d+)\*(\w+)/g) || [];
@@ -642,6 +567,7 @@
             errorTotals[normalizedCode] = (errorTotals[normalizedCode] || 0) + parseInt(count);
         });
         
+        // Toplam sayılarına göre sırala ve formatla
         return Object.entries(errorTotals)
             .sort((a, b) => b[1] - a[1]) // Sayıya göre büyükten küçüğe sırala
             .map(([code, total]) => {
@@ -728,12 +654,13 @@
         // YYYY-Wxx formatında döndür
         return `${year}-W${String(weekNumber).padStart(2, '0')}`;
         
-      } catch (error) {
-          console.error('Hafta hesaplama hatası:', error);
-          return '';
-      }
+    } catch (error) {
+        console.error('Hafta hesaplama hatası:', error);
+        return '';
     }
+}
     
+    // Yılın son hafta numarasını hesapla
     function getLastWeekOfYear(year) {
       const dec31 = new Date(year, 11, 31);
       const jan4NextYear = new Date(year + 1, 0, 4);
@@ -759,19 +686,7 @@
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 1000));
       return Math.floor(diffDays / 7) + 1;
     }
-    function getMonthYear(dateString) {
-        if (!dateString || typeof dateString !== 'string') return '';
-        
-        try {
-            const [day, month, year] = dateString.split('.').map(num => parseInt(num));
-            const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
-                          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-            return `${months[month-1]}-${year}`;
-        } catch (error) {
-            return '';
-        }
-    }
-    
+
     function updateProgress(current, total) {
       const percentage = Math.round((current / total) * 100);
       const progressFill = document.getElementById('progress-fill');
@@ -1114,7 +1029,6 @@
                 <tr><td>H63</td><td>F Sweep Hatası</td></tr>
                 <tr><td>H64</td><td>Error Valitadion Failed Hatası</td></tr>
                 <tr><td>H66</td><td>Yapıştırıcı Uygun Değil (Camsı Ürün)</td></tr>
-                <tr><td>H67</td><td>Panel Test Hatası</td></tr>
                 <tr><td>H68</td><td>Proses Hatası</td></tr>
                 <tr><td>H69</td><td>Mtf Nok</td></tr>
                 <tr><td>H73</td><td>ID Hatası</td></tr>
@@ -1462,160 +1376,27 @@
 
                 weekSelectContainer.appendChild(tableTypeSelect);
 
-                // Export seçenekleri ve buton container'ı oluştur
-                const exportControls = document.createElement('div');
-                exportControls.className = 'export-controls';
-                exportControls.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    margin-left: auto;
-                    gap: 15px;
-                `;
-
-                // Checkbox'lar için container
-                const checkboxContainer = document.createElement('div');
-                checkboxContainer.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                `;
-
-                // Excel checkbox
-                const excelLabel = document.createElement('label');
-                excelLabel.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    cursor: pointer;
-                `;
-                const excelCheckbox = document.createElement('input');
-                excelCheckbox.type = 'radio';
-                excelCheckbox.name = 'exportType';
-                excelCheckbox.value = 'excel';
-                excelCheckbox.style.cursor = 'pointer';
-                excelLabel.appendChild(excelCheckbox);
-                excelLabel.appendChild(document.createTextNode('Excel'));
-
-                // PDF checkbox
-                const pdfLabel = document.createElement('label');
-                pdfLabel.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    cursor: pointer;
-                `;
-                const pdfCheckbox = document.createElement('input');
-                pdfCheckbox.type = 'radio';
-                pdfCheckbox.name = 'exportType';
-                pdfCheckbox.value = 'pdf';
-                pdfCheckbox.style.cursor = 'pointer';
-                pdfLabel.appendChild(pdfCheckbox);
-                pdfLabel.appendChild(document.createTextNode('PDF'));
-
-                // Dışa Aktar butonu
-                const exportButton = document.createElement('button');
-                exportButton.textContent = 'Dışa Aktar';
-                exportButton.className = 'export-button';
-                exportButton.style.cssText = `
-                    padding: 8px 16px;
-                    background-color: #4CAF50;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 14px;
-                `;
-
-                exportButton.addEventListener('click', function() {
-                    const selectedFormat = document.querySelector('input[name="exportType"]:checked')?.value;
-                    if (!selectedFormat) {
-                        alert('Lütfen bir format seçin');
-                        return;
-                    }
-
-                    // Mevcut export işlemlerini buraya taşı
-                    const selectedMonth = monthSelect.value;
-                    const selectedWeek = weekSelect.value;
-                    const selectedType = tableTypeSelect.value;
+                // Tablo tipi değiştiğinde mevcut tabloları güncelle
+                tableTypeSelect.addEventListener('change', function() {
+                    const selectedType = this.value;
                     const tables = document.querySelectorAll('.weekly-report-table');
-
-                    if (selectedFormat === 'excel') {
-                        // Excel export
-                        const wb = XLSX.utils.book_new();
-                        tables.forEach((table, index) => {
-                            if (table.style.display !== 'none') {
-                                const tableType = ['SVC', 'DMS'][index];
-                                const ws_data = [];
-                                // Headers
-                                const headers = [];
-                                table.querySelectorAll('thead th').forEach(th => {
-                                    headers.push(th.textContent);
-                                });
-                                ws_data.push(headers);
-                                
-                                // Data
-                                table.querySelectorAll('tbody tr').forEach(tr => {
-                                    const row = [];
-                                    tr.querySelectorAll('td').forEach((td, i) => {
-                                        if (i === 2) { // Scrap input değeri
-                                            row.push(td.querySelector('input').value);
-                                        } else {
-                                            row.push(td.textContent);
-                                        }
-                                    });
-                                    ws_data.push(row);
-                                });
-                                
-                                const ws = XLSX.utils.aoa_to_sheet(ws_data);
-                                XLSX.utils.book_append_sheet(wb, ws, tableType);
-                            }
-                        });
+                    const titles = document.querySelectorAll('h4');
+                    
+                    tables.forEach((table, index) => {
+                        const title = titles[index];
+                        const tableType = title.textContent;
                         
-                        const today = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
-                        XLSX.writeFile(wb, `Haftalik_Rapor_${selectedWeek || 'Tum'}_${today}.xlsx`);
-                        XLSX.writeFile(wb, `Aylik_Rapor_${selectedMonth || 'Tum'}_${today}.xlsx`);
-                    } else if (selectedFormat === 'pdf') {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-                        script.onload = function() {
-                            const element = document.createElement('div');
-                            element.style.padding = '20px';
-                            
-                            // Başlık ekle
-                            const title = document.createElement('h2');
-                            title.textContent = `Haftalık Rapor ${selectedWeek || 'Tüm Haftalar'}`;
-                            element.appendChild(title);
-                            
-                            // Tabloları kopyala
-                            tables.forEach(table => {
-                                if (table.style.display !== 'none') {
-                                    element.appendChild(table.cloneNode(true));
-                                }
-                            });
-                            
-                            const opt = {
-                                margin: 1,
-                                filename: `Haftalik_Rapor_${selectedWeek || 'Tum'}_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.pdf`,
-                                image: { type: 'jpeg', quality: 0.98 },
-                                html2canvas: { scale: 2 },
-                                jsPDF: { unit: 'cm', format: 'a4', orientation: 'landscape' }
-                            };
-                            
-                            html2pdf().from(element).set(opt).save();
-                        };
-                        document.head.appendChild(script);
-                    }
+                        if (selectedType === 'BOTH' || 
+                            (selectedType === 'SVC' && tableType === 'SVC') || 
+                            (selectedType === 'DMS' && tableType === 'DMS')) {
+                            table.style.display = '';
+                            title.style.display = '';
+                        } else {
+                            table.style.display = 'none';
+                            title.style.display = 'none';
+                        }
+                    });
                 });
-
-                // Elementleri container'lara ekle
-                checkboxContainer.appendChild(excelLabel);
-                checkboxContainer.appendChild(pdfLabel);
-                exportControls.appendChild(checkboxContainer);
-                exportControls.appendChild(exportButton);
-
-                // Export kontrollerini weekSelectContainer'a ekle
-                weekSelectContainer.appendChild(exportControls);
-
                 reportsContainer.appendChild(weekSelectContainer);
                 
                 // Benzersiz proses adlarını al (6. sütun)
@@ -1699,7 +1480,7 @@
                               return total + nokCount;
                           }, 0);
                           
-                          const nokPercentage = okTotal > 0 ? ((nokTotal / (okTotal + nokTotal)) * 100).toFixed(2) : '0.00';
+                          const nokPercentage = okTotal > 0 ? ((nokTotal / okTotal) * 100).toFixed(2) : '0.00';
 
                           return `
                             <tr>
@@ -1709,7 +1490,10 @@
                                     class="scrap-input" 
                                     value="0" 
                                     style="width: 60px; padding: 8px;"
-                                    onblur="this.value = this.value || '0'"></td>
+                                    onblur="this.value = this.value || '0'"
+                                    onchange="updateNokPercentage(this)"
+                                    data-ok="${okTotal}"
+                                    data-nok="${nokTotal}"></td>
                                 <td>${nokTotal || '0'}</td>
                                 <td>${nokPercentage}%</td>
                                 <td style="white-space: pre-line;">${parseErrorCodes(processData.map(row => row[12]).join('+'))}</td>
@@ -1768,228 +1552,14 @@
                 document.head.appendChild(style);
 
                 weekSelect.dispatchEvent(new Event('change'));
-            } else if (this.dataset.type === 'monthly') {
-              if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
-                  reportsContainer.innerHTML = '';
-                  const messageTitle = document.createElement('h3');
-                  messageTitle.style.textAlign = 'center';
-                  messageTitle.style.marginTop = '50px';
-                  messageTitle.textContent = 'Lütfen önce bir Excel dosyası yükleyin.';
-                  reportsContainer.appendChild(messageTitle);
-                  return;
-              }
-              
-              reportsContainer.innerHTML = '';
-
-              const title = document.createElement('h3');
-              title.textContent = 'Aylık Rapor';
-              title.style.marginBottom = '20px';
-              reportsContainer.appendChild(title);
-
-              // Ay-Yıl seçici
-              const monthSelect = document.createElement('select');
-              monthSelect.className = 'date-select';
-
-              // Benzersiz ay-yılları al
-              const monthYears = [...new Set(window.processedSuccessRows.map(row => 
-                  getMonthYear(row[6])
-              ))].sort().reverse();
-
-              monthSelect.innerHTML = `
-                  <option value="">Tüm Aylar</option>
-                  ${monthYears.map(month => `<option value="${month}">${month}</option>`).join('')}
-              `;
-
-              const monthSelectContainer = document.createElement('div');
-              monthSelectContainer.className = 'date-filter-container';
-              monthSelectContainer.appendChild(monthSelect);
-
-              // SVC-DMS seçici ve diğer kontroller için haftalık rapordan kopyala
-              const tableTypeSelect = document.createElement('select');
-              tableTypeSelect.className = 'date-select';
-              tableTypeSelect.style.marginLeft = '20px';
-              tableTypeSelect.innerHTML = `
-                  <option value="BOTH">SVC-DMS</option>
-                  <option value="SVC">SVC</option>
-                  <option value="DMS">DMS</option>
-              `;
-              monthSelectContainer.appendChild(tableTypeSelect);
-
-              // Export kontrolleri (haftalık rapordan aynı şekilde kopyala)
-              const exportControls = document.createElement('div');
-              exportControls.className = 'export-controls';
-              exportControls.style.cssText = `
-                  display: flex;
-                  align-items: center;
-                  margin-left: auto;
-                  gap: 15px;
-              `;
-
-              // Radio butonlar için container
-              const checkboxContainer = document.createElement('div');
-              checkboxContainer.style.cssText = `
-                  display: flex;
-                  align-items: center;
-                  gap: 15px;
-              `;
-
-              // Excel radio
-              const excelLabel = document.createElement('label');
-              excelLabel.style.cssText = `
-                  display: flex;
-                  align-items: center;
-                  gap: 5px;
-                  cursor: pointer;
-              `;
-              const excelRadio = document.createElement('input');
-              excelRadio.type = 'radio';
-              excelRadio.name = 'monthlyExportType';
-              excelRadio.value = 'excel';
-              excelRadio.style.cursor = 'pointer';
-              excelLabel.appendChild(excelRadio);
-              excelLabel.appendChild(document.createTextNode('Excel'));
-
-              // PDF radio
-              const pdfLabel = document.createElement('label');
-              pdfLabel.style.cssText = `
-                  display: flex;
-                  align-items: center;
-                  gap: 5px;
-                  cursor: pointer;
-              `;
-              const pdfRadio = document.createElement('input');
-              pdfRadio.type = 'radio';
-              pdfRadio.name = 'monthlyExportType';
-              pdfRadio.value = 'pdf';
-              pdfRadio.style.cursor = 'pointer';
-              pdfLabel.appendChild(pdfRadio);
-              pdfLabel.appendChild(document.createTextNode('PDF'));
-
-              checkboxContainer.appendChild(excelLabel);
-              checkboxContainer.appendChild(pdfLabel);
-
-              // Export butonu
-              const exportButton = document.createElement('button');
-              exportButton.textContent = 'Dışa Aktar';
-              exportButton.className = 'export-button';
-              exportButton.style.cssText = `
-                  padding: 8px 16px;
-                  background-color: #4CAF50;
-                  color: white;
-                  border: none;
-                  border-radius: 4px;
-                  cursor: pointer;
-                  font-size: 14px;
-              `;
-
-              exportControls.appendChild(checkboxContainer);
-              exportControls.appendChild(exportButton);
-              monthSelectContainer.appendChild(exportControls);
-              reportsContainer.appendChild(monthSelectContainer);
-
-              // monthSelect.addEventListener('change', function() kısmında şu değişiklikleri yapalım:
-              monthSelect.addEventListener('change', function() {
-                  const selectedMonth = this.value;
-                  const selectedType = tableTypeSelect.value;
-
-                  const existingTables = reportsContainer.querySelectorAll('.weekly-report-table');
-                  const existingTitles = reportsContainer.querySelectorAll('h4');
-                  existingTables.forEach(table => table.remove());
-                  existingTitles.forEach(title => title.remove());
-
-                  ['SVC', 'DMS'].forEach(tableType => {
-                      if (selectedType === 'BOTH' || selectedType === tableType) {
-                          const processes = [
-                              'SMD BOT',
-                              'SMD TOP',
-                              'TH Lehimleme',
-                              'Panel Test',
-                              'Depaneling',
-                              'Vidalama',
-                              'Lens AA',
-                              'Sızdırmazlık',
-                              'EOL Flaş',
-                              'EOL',
-                              'Lazer Markalama'
-                          ];
-                          const tableTitle = document.createElement('h4');
-                          tableTitle.textContent = `${tableType}`;
-                          tableTitle.style.marginTop = '30px';
-                          tableTitle.style.marginBottom = '15px';
-
-                          let filteredData = window.processedSuccessRows.filter(row => 
-                              row[7] && row[7].toUpperCase() === tableType
-                          );
-
-                          if (selectedMonth) {
-                              filteredData = filteredData.filter(row => 
-                                  getMonthYear(row[6]) === selectedMonth
-                              );
-                          }
-
-                          // Tablo oluştur
-                          const table = document.createElement('table');
-                          table.className = 'weekly-report-table';
-                          
-                          // Tablo başlıkları
-                          table.innerHTML = `
-                              <thead>
-                                  <tr>
-                                      <th>Prosesler</th>
-                                      <th>OK Adet</th>
-                                      <th>Scrap Adet</th>
-                                      <th>Total NOK Adet</th>
-                                      <th>Yüzde NOK</th>
-                                      <th>Açıklama</th>
-                                  </tr>
-                              </thead>
-                              <tbody>
-                                  ${processes.map(process => {
-                                      const processData = filteredData.filter(row => 
-                                          row[8] && row[8].toUpperCase() === process.toUpperCase()
-                                      );
-
-                                      const okTotal = processData.reduce((total, row) => {
-                                          const okCount = parseInt(row[11]) || 0;
-                                          return total + okCount;
-                                      }, 0);
-
-                                      const nokTotal = processData.reduce((total, row) => {
-                                          if (!row[12] || row[12] === "0") return total;
-                                          const matches = row[12].match(/(\d+)\*\w+/g) || [];
-                                          return total + matches.reduce((sum, match) => 
-                                              sum + (parseInt(match.split('*')[0]) || 0), 0);
-                                      }, 0);
-                                      
-                                      const nokPercentage = ((nokTotal / (okTotal + nokTotal)) * 100).toFixed(2);
-
-                                      return `
-                                          <tr>
-                                              <td>${process}</td>
-                                              <td>${okTotal || '0'}</td>
-                                              <td><input type="number" min="0" 
-                                                  class="scrap-input" 
-                                                  value="0" 
-                                                  style="width: 60px; padding: 8px;"
-                                                  onblur="this.value = this.value || '0'"></td>
-                                              <td>${nokTotal || '0'}</td>
-                                              <td>${nokPercentage}%</td>
-                                              <td style="white-space: pre-line;">${parseErrorCodes(processData.map(row => row[12]).join('+'))}</td>
-                                          </tr>
-                                      `;
-                                  }).join('')}
-                              </tbody>
-                          `;
-                          
-                          reportsContainer.appendChild(tableTitle);
-                          reportsContainer.appendChild(table);
-                      }
-                  });
-              });
-
-              // İlk yükleme
-              monthSelect.dispatchEvent(new Event('change'));
-          }
+            } else {
+                reportsContainer.innerHTML = '';
+                const messageTitle = document.createElement('h3');
+                messageTitle.style.textAlign = 'center';
+                messageTitle.style.marginTop = '50px';
+                messageTitle.textContent = 'Aylık Raporlar Yakında Eklenecek';
+                reportsContainer.appendChild(messageTitle);
+            }
         });
         
         reportsGrid.appendChild(card);
@@ -2031,7 +1601,18 @@
       fileInput.value = '';
       fileInput.click();
     });
-    
+    function updateNokPercentage(input) {
+        const row = input.closest('tr');
+        const scrapValue = parseInt(input.value) || 0;
+        const nokCell = row.cells[3];
+        const nokValue = parseInt(nokCell.textContent) || 0;
+        const percentageCell = row.cells[4];
+        const okTotal = parseInt(input.dataset.ok) || 0;
+        const totalNOK = nokValue + scrapValue;
+        const newPercentage = okTotal > 0 ? ((totalNOK / okTotal) * 100).toFixed(2) : '0.00';
+        percentageCell.textContent = `${newPercentage}%`;
+    }
+
     function handleFile(file) {
       if (!file) return;
 

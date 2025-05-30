@@ -155,7 +155,6 @@
       justify-content: center;
       min-width: 120px;
     }
-
     .main-table-btn {
         padding: 10px 20px;
         background-color: #4CAF50;
@@ -165,8 +164,20 @@
         cursor: pointer;
         font-size: 16px;
         min-width: 120px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);  /* Normal durumdaki gölge */
     }
-
+    .main-table-btn:hover {
+        background-color: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);  /* Hover durumunda daha belirgin gölge */
+    }
+    .main-table-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.0.05);  /* Tıklama durumunda orta seviye gölge */
+    }
     .button-container button.active {
     background-color: #367c39;
     box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
@@ -177,13 +188,11 @@
     box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
     }
 
-    .main-table-btn:hover {
-    background-color: #45a049;
-    }
-
     .table-section {
-      position: relative;
-      margin-bottom: 30px;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .table-header {
@@ -276,7 +285,7 @@
     .date-filter-container {
         display: flex;
         gap: 20px;
-        align-items: flex-start;
+        align-items: center;
         margin-bottom: 20px;
     }
 
@@ -297,7 +306,7 @@
     border: 1px solid var(--border);
     border-radius: 4px;
     font-size: 14px;
-    min-width: 200px;
+    min-width: 150px;
     cursor: pointer;
     background: white;
     }
@@ -385,23 +394,41 @@
       display: none;
     }
 
-    table {
-      border-collapse: collapse;
+    .table-wrapper table {
       width: 100%;
-      min-width: 900px;
-      background-color: var(--box);
+      border-collapse: collapse;
     }
 
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
+    .table-wrapper th,
+    .table-wrapper td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
       text-align: left;
+    }
+
+    .table-wrapper th {
+      background: #f5f5f5;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
     }
 
     th:first-child, td:first-child {
       width: 32px;
       text-align: center;
       background-color: #f1f1f1;
+    }
+    .scrap-input {
+        width: 60px;
+        padding: 4px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .scrap-input:focus {
+        outline: none;
+        border-color: #4CAF50;
     }
 
     thead {
@@ -505,6 +532,25 @@
     const Hatalar_list = Array.from({ length: 93 }, (_, i) => "H" + i);
     const Duruslar_list = Array.from({ length: 25 }, (_, i) => "D" + i);
 
+    function parseErrorCodes(errorString) {
+        if (!errorString || errorString === "0") return "";
+        
+        const errorTotals = {};
+        const allMatches = errorString.match(/(\d+)\*(\w+)/g) || [];
+        
+        allMatches.forEach(match => {
+            const [count, code] = match.split('*');
+            const normalizedCode = code.toUpperCase();
+            errorTotals[normalizedCode] = (errorTotals[code] || 0) + parseInt(count);
+        });
+        
+        // Toplam sayılarına göre sırala ve formatla
+        return Object.entries(errorTotals)
+            .sort((a, b) => b[1] - a[1]) // Sayıya göre büyükten küçüğe sırala
+            .map(([code, total]) => `${code}: ${total}`)
+            .join('<br>');
+    }
+
     function excelDateToJSDate(serial) {
       const excelEpoch = new Date(Date.UTC(1899, 11, 30));
       return new Date(excelEpoch.getTime() + serial * 24 * 60 * 60 * 1000);
@@ -557,54 +603,35 @@
       
       try {
         // dd.mm.yyyy formatını parse et
-        const parts = dateString.split('.');
-        if (parts.length !== 3) return '';
-        
-        const day = parseInt(parts[0]);
-        const month = parseInt(parts[1]);
-        const year = parseInt(parts[2]);
+        const [day, month, year] = dateString.split('.').map(num => parseInt(num));
         
         if (isNaN(day) || isNaN(month) || isNaN(year)) return '';
         
+        // Tarihi Date objesine çevir
         const date = new Date(year, month - 1, day);
         
-        // ISO 8601 hafta hesaplama
-        // Yılın 4 Ocak'ı her zaman 1. haftadadır
-        const jan4 = new Date(year, 0, 4);
+        // ISO hafta hesaplama
+        const target = new Date(date.valueOf());
+        const dayNumber = (date.getDay() + 6) % 7; // Pazartesi = 0
         
-        // 4 Ocak'ın hangi günde olduğunu bul (0=Pazar, 1=Pazartesi, ...)
-        const jan4Day = jan4.getDay();
+        target.setDate(target.getDate() - dayNumber + 3);
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1);
         
-        // Yılın ilk pazartesini bul
-        const firstMonday = new Date(jan4);
-        firstMonday.setDate(jan4.getDate() - (jan4Day === 0 ? 6 : jan4Day - 1));
-        
-        // Hedef tarih ile ilk pazartesi arasındaki gün farkını hesapla
-        const diffTime = date.getTime() - firstMonday.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        // Hafta numarasını hesapla
-        const weekNumber = Math.floor(diffDays / 7) + 1;
-        
-        // Eğer negatif hafta numarası çıkarsa, bir önceki yılın son haftası
-        if (weekNumber <= 0) {
-          const prevYear = year - 1;
-          const prevYearLastWeek = getLastWeekOfYear(prevYear);
-          return `${prevYear}-W${String(prevYearLastWeek).padStart(2, '0')}`;
+        if (target.getDay() !== 4) {
+            target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
         }
         
-        // Yılın son haftasını kontrol et
-        const lastWeekOfYear = getLastWeekOfYear(year);
-        if (weekNumber > lastWeekOfYear) {
-          return `${year + 1}-W01`;
-        }
+        const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
         
+        // YYYY-Wxx formatında döndür
         return `${year}-W${String(weekNumber).padStart(2, '0')}`;
-      } catch (error) {
+        
+    } catch (error) {
         console.error('Hafta hesaplama hatası:', error);
         return '';
-      }
     }
+}
     
     // Yılın son hafta numarasını hesapla
     function getLastWeekOfYear(year) {
@@ -754,9 +781,38 @@
         const resultsDiv = document.createElement('div');
         resultsDiv.className = 'analysis-results';    
 
+        // Grafik container
         const chartContainer = document.createElement('div');
         chartContainer.style.marginBottom = '30px';
         chartContainer.style.height = '400px';
+
+        // Tablo container oluştur
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'table-section';
+
+        // Tablo header
+        const tableHeader = document.createElement('div');
+        tableHeader.className = 'table-header';
+        
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'table-title';
+        titleDiv.innerHTML = '📊 Hata Kodları ve Adetleri';
+        
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'table-controls';
+        
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'toggle-button';
+        toggleBtn.innerHTML = '<span class="toggle-icon">▼</span> Göster/Gizle';
+        
+        controlsDiv.appendChild(toggleBtn);
+        tableHeader.appendChild(titleDiv);
+        tableHeader.appendChild(controlsDiv);
+
+        // Tablo wrapper
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-wrapper';
+        wrapper.style.maxHeight = '500px'; // Tablo yüksekliğini sınırla
 
         const canvas = document.createElement('canvas');
         canvas.id = 'paretoChart';
@@ -858,6 +914,7 @@
         }
     });
 
+    // Tablo oluşturma
     const table = document.createElement('table');
     table.innerHTML = `
         <thead>
@@ -867,16 +924,33 @@
             </tr>
         </thead>
         <tbody>
-            ${sortedErrors.map(([code, count]) => `
-                <tr>
-                    <td>${code}</td>
-                    <td>${count}</td>
-                </tr>
-            `).join('')}
+            ${Object.entries(errorCount)
+                .sort(([, a], [, b]) => b - a)
+                .map(([code, count]) => `
+                    <tr>
+                        <td>${code}</td>
+                        <td>${count}</td>
+                    </tr>
+                `).join('')}
         </tbody>
     `;
 
-    resultsDiv.appendChild(table);
+    // Toggle fonksiyonu
+    toggleBtn.onclick = () => {
+        const isCollapsed = wrapper.classList.contains('collapsed');
+        if (isCollapsed) {
+            wrapper.classList.remove('collapsed');
+            toggleBtn.classList.remove('collapsed');
+        } else {
+            wrapper.classList.add('collapsed');
+            toggleBtn.classList.add('collapsed');
+        }
+    };
+
+    wrapper.appendChild(table);
+    tableContainer.appendChild(tableHeader);
+    tableContainer.appendChild(wrapper);
+    resultsDiv.appendChild(tableContainer);
     container.appendChild(resultsDiv);    
     }    
 
@@ -1152,19 +1226,237 @@
             <button class="report-btn" data-type="${report.type}">Raporu Görüntüle</button>
         `;
         const reportBtn = card.querySelector('.report-btn');
+        // reportBtn event listener'ını güncelleyelim
         reportBtn.addEventListener('click', function() {
-          reportsContainer.innerHTML = '';
-          const messageTitle = document.createElement('h3');
-          messageTitle.style.textAlign = 'center';
-          messageTitle.style.marginTop = '50px';
+            if (this.dataset.type === 'weekly') {
+                if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
+                    reportsContainer.innerHTML = '';
+                    const messageTitle = document.createElement('h3');
+                    messageTitle.style.textAlign = 'center';
+                    messageTitle.style.marginTop = '50px';
+                    messageTitle.textContent = 'Lütfen önce bir Excel dosyası yükleyin.';
+                    reportsContainer.appendChild(messageTitle);
+                    return;
+                }
+                
+                reportsContainer.innerHTML = '';
 
-          if (this.dataset.type === 'weekly') {
-                messageTitle.textContent = 'Haftalık Raporlar Yakında Eklenecek';
+                const title = document.createElement('h3');
+                title.textContent = 'Haftalık Rapor';
+                title.style.marginBottom = '20px';
+                reportsContainer.appendChild(title);
+
+                const weekSelect = document.createElement('select');
+                weekSelect.className = 'date-select';
+
+                // 3. Haftaları al ve seçici içeriğini oluştur
+                const weeks = [...new Set(window.processedSuccessRows.map(row => 
+                    getWeekFromDate(row[6])
+                ))].sort();
+
+                weekSelect.innerHTML = `
+                    <option value="">Tüm Haftalar</option>
+                    ${weeks.map(week => `<option value="${week}">${week}</option>`).join('')}
+                `;
+                const weekSelectContainer = document.createElement('div');
+                weekSelectContainer.className = 'date-filter-container';
+                weekSelectContainer.appendChild(weekSelect);
+
+                const tableTypeSelect = document.createElement('select');
+                tableTypeSelect.className = 'date-select';
+                tableTypeSelect.style.marginLeft = '20px';  // Hafta seçiciden sonra boşluk bırakmak için
+                tableTypeSelect.innerHTML = `
+                    <option value="BOTH">SVC-DMS</option>
+                    <option value="SVC">SVC</option>
+                    <option value="DMS">DMS</option>
+                `;
+
+                weekSelectContainer.appendChild(tableTypeSelect);
+
+                // Tablo tipi değiştiğinde mevcut tabloları güncelle
+                tableTypeSelect.addEventListener('change', function() {
+                    const selectedType = this.value;
+                    const tables = document.querySelectorAll('.weekly-report-table');
+                    const titles = document.querySelectorAll('h4');
+                    
+                    tables.forEach((table, index) => {
+                        const title = titles[index];
+                        const tableType = title.textContent;
+                        
+                        if (selectedType === 'BOTH' || 
+                            (selectedType === 'SVC' && tableType === 'SVC') || 
+                            (selectedType === 'DMS' && tableType === 'DMS')) {
+                            table.style.display = '';
+                            title.style.display = '';
+                        } else {
+                            table.style.display = 'none';
+                            title.style.display = 'none';
+                        }
+                    });
+                });
+                reportsContainer.appendChild(weekSelectContainer);
+                
+                // Benzersiz proses adlarını al (6. sütun)
+                const processes = [
+                    'SMD BOT',
+                    'SMD TOP',
+                    'TH Lehimleme',
+                    'Panel Test',
+                    'Depaneling',
+                    'Vidalama',
+                    'Lens AA',
+                    'Sızdırmazlık',
+                    'EOL Flaş',
+                    'EOL',
+                    'Lazer Markalama'
+                ];
+                weekSelect.addEventListener('change', function() {
+                    const selectedWeek = this.value;
+                    const selectedType = tableTypeSelect.value; // Default olarak "SVC" gelecek
+
+                    
+                    const existingTables = reportsContainer.querySelectorAll('.weekly-report-table');
+                    const existingTitles = reportsContainer.querySelectorAll('h4');
+                    existingTables.forEach(table => table.remove());
+                    existingTitles.forEach(title => title.remove());
+
+                    const tablesToShow = selectedType === 'BOTH' ? ['SVC', 'DMS'] : [selectedType];
+
+                // Tablo oluştur
+                ['SVC', 'DMS'].forEach(tableType => {
+                    const tableTitle = document.createElement('h4');
+                    tableTitle.textContent = `${tableType}`;
+                    tableTitle.style.marginTop = '30px';
+                    tableTitle.style.marginBottom = '15px';
+
+                    let filteredData = window.processedSuccessRows.filter(row => 
+                        row[7] && row[7].toUpperCase() === tableType
+                    );
+                    if (selectedWeek) {
+                        filteredData = filteredData.filter(row => 
+                            getWeekFromDate(row[6]) === selectedWeek
+                        );
+                    }
+                
+                const table = document.createElement('table');
+                table.className = 'weekly-report-table';
+                
+                // Tablo başlıkları
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Prosesler</th>
+                            <th>OK Adet</th>
+                            <th>Scrap Adet</th>
+                            <th>Total NOK Adet</th>
+                            <th>Yüzde NOK</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${processes.map(process => {
+                          // Her proses için verileri filtrele
+                          const processData = filteredData.filter(row => 
+                              row[8] && row[8].toUpperCase() === process.toUpperCase()
+                          );
+
+                          // 11. sütundaki OK Adet değerlerini topla
+                          const okTotal = processData.reduce((total, row) => {
+                              const okCount = parseInt(row[11]) || 0;
+                              return total + okCount;
+                          }, 0);
+
+                          const nokTotal = processData.reduce((total, row) => {
+                              if (!row[12] || row[12] === "0") return total;
+                              const matches = row[12].match(/(\d+)\*\w+/g) || [];
+                              const nokCount = matches.reduce((sum, match) => {
+                                  const count = parseInt(match.split('*')[0]);
+                                  return sum + (count || 0);
+                              }, 0);
+                              
+                              return total + nokCount;
+                          }, 0);
+                          
+                          const nokPercentage = okTotal > 0 ? ((nokTotal / okTotal) * 100).toFixed(2) : '0.00';
+
+                          return `
+                            <tr>
+                                <td>${process}</td>
+                                <td>${okTotal || '0'}</td>
+                                <td><input type="number" min="0" 
+                                    class="scrap-input" 
+                                    value="0" 
+                                    style="width: 60px; padding: 8px;"
+                                    onblur="this.value = this.value || '0'"
+                                    onchange="updateNokPercentage(this)"
+                                    data-ok="${okTotal}"
+                                    data-nok="${nokTotal}"></td>
+                                <td>${nokTotal || '0'}</td>
+                                <td>${nokPercentage}%</td>
+                                <td style="white-space: pre-line;">${parseErrorCodes(processData.map(row => row[12]).join('+'))}</td>
+                            </tr>
+                          `;  
+                      }).join('')}
+                    </tbody>
+                `;
+                reportsContainer.appendChild(tableTitle);
+                reportsContainer.appendChild(table);
+              });
+            }); 
+
+                // CSS stil ekle
+                const style = document.createElement('style');
+                style.textContent = `
+                    .weekly-report-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                        background: white;
+                        margin-bottom: 40px;
+                    }
+                    .weekly-report-table th,
+                    .weekly-report-table td {
+                        padding: 12px;
+                        border: 1px solid var(--border);
+                        text-align: left;
+                    }
+                    .weekly-report-table th:first-child,
+                    .weekly-report-table td:first-child {
+                        width: 120px;  /* Başlık 1 sütunu için genişlik */
+                        min-width: 120px; 
+                        max-width: 120px; 
+                    }
+                    .weekly-report-table th:nth-child(2),
+                    .weekly-report-table td:nth-child(2),
+                    .weekly-report-table th:nth-child(3),
+                    .weekly-report-table td:nth-child(3),
+                    .weekly-report-table th:nth-child(4),
+                    .weekly-report-table td:nth-child(4),
+                    .weekly-report-table th:nth-child(5),
+                    .weekly-report-table td:nth-child(5) {
+                        width: 80px;
+                        min-width: 80px;
+                        max-width: 80px; 
+                    }              
+                    .weekly-report-table th {
+                        background: #f5f5f5;
+                        font-weight: 600;
+                    }
+                    .weekly-report-table tr:hover {
+                        background: #f9f9f9;
+                    }
+                `;
+                document.head.appendChild(style);
+
+                weekSelect.dispatchEvent(new Event('change'));
             } else {
+                reportsContainer.innerHTML = '';
+                const messageTitle = document.createElement('h3');
+                messageTitle.style.textAlign = 'center';
+                messageTitle.style.marginTop = '50px';
                 messageTitle.textContent = 'Aylık Raporlar Yakında Eklenecek';
+                reportsContainer.appendChild(messageTitle);
             }
-            
-            reportsContainer.appendChild(messageTitle);
         });
         
         reportsGrid.appendChild(card);
@@ -1206,6 +1498,17 @@
       fileInput.value = '';
       fileInput.click();
     });
+    function updateNokPercentage(input) {
+        const row = input.closest('tr');
+        const scrapValue = parseInt(input.value) || 0;
+        const nokCell = row.cells[3];
+        const nokValue = parseInt(nokCell.textContent) || 0;
+        const percentageCell = row.cells[4];
+        const okTotal = parseInt(input.dataset.ok) || 0;
+        const totalNOK = nokValue + scrapValue;
+        const newPercentage = okTotal > 0 ? ((totalNOK / okTotal) * 100).toFixed(2) : '0.00';
+        percentageCell.textContent = `${newPercentage}%`;
+    }
 
     function handleFile(file) {
       if (!file) return;
@@ -1236,6 +1539,15 @@
 
           for (let i = startIndex; i < endIndex; i++) {
             const row = json[i];
+            if (i === 0) { // Header satırı için kontrol etme
+                    continue;
+                }
+                
+                // Email kontrolü (4. sütun) ve ID kontrolü (1. sütun)
+            if (row[3] === "alihanaykanat@buyutech.com.tr" || 
+                (typeof row[0] === 'number' && row[0] < 189)) {
+                continue; // Bu satırı atla
+                }
             const newRow = [...row];
             let isError = false;
 
