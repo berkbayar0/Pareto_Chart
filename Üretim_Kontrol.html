@@ -761,7 +761,7 @@
         }
         const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
         
-        return `${year}-W${String(weekNumber).padStart(2, '0')}`;
+        return `${year}-W${weekNumber}`;
         
       } catch (error) {
           console.error('Hafta hesaplama hatası:', error);
@@ -800,6 +800,7 @@
         "Email", 
         "Tarih",
         "Hafta",
+        "Ürün",
         "Proses Adı",        // "Process adı" yerine
         "OK Ürün",           // "ok ürün adeti" yerine
         "Fireler",           // "hata adet ve kodlar" yerine
@@ -809,9 +810,9 @@
         "proses adı": "process adı",
         "ok ürün": "ok ürün adeti",
         "fireler": "hata adet ve kodlar",
-        "fire açıklaması": "h0 için açıklama"
+        "fire açıklaması": "h0 için açıklama",
+        "ürün": "ürün adı"
       };
-
       const actualIndices = {};
       headers.forEach((header, index) => {
         if (header && typeof header === 'string') {
