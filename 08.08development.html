@@ -2,12 +2,16 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Excel Veri Kontrolü</title>
+  <title>Üretim Kontrolü</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 
   <style>
     :root {
@@ -496,11 +500,76 @@
         padding: 8px;
       }
     }
+
+    .export-dropdown {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+        margin-left: 20px;
+        cursor: pointer;
+    }
+
+    .export-dropdown:hover {
+        border-color: #4CAF50;
+    }
+
+    .weekly-report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        margin-bottom: 40px;
+    }
+
+    .weekly-report-table th,
+    .weekly-report-table td {
+        padding: 12px;
+        border: 1px solid var(--border);
+        text-align: left;
+    }
+
+    .weekly-report-table th:first-child,
+    .weekly-report-table td:first-child {
+        width: 120px;
+        min-width: 120px; 
+        max-width: 120px; 
+    }
+
+    .weekly-report-table th:nth-child(2),
+    .weekly-report-table td:nth-child(2),
+    .weekly-report-table th:nth-child(3),
+    .weekly-report-table td:nth-child(3),
+    .weekly-report-table th:nth-child(4),
+    .weekly-report-table td:nth-child(4),
+    .weekly-report-table th:nth-child(5),
+    .weekly-report-table td:nth-child(5) {
+        width: 80px;
+        min-width: 80px;
+        max-width: 80px; 
+    }              
+
+    .weekly-report-table th {
+        background: #f5f5f5;
+        font-weight: 600;
+    }
+
+    .weekly-report-table tr:hover {
+        background: #f9f9f9;
+    }
   </style>
+  <script>
+    jspdf.jsPDF.API.events.push(["addFonts", function() {
+      this.addFileToVFS();
+      this.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+}]);
+
+  </script>
 </head>
 <body>
   <div class="container">
-    <h2>Excel Dosyası Veri Kontrolü</h2>
+    <h2>Üretim Takip Formu Veri Kontrolü</h2>
     
     <div id="drop-zone">
       <input type="file" id="file-input" accept=".xlsx, .xls" />
@@ -523,10 +592,9 @@
       </div>
       <div class="progress-text" id="progress-text">İşleniyor...</div>
     </div>
-    
+
     <div id="tables"></div>
   </div>
-
   <script>
     const excludedIndexes = [1, 2, 5, 16];
     const Hatalar_list = Array.from({ length: 93 }, (_, i) => "H" + i);
@@ -535,28 +603,87 @@
     function parseErrorCodes(errorString) {
         if (!errorString || errorString === "0") return "";
         
-        // Hata kodları referans listesi - key-value şeklinde tutuyoruz
         const errorReferences = {
-            'H0': 'Diğer (Lütfen açıklama giriniz)',
-            'H9': 'Hasarlı Malzeme',
-            'H30': 'Görüntü Gelmiyor',
-            'H32': 'Sızdırmazlık Uygun Değil',
-            'H45': 'EOL Programı Yapılmamış (White Box)',
-            'H49': 'Program Atılamama (White Box/EOL)',
-            'H54': 'Görüntü Bulanık',
-            'H55': 'Leke var',
-            'H60': 'XY Hatası',
-            'H61': 'Z Hatası',
-            'H62': '2S/S Hatası',
-            'H63': 'F Sweep Hatası',
-            'H64': 'Error Valitadion Failed Hatası',
-            'H66': 'Yapıştırıcı Uygun Değil (Camsı Ürün)',
-            'H68': 'Proses Hatası',
-            'H69': 'Mtf Nok',
-            'H73': 'ID Hatası',
-            'H74': 'Lens Çevresi Boşluk (50° üzeri)',
-            'H76': 'Shift Hatası'
-        };
+        'H0': 'Diğer (Lütfen açıklama giriniz)',
+        'H1': 'Oksitli Malzeme',
+        'H2': 'Tam Oturmamış Malzeme',
+        'H3': 'Soğuk Lehim',
+        'H4': 'Ters Malzeme',
+        'H5': 'Kayık Malzeme',
+        'H6': 'Eksik Malzeme',
+        'H7': 'Lehimsiz',
+        'H8': 'Dik Malzeme',
+        'H9': 'Hasarlı Malzeme',
+        'H10': 'Kısa Devre',
+        'H11': 'Bozuk Malzeme',
+        'H12': 'Kırık/Çatlak Malzeme',
+        'H13': 'Yanlış Malzeme',
+        'H14': 'Çıkık Malzeme',
+        'H15': 'Fazla Lehim',
+        'H16': 'Fazla Malzeme',
+        'H17': 'Top Lehim',
+        'H18': 'Soket Pinleri Eğik',
+        'H19': 'Yetersiz Lehim',
+        'H20': 'Hatalı Bacak Kesımı',
+        'H21': 'Yapıştırıcı Uygun Değil (Az)',
+        'H22': 'Yapıştırıcı Uygun Değil (Fazla)',
+        'H23': 'Odak Uygun Değil',
+        'H24': 'Eksik Enjeksiyon',
+        'H25': 'Alüminyum Soğutucu Bacak Eksik',
+        'H26': 'Yanlış Montaj',
+        'H27': 'Led Aydınlatma Yetersiz',
+        'H28': 'Yüksek Akım',
+        'H29': 'EOL NOK',
+        'H30': 'Görüntü Gelmiyor',
+        'H31': 'Lehim Doluluk Uygun Değil',
+        'H32': 'Sızdırmazlık Uygun Değil',
+        'H33': 'UV Kürleme Hatası',
+        'H34': 'PCB de Çapak',
+        'H35': 'Depanalling Kesim Hatası',
+        'H36': 'Yanlış Vida',
+        'H37': 'Vida Takılmamış',
+        'H38': 'Montaj Sıralaması uygun değil',
+        'H39': 'Conta Yok',
+        'H40': 'Rubber Yok',
+        'H41': 'Led Çalışmıyor',
+        'H42': 'Led Lens Eksik',
+        'H43': 'Alüminyum Soğutucu Vida Delikleri Kayık',
+        'H44': 'Lens Montaj Programlama Yapılmamış',
+        'H45': 'EOL Programı Yapılmamış (White Box)',
+        'H46': 'Lazer Markalama Bilgileri Eksik',
+        'H47': 'Lazer Markalama Okunmuyor',
+        'H48': 'Lazer Markalama Hatalı',
+        'H49': 'Program Atılamama (White Box/EOL)',
+        'H50': 'Bozuk Kart (Bad\'li Kart)',
+        'H51': 'Tork Değeri Uygun Değil',
+        'H52': 'Vida Sıkılmamış',
+        'H67': 'Panel Test Hatası',
+        'H68': 'Proses Hatası',
+        'H69': 'Mtf Nok',
+        'H70': 'Fov Nok',
+        'H71': 'Snr Nok',
+        'H72': 'Homegenity Nok',
+        'H73': 'ID Hatası',
+        'H74': 'Lens Çevresi Boşluk (50° üzeri)',
+        'H75': 'Konnektör Merkezi Yamuk',
+        'H76': 'Shift Hatası',
+        'H77': '406/Dispense İstasyonu Prob Up hatası',
+        'H78': '105/Align İstasyonu Görüntü Gelmeme Hatası',
+        'H79': '107/Align İstasyonu Merkez Kaçıklık Hatası',
+        'H80': '108/Align İstasyonu Maksimum Tarama Hatası',
+        'H81': '155/Align İstasyonu Kürleme Sonrası MTF Düşme Hatası',
+        'H82': '222/Dispense İstasyonu Görüntü Eşleşmeme Hatası',
+        'H83': '231/Dispense İstasyonu Connection Hatası',
+        'H84': '233/Dispense İstasyonu Kötü Yapıştırıcı Hatası',
+        'H85': '242/Dispense İstaysonu Tozlu Ürün Hatası',
+        'H86': '131/Align İstasyonu Köşelerde Odaklama Hatası',
+        'H87': 'Robot Aşırı Yük Hatası',
+        'H88': 'Fazla Magazin Hatası',
+        'H89': 'Bağlantı Hatası (Üst üste min.2 kere bağlantı hatası)',
+        'H90': 'TCP Nok / Mıu Board',
+        'H91': 'Work ID Ön Bellek Depolama Hatası',
+        'H92': 'Zaman Aşımı Hatası(Allign İstaysonu Görüntü Açılmadığı için)'
+    };
         
         const errorTotals = {};
         const allMatches = errorString.match(/(\d+)\*(\w+)/g) || [];
@@ -567,7 +694,6 @@
             errorTotals[normalizedCode] = (errorTotals[normalizedCode] || 0) + parseInt(count);
         });
         
-        // Toplam sayılarına göre sırala ve formatla
         return Object.entries(errorTotals)
             .sort((a, b) => b[1] - a[1]) // Sayıya göre büyükten küçüğe sırala
             .map(([code, total]) => {
@@ -624,20 +750,15 @@
       return checkListContains(codes, validList);
     }
 
-    // Tarihe göre hafta numarası hesaplama fonksiyonu (ISO 8601 formatında)
     function getWeekFromDate(dateString) {
       if (!dateString || typeof dateString !== 'string') return '';
       
       try {
-        // dd.mm.yyyy formatını parse et
         const [day, month, year] = dateString.split('.').map(num => parseInt(num));
         
         if (isNaN(day) || isNaN(month) || isNaN(year)) return '';
-        
-        // Tarihi Date objesine çevir
         const date = new Date(year, month - 1, day);
         
-        // ISO hafta hesaplama
         const target = new Date(date.valueOf());
         const dayNumber = (date.getDay() + 6) % 7; // Pazartesi = 0
         
@@ -648,45 +769,27 @@
         if (target.getDay() !== 4) {
             target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
         }
-        
         const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
         
-        // YYYY-Wxx formatında döndür
-        return `${year}-W${String(weekNumber).padStart(2, '0')}`;
+        return `${year}-W${weekNumber}`;
         
-    } catch (error) {
-        console.error('Hafta hesaplama hatası:', error);
-        return '';
-    }
-}
-    
-    // Yılın son hafta numarasını hesapla
-    function getLastWeekOfYear(year) {
-      const dec31 = new Date(year, 11, 31);
-      const jan4NextYear = new Date(year + 1, 0, 4);
-      const jan4NextYearDay = jan4NextYear.getDay();
-      
-      // Eğer 31 Aralık, bir sonraki yılın ilk haftasındaysa
-      if (jan4NextYearDay <= 4) { // Perşembe veya öncesi
-        const firstMondayNextYear = new Date(jan4NextYear);
-        firstMondayNextYear.setDate(jan4NextYear.getDate() - (jan4NextYearDay === 0 ? 6 : jan4NextYearDay - 1));
-        
-        if (dec31 >= firstMondayNextYear) {
-          return 1; // Aslında bir sonraki yılın ilk haftası
-        }
+      } catch (error) {
+          console.error('Hafta hesaplama hatası:', error);
+          return '';
       }
-      
-      // Normal hesaplama
-      const jan4 = new Date(year, 0, 4);
-      const jan4Day = jan4.getDay();
-      const firstMonday = new Date(jan4);
-      firstMonday.setDate(jan4.getDate() - (jan4Day === 0 ? 6 : jan4Day - 1));
-      
-      const diffTime = dec31.getTime() - firstMonday.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 1000));
-      return Math.floor(diffDays / 7) + 1;
     }
-
+    function getMonthYear(dateString) {
+        if (!dateString || typeof dateString !== 'string') return '';
+        
+        try {
+            const [day, month, year] = dateString.split('.').map(num => parseInt(num));
+            const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            return `${months[month-1]}-${year}`;
+        } catch (error) {
+            return '';
+        }
+    }
     function updateProgress(current, total) {
       const percentage = Math.round((current / total) * 100);
       const progressFill = document.getElementById('progress-fill');
@@ -695,22 +798,19 @@
       progressFill.style.width = percentage + '%';
       progressText.textContent = `${current}/${total} satır işlendi... (${percentage}%)`;
     }
-
     function showProgress() {
       document.getElementById('progress-container').style.display = 'block';
     }
-
     function hideProgress() {
       document.getElementById('progress-container').style.display = 'none';
     }
-
     function exportToExcel(headers, rows, fileName) {
-      // İstenen sütun başlıkları ve sıralaması
       const desiredHeaders = [
         "ID",
         "Email", 
         "Tarih",
         "Hafta",
+        "Ürün",
         "Proses Adı",        // "Process adı" yerine
         "OK Ürün",           // "ok ürün adeti" yerine
         "Fireler",           // "hata adet ve kodlar" yerine
@@ -720,17 +820,15 @@
         "proses adı": "process adı",
         "ok ürün": "ok ürün adeti",
         "fireler": "hata adet ve kodlar",
-        "fire açıklaması": "h0 için açıklama"
+        "fire açıklaması": "h0 için açıklama",
+        "ürün": "ürün adı"
       };
-
-      // Orijinal başlıkların indekslerini bul - daha esnek eşleştirme
       const actualIndices = {};
       headers.forEach((header, index) => {
         if (header && typeof header === 'string') {
           const cleanHeader = header.trim().toLowerCase();
           actualIndices[cleanHeader] = index;
           
-          // Process adı için alternatif eşleştirmeler
           if (cleanHeader.includes('process') || cleanHeader.includes('proses')) {
             actualIndices['process adı'] = index;
           }
@@ -745,10 +843,6 @@
           }
         }
       });
-
-      console.log('Başlık eşleştirmeleri:', actualIndices); // Debug için
-
-      // Her istenen başlık için orijinal indeksi bul
       const headerMap = desiredHeaders.map(desiredHeader => {
         if (desiredHeader === "Hafta") {
           return "HAFTA"; // Özel işaretçi
@@ -770,36 +864,28 @@
         return -1;
       });
 
-      // Filtrelenmiş satırları oluştur
       const filteredRows = rows.map(row => {
         return headerMap.map((idx, headerIndex) => {
           if (idx === "HAFTA") {
-            // Tarih sütunundan hafta bilgisini hesapla
             const dateIndex = actualIndices["tarih"];
             const dateValue = dateIndex !== undefined ? row[dateIndex] : "";
             return getWeekFromDate(dateValue);
           }
-          
           if (idx === -1) return "(eksik)"; // Başlık bulunamadı
           return row[idx] ?? "";
         });
       });
 
-      // Excel workbook oluştur
       const wb = XLSX.utils.book_new();
       const wsData = [desiredHeaders, ...filteredRows];
       const ws = XLSX.utils.aoa_to_sheet(wsData);
       
-      // Kolon genişliklerini ayarla
       ws['!cols'] = desiredHeaders.map(() => ({ wch: 20 }));
       
-      // Worksheet'i workbook'a ekle
       XLSX.utils.book_append_sheet(wb, ws, 'Veriler');
       
-      // Dosyayı indir
       XLSX.writeFile(wb, fileName);
     }
-
     function displayAnalysisResults(errorCodes, container) {
         const existingResults = container.querySelector('.analysis-results');
         if (existingResults) {
@@ -808,16 +894,13 @@
         const resultsDiv = document.createElement('div');
         resultsDiv.className = 'analysis-results';    
 
-        // Grafik container
         const chartContainer = document.createElement('div');
         chartContainer.style.marginBottom = '30px';
         chartContainer.style.height = '400px';
 
-        // Tablo container oluştur
         const tableContainer = document.createElement('div');
         tableContainer.className = 'table-section';
 
-        // Tablo header
         const tableHeader = document.createElement('div');
         tableHeader.className = 'table-header';
         
@@ -835,7 +918,6 @@
         controlsDiv.appendChild(toggleBtn);
         tableHeader.appendChild(titleDiv);
         tableHeader.appendChild(controlsDiv);
-
         // Tablo wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'table-wrapper';
@@ -845,7 +927,6 @@
         canvas.id = 'paretoChart';
         chartContainer.appendChild(canvas);
         resultsDiv.appendChild(chartContainer);
-
         // Hata sayılarını hesapla ve Pareto grafiği için kullan
         const errorCount = {};
         errorCodes.forEach(codeString => {
@@ -858,27 +939,22 @@
                 errorCount[normalizedCode] = (errorCount[normalizedCode] || 0) + parseInt(count);
             });
         });
-
         // Pareto grafiği için verileri hazırla
         const sortedErrors = Object.entries(errorCount)
             .sort(([, a], [, b]) => b - a);
 
         const codes = sortedErrors.map(item => item[0]);
         const counts = sortedErrors.map(item => item[1]);
-
         const total = counts.reduce((a, b) => a + b, 0);
         let cumulative = 0;
         const cumulativePercent = counts.map(val => {
             cumulative += val;
             return ((cumulative / total) * 100).toFixed(2);
         });
-
         // Eski grafik varsa temizle
         if (window.paretoChart) {
             window.paretoChart.destroy();
         }
-
-        // Yeni grafik oluştur
         const ctx = canvas.getContext('2d');
         window.paretoChart = new Chart(ctx, {
             type: 'bar',
@@ -886,29 +962,18 @@
                 labels: codes,
                 datasets: [
                     {
-                        label: 'Hata Adedi',
-                        data: counts,
-                        backgroundColor: '#4CAF50',
-                        yAxisID: 'y1'
+                        label: 'Hata Adedi', data: counts, backgroundColor: '#4CAF50', yAxisID: 'y1'
                     },
                     {
-                        label: 'Kümülatif %',
-                        data: cumulativePercent,
-                        type: 'line',
-                        borderColor: '#ff9800',
-                        borderWidth: 2,
-                        yAxisID: 'y2',
-                        tension: 0.3,
-                        fill: false
+                        label: 'Kümülatif %', data: cumulativePercent, type: 'line', borderColor: '#ff9800',
+                        borderWidth: 2,yAxisID: 'y2',tension: 0.3, fill: false
                     }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
+                responsive: true, maintainAspectRatio: false, scales: {
                     y1: {
-                        beginAtZero: true,
+                        beginAtZero: true, 
                         position: 'left',
                         title: {
                             display: true,
@@ -941,8 +1006,6 @@
                 }
             }
         });
-
-        // Tablo oluşturma
         const table = document.createElement('table');
         table.innerHTML = `
             <thead>
@@ -960,8 +1023,6 @@
                 `).join('')}
             </tbody>
         `;
-
-        // Toggle fonksiyonu
         toggleBtn.onclick = () => {
             const isCollapsed = wrapper.classList.contains('collapsed');
             if (isCollapsed) {
@@ -972,17 +1033,14 @@
                 toggleBtn.classList.add('collapsed');
             }
         };
-
         wrapper.appendChild(table);
         tableContainer.appendChild(tableHeader);
         tableContainer.appendChild(wrapper);
         resultsDiv.appendChild(tableContainer);
 
-        // Referans tablosu container
         const referenceContainer = document.createElement('div');
         referenceContainer.className = 'table-section';
 
-        // Referans tablosu header
         const referenceHeader = document.createElement('div');
         referenceHeader.className = 'table-header';
 
@@ -1001,11 +1059,9 @@
         referenceHeader.appendChild(referenceTitleDiv);
         referenceHeader.appendChild(referenceControlsDiv);
 
-        // Referans tablosu wrapper
         const referenceWrapper = document.createElement('div');
         referenceWrapper.className = 'table-wrapper';
 
-        // Referans tablosu
         const referenceTable = document.createElement('table');
         referenceTable.innerHTML = `
             <thead>
@@ -1029,6 +1085,7 @@
                 <tr><td>H63</td><td>F Sweep Hatası</td></tr>
                 <tr><td>H64</td><td>Error Valitadion Failed Hatası</td></tr>
                 <tr><td>H66</td><td>Yapıştırıcı Uygun Değil (Camsı Ürün)</td></tr>
+                <tr><td>H67</td><td>Panel Test Hatası</td></tr>
                 <tr><td>H68</td><td>Proses Hatası</td></tr>
                 <tr><td>H69</td><td>Mtf Nok</td></tr>
                 <tr><td>H73</td><td>ID Hatası</td></tr>
@@ -1036,8 +1093,6 @@
                 <tr><td>H76</td><td>Shift Hatası</td></tr>
             </tbody>
         `;
-
-        // Toggle fonksiyonu
         referenceToggleBtn.onclick = () => {
             const isCollapsed = referenceWrapper.classList.contains('collapsed');
             if (isCollapsed) {
@@ -1056,12 +1111,10 @@
 
         container.appendChild(resultsDiv);    
     }    
-
     function createTable(headers, rows, tableId, isErrorTable = false) {
       const section = document.createElement('div');
       section.className = 'table-section';
 
-      // Header kısmı
       const tableHeader = document.createElement('div');
       tableHeader.className = `table-header ${isErrorTable ? 'error-header' : ''}`;
       
@@ -1076,11 +1129,9 @@
         <span class="table-count">${rows.length} kayıt</span>
       `;
       
-      // Kontrol butonları container
       const controlsDiv = document.createElement('div');
       controlsDiv.className = 'table-controls';
       
-      // Export butonu
       const exportBtn = document.createElement('button');
       exportBtn.className = 'export-button';
       exportBtn.innerHTML = '📊 Excel\'e Aktar';
@@ -1089,7 +1140,6 @@
         exportToExcel(headers, rows, fileName);
       };
       
-      // Toggle butonu
       const toggleBtn = document.createElement('button');
       toggleBtn.className = 'toggle-button';
       toggleBtn.innerHTML = '<span class="toggle-icon">▼</span> Göster/Gizle';
@@ -1100,11 +1150,9 @@
       tableHeader.appendChild(titleDiv);
       tableHeader.appendChild(controlsDiv);
 
-      // Tablo wrapper
       const wrapper = document.createElement('div');
       wrapper.className = 'table-wrapper';
       
-      // Tablo oluştur
       const table = document.createElement('table');
       const thead = document.createElement('thead');
       const tbody = document.createElement('tbody');
@@ -1137,7 +1185,6 @@
       table.appendChild(tbody);
       wrapper.appendChild(table);
 
-      // Toggle fonksiyonu
       toggleBtn.onclick = () => {
         const isCollapsed = wrapper.classList.contains('collapsed');
         if (isCollapsed) {
@@ -1153,7 +1200,6 @@
       section.appendChild(wrapper);
       return section;
     }
-
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const tablesContainer = document.getElementById('tables');
@@ -1169,7 +1215,7 @@
             "main-table"
         );
         tablesContainer.appendChild(mainTable);
-    }
+      }
         
         if (window.processedErrorRows && window.processedErrorRows.length > 0) {
         const errTable = createTable(
@@ -1179,32 +1225,26 @@
             true
         );
         tablesContainer.appendChild(errTable);
-    }
-});
-
+      }
+    });
     document.getElementById('analysisBtn').addEventListener('click', function() {
         tablesContainer.innerHTML = '';
     
-            // Analiz container oluştur
         const analysisContainer = document.createElement('div');
         analysisContainer.className = 'analysis-container';
         
-        // Başlık ekle
         const title = document.createElement('h3');
         title.textContent = 'Hata Kodları Analizi';
         title.style.marginBottom = '20px';
         
-        // Filtre container
         const filterContainer = document.createElement('div');
         filterContainer.className = 'date-filter-container';
   
-         // Label ve input container'ları
         const startDateContainer = document.createElement('div');
         startDateContainer.className = 'date-input-container';
         const endDateContainer = document.createElement('div');
         endDateContainer.className = 'date-input-container';
 
-        // Başlangıç tarihi label ve input
         const startLabel = document.createElement('label');
         startLabel.textContent = 'Başlangıç Tarihi:';
         const startDateInput = document.createElement('input');
@@ -1212,7 +1252,6 @@
         startDateInput.className = 'date-select';
         startDateInput.placeholder = 'Başlangıç Tarihi Seçin';
 
-        // Bitiş tarihi label ve input
         const endLabel = document.createElement('label');
         endLabel.textContent = 'Bitiş Tarihi:';
         const endDateInput = document.createElement('input');
@@ -1220,7 +1259,6 @@
         endDateInput.className = 'date-select';
         endDateInput.placeholder = 'Bitiş Tarihi Seçin';
 
-        // En erken ve en geç tarihleri bul
         const dates = window.processedSuccessRows.map(row => {
             const dateParts = row[6].split('.');
             return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
@@ -1228,8 +1266,6 @@
 
         const minDate = new Date(Math.min(...dates));
         const maxDate = new Date(Math.max(...dates));
-
-        // Flatpickr ayarları
         const flatpickrConfig = {
             dateFormat: "d.m.Y",
             locale: "tr",
@@ -1237,17 +1273,13 @@
             maxDate: maxDate
         };
 
-        // Başlangıç tarihi için Flatpickr
         const startFp = flatpickr(startDateInput, {
             ...flatpickrConfig,
             defaultDate: minDate,
             onChange: function(selectedDates, dateStr) {
-            // Bitiş tarihinin minimum değerini başlangıç tarihine ayarla
             endFp.set('minDate', selectedDates[0]);
               
-            // Eğer bitiş tarihi, yeni başlangıç tarihinden önceyse
             if (endFp.selectedDates[0] && selectedDates[0] > endFp.selectedDates[0]) {
-                // Bitiş tarihini başlangıç tarihine eşitle
                 endFp.setDate(selectedDates[0]);
             }
               
@@ -1255,7 +1287,6 @@
           }
         });
 
-        // Bitiş tarihi için Flatpickr
         const endFp = flatpickr(endDateInput, {
             ...flatpickrConfig,
             defaultDate: maxDate,
@@ -1268,39 +1299,37 @@
             const endDate = endFp.selectedDates[0];
 
             if (startDate && endDate) {
-                // Seçilen tarih aralığındaki verileri filtrele
                 const filteredData = window.processedSuccessRows.filter(row => {
                     const dateParts = row[6].split('.');
                     const rowDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
                     return rowDate >= startDate && rowDate <= endDate;
                 });
-
                 const errorCodes = filteredData.map(row => row[12]);
-                
-                // Sonuçları göster
                 displayAnalysisResults(errorCodes, analysisContainer);
             }
         }
-
-        // Input'ları container'lara ekle
         startDateContainer.appendChild(startLabel);
         startDateContainer.appendChild(startDateInput);
         endDateContainer.appendChild(endLabel);
         endDateContainer.appendChild(endDateInput);
-
-        // Container'ları ana filter container'a ekle
         filterContainer.appendChild(startDateContainer);
         filterContainer.appendChild(endDateContainer);
-
-        // Her şeyi ana container'a ekle
         analysisContainer.appendChild(title);
         analysisContainer.appendChild(filterContainer);
         
         tablesContainer.appendChild(analysisContainer);
 
-        // İlk sonuçları göster
         updateResults();
     });
+
+    function getUniqueMarks() {
+      if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
+         return [];
+      }
+        return [...new Set(window.processedSuccessRows.map(row => 
+          row[7] && row[7].toUpperCase() || 'BİLİNMEYEN'
+        ))].filter(Boolean).sort();
+    }
 
     document.getElementById('reportsBtn').addEventListener('click', function() {
       tablesContainer.innerHTML = '';
@@ -1319,7 +1348,6 @@
         { title: 'Haftalık', description: 'Haftalara göre detaylı rapor analizi', type:'weekly' },
         { title: 'Aylık', description: 'Aylara göre detaylı rapor analizi', type:'monthly' }
       ];
-
       reportCards.forEach(report => {
         const card = document.createElement('div');
         card.className = 'report-card';
@@ -1329,7 +1357,6 @@
             <button class="report-btn" data-type="${report.type}">Raporu Görüntüle</button>
         `;
         const reportBtn = card.querySelector('.report-btn');
-        // reportBtn event listener'ını güncelleyelim
         reportBtn.addEventListener('click', function() {
             if (this.dataset.type === 'weekly') {
                 if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
@@ -1341,9 +1368,7 @@
                     reportsContainer.appendChild(messageTitle);
                     return;
                 }
-                
                 reportsContainer.innerHTML = '';
-
                 const title = document.createElement('h3');
                 title.textContent = 'Haftalık Rapor';
                 title.style.marginBottom = '20px';
@@ -1352,10 +1377,18 @@
                 const weekSelect = document.createElement('select');
                 weekSelect.className = 'date-select';
 
-                // 3. Haftaları al ve seçici içeriğini oluştur
-                const weeks = [...new Set(window.processedSuccessRows.map(row => 
+                const weeks = [...new Set(window.processedSuccessRows.map(row =>
                     getWeekFromDate(row[6])
-                ))].sort();
+                ))].sort((a, b) => {
+                    const [yearA, weekA] = a.split('-W').map(Number);
+                    const [yearB, weekB] = b.split('-W').map(Number);
+
+                    if (yearA === yearB) {
+                        return weekA - weekB;
+                    } else {
+                        return yearA - yearB;
+                    }
+                });
 
                 weekSelect.innerHTML = `
                     <option value="">Tüm Haftalar</option>
@@ -1368,38 +1401,160 @@
                 const tableTypeSelect = document.createElement('select');
                 tableTypeSelect.className = 'date-select';
                 tableTypeSelect.style.marginLeft = '20px';  // Hafta seçiciden sonra boşluk bırakmak için
+                const uniqueMarks = getUniqueMarks();
                 tableTypeSelect.innerHTML = `
-                    <option value="BOTH">SVC-DMS</option>
-                    <option value="SVC">SVC</option>
-                    <option value="DMS">DMS</option>
+                    <option value="ALL">Tümü</option>
+                    ${uniqueMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
                 `;
 
                 weekSelectContainer.appendChild(tableTypeSelect);
 
-                // Tablo tipi değiştiğinde mevcut tabloları güncelle
-                tableTypeSelect.addEventListener('change', function() {
-                    const selectedType = this.value;
+                const exportControls = document.createElement('div');
+                exportControls.className = 'export-controls';
+                exportControls.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    margin-left: auto;
+                    gap: 15px;
+                `;
+
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                `;
+                const excelLabel = document.createElement('label');
+                excelLabel.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    cursor: pointer;
+                `;
+                const excelCheckbox = document.createElement('input');
+                excelCheckbox.type = 'radio';
+                excelCheckbox.name = 'exportType';
+                excelCheckbox.value = 'excel';
+                excelCheckbox.style.cursor = 'pointer';
+                excelLabel.appendChild(excelCheckbox);
+                excelLabel.appendChild(document.createTextNode('Excel'));
+
+                const pdfLabel = document.createElement('label');
+                pdfLabel.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    cursor: pointer;
+                `;
+                const pdfCheckbox = document.createElement('input');
+                pdfCheckbox.type = 'radio';
+                pdfCheckbox.name = 'exportType';
+                pdfCheckbox.value = 'pdf';
+                pdfCheckbox.style.cursor = 'pointer';
+                pdfLabel.appendChild(pdfCheckbox);
+                pdfLabel.appendChild(document.createTextNode('PDF'));
+
+                const exportButton = document.createElement('button');
+                exportButton.textContent = 'Dışa Aktar';
+                exportButton.className = 'export-button';
+                exportButton.style.cssText = `
+                    padding: 8px 16px; 
+                    background-color: #4CAF50; 
+                    color: white; border: none; 
+                    border-radius: 4px; 
+                    cursor: pointer; 
+                    font-size: 14px;`;
+                exportButton.addEventListener('click', function() {
+                    const selectedFormat = document.querySelector('input[name="exportType"]:checked')?.value;
+                    const selectedWeek = weekSelect.value;
                     const tables = document.querySelectorAll('.weekly-report-table');
-                    const titles = document.querySelectorAll('h4');
-                    
-                    tables.forEach((table, index) => {
-                        const title = titles[index];
-                        const tableType = title.textContent;
+                    const today = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
+
+                    if (selectedFormat === 'excel') { //excel export haftalık
+                        const wb = XLSX.utils.book_new();
                         
-                        if (selectedType === 'BOTH' || 
-                            (selectedType === 'SVC' && tableType === 'SVC') || 
-                            (selectedType === 'DMS' && tableType === 'DMS')) {
-                            table.style.display = '';
-                            title.style.display = '';
-                        } else {
-                            table.style.display = 'none';
-                            title.style.display = 'none';
+                        tables.forEach((table, index) => {
+                            if (table.style.display !== 'none') {
+                                const tableTitle = table.previousElementSibling;
+                                const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
+                                const ws_data = [];
+                                const headers = [];
+                                table.querySelectorAll('thead th').forEach(th => {
+                                    headers.push(th.textContent);
+                                });
+                                ws_data.push(headers);
+                                
+                                table.querySelectorAll('tbody tr').forEach(tr => {
+                                    const row = [];
+                                    tr.querySelectorAll('td').forEach((td, i) => {
+                                        if (i === 2) { 
+                                            const inputValue = td.querySelector('input')?.value || '0';
+                                            row.push(inputValue);
+                                        } else {
+                                            row.push(td.textContent || '');
+                                        }
+                                    });
+                                    ws_data.push(row);
+                                });
+                                
+                                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                                XLSX.utils.book_append_sheet(wb, ws, tableType);
+                            }
+                        });
+                        XLSX.writeFile(wb, `Haftalik_Rapor_${selectedWeek || 'Tum'}_${today}.xlsx`);
+                    }else if (selectedFormat === 'pdf') {
+                      const { jsPDF } = window.jspdf;
+                      const doc = new jsPDF({ orientation: 'landscape' });
+                      let currentY = 20;
+
+                      tables.forEach((table, index) => {
+                        if (index === 1) { // bu if bloğu kalkabilir eğer yeni sayfa açmak istemiyorsanız
+                          doc.addPage();
+                          currentY = 20; 
                         }
-                    });
+                        doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+                        doc.setFont("Roboto");
+                        const tableTitle = table.previousElementSibling;
+                        const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
+
+                        doc.text(`${tableType} - Haftalık Rapor: ${selectedWeek || 'Tüm Haftalar'}`, 14, currentY);
+
+                        doc.autoTable({
+                          html: table,
+                          startY: currentY + 5,
+                          theme: 'striped',
+                          styles: {
+                            font: 'Roboto',   
+                            fontStyle: 'normal',
+                            fontSize: 10,
+                            cellPadding: 2
+                          },
+                          headStyles: {
+                            font: 'Roboto',
+                            fontStyle: 'bold',
+                            fontSize: 11,
+                            fillColor: [76, 175, 80] 
+                          },
+                          margin: { left: 14, right: 14 },
+                          didDrawPage: function (data) {
+                            currentY = data.cursor.y + 15;
+                          }
+                        });
+                      });
+
+                      doc.save(`Haftalik_Rapor_${selectedWeek || 'Tum'}_${today}.pdf`);
+                    }
+
                 });
+
+                checkboxContainer.appendChild(excelLabel);
+                checkboxContainer.appendChild(pdfLabel);
+                exportControls.appendChild(checkboxContainer);
+                exportControls.appendChild(exportButton);
+                weekSelectContainer.appendChild(exportControls);
+
                 reportsContainer.appendChild(weekSelectContainer);
                 
-                // Benzersiz proses adlarını al (6. sütun)
                 const processes = [
                     'SMD BOT',
                     'SMD TOP',
@@ -1411,40 +1566,40 @@
                     'Sızdırmazlık',
                     'EOL Flaş',
                     'EOL',
-                    'Lazer Markalama'
+                    'Lazer Markalama',
+                    'Son Kontrol',
+                  
                 ];
                 weekSelect.addEventListener('change', function() {
                     const selectedWeek = this.value;
                     const selectedType = tableTypeSelect.value; // Default olarak "SVC" gelecek
-
-                    
                     const existingTables = reportsContainer.querySelectorAll('.weekly-report-table');
                     const existingTitles = reportsContainer.querySelectorAll('h4');
                     existingTables.forEach(table => table.remove());
                     existingTitles.forEach(title => title.remove());
 
-                    const tablesToShow = selectedType === 'BOTH' ? ['SVC', 'DMS'] : [selectedType];
-
-                // Tablo oluştur
-                ['SVC', 'DMS'].forEach(tableType => {
-                    const tableTitle = document.createElement('h4');
-                    tableTitle.textContent = `${tableType}`;
-                    tableTitle.style.marginTop = '30px';
-                    tableTitle.style.marginBottom = '15px';
-
-                    let filteredData = window.processedSuccessRows.filter(row => 
-                        row[7] && row[7].toUpperCase() === tableType
-                    );
-                    if (selectedWeek) {
-                        filteredData = filteredData.filter(row => 
-                            getWeekFromDate(row[6]) === selectedWeek
-                        );
+                    let marksToShow = [];
+                    if (selectedType === 'ALL') {
+                        marksToShow = getUniqueMarks();
+                    } else {
+                        marksToShow = [selectedType];
                     }
-                
+                    marksToShow.forEach(mark => {
+                        const tableTitle = document.createElement('h4');
+                        tableTitle.textContent = `Marka: ${mark}`;
+                        tableTitle.style.marginTop = '30px';
+                        tableTitle.style.marginBottom = '15px';
+
+                        let filteredData = window.processedSuccessRows.filter(row =>
+                            row[7] && row[7].toUpperCase() === mark
+                        );
+                        if (selectedWeek) {
+                            filteredData = filteredData.filter(row =>
+                                getWeekFromDate(row[6]) === selectedWeek
+                            );
+                        }
                 const table = document.createElement('table');
                 table.className = 'weekly-report-table';
-                
-                // Tablo başlıkları
                 table.innerHTML = `
                     <thead>
                         <tr>
@@ -1457,18 +1612,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${processes.map(process => {
-                          // Her proses için verileri filtrele
+                        ${processes.map(process => { //proseslere göre filtreleme
                           const processData = filteredData.filter(row => 
                               row[8] && row[8].toUpperCase() === process.toUpperCase()
                           );
-
-                          // 11. sütundaki OK Adet değerlerini topla
                           const okTotal = processData.reduce((total, row) => {
                               const okCount = parseInt(row[11]) || 0;
                               return total + okCount;
                           }, 0);
-
                           const nokTotal = processData.reduce((total, row) => {
                               if (!row[12] || row[12] === "0") return total;
                               const matches = row[12].match(/(\d+)\*\w+/g) || [];
@@ -1476,12 +1627,9 @@
                                   const count = parseInt(match.split('*')[0]);
                                   return sum + (count || 0);
                               }, 0);
-                              
                               return total + nokCount;
                           }, 0);
-                          
-                          const nokPercentage = okTotal > 0 ? ((nokTotal / okTotal) * 100).toFixed(2) : '0.00';
-
+                          const nokPercentage = (okTotal + nokTotal) > 0 ? ((nokTotal / (okTotal + nokTotal)) * 100).toFixed(2) : '0.00';
                           return `
                             <tr>
                                 <td>${process}</td>
@@ -1490,10 +1638,7 @@
                                     class="scrap-input" 
                                     value="0" 
                                     style="width: 60px; padding: 8px;"
-                                    onblur="this.value = this.value || '0'"
-                                    onchange="updateNokPercentage(this)"
-                                    data-ok="${okTotal}"
-                                    data-nok="${nokTotal}"></td>
+                                    onblur="this.value = this.value || '0'"></td>
                                 <td>${nokTotal || '0'}</td>
                                 <td>${nokPercentage}%</td>
                                 <td style="white-space: pre-line;">${parseErrorCodes(processData.map(row => row[12]).join('+'))}</td>
@@ -1506,121 +1651,323 @@
                 reportsContainer.appendChild(table);
               });
             }); 
-
-                // CSS stil ekle
-                const style = document.createElement('style');
-                style.textContent = `
-                    .weekly-report-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 20px;
-                        background: white;
-                        margin-bottom: 40px;
-                    }
-                    .weekly-report-table th,
-                    .weekly-report-table td {
-                        padding: 12px;
-                        border: 1px solid var(--border);
-                        text-align: left;
-                    }
-                    .weekly-report-table th:first-child,
-                    .weekly-report-table td:first-child {
-                        width: 120px;  /* Başlık 1 sütunu için genişlik */
-                        min-width: 120px; 
-                        max-width: 120px; 
-                    }
-                    .weekly-report-table th:nth-child(2),
-                    .weekly-report-table td:nth-child(2),
-                    .weekly-report-table th:nth-child(3),
-                    .weekly-report-table td:nth-child(3),
-                    .weekly-report-table th:nth-child(4),
-                    .weekly-report-table td:nth-child(4),
-                    .weekly-report-table th:nth-child(5),
-                    .weekly-report-table td:nth-child(5) {
-                        width: 80px;
-                        min-width: 80px;
-                        max-width: 80px; 
-                    }              
-                    .weekly-report-table th {
-                        background: #f5f5f5;
-                        font-weight: 600;
-                    }
-                    .weekly-report-table tr:hover {
-                        background: #f9f9f9;
-                    }
-                `;
-                document.head.appendChild(style);
-
                 weekSelect.dispatchEvent(new Event('change'));
-            } else {
-                reportsContainer.innerHTML = '';
-                const messageTitle = document.createElement('h3');
-                messageTitle.style.textAlign = 'center';
-                messageTitle.style.marginTop = '50px';
-                messageTitle.textContent = 'Aylık Raporlar Yakında Eklenecek';
-                reportsContainer.appendChild(messageTitle);
-            }
+            } else if (this.dataset.type === 'monthly') {
+              if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
+                  reportsContainer.innerHTML = '';
+                  const messageTitle = document.createElement('h3');
+                  messageTitle.style.textAlign = 'center';
+                  messageTitle.style.marginTop = '50px';
+                  messageTitle.textContent = 'Lütfen önce bir Excel dosyası yükleyin.';
+                  reportsContainer.appendChild(messageTitle);
+                  return;
+              }
+              reportsContainer.innerHTML = '';
+              const title = document.createElement('h3');
+              title.textContent = 'Aylık Rapor';
+              title.style.marginBottom = '20px';
+              reportsContainer.appendChild(title);
+              const monthSelect = document.createElement('select');
+              monthSelect.className = 'date-select';
+              const monthYears = [...new Set(window.processedSuccessRows.map(row => 
+                  getMonthYear(row[6])
+              ))].sort((a, b) => {
+                  const [monthA, yearA] = a.split(' ');
+                  const [monthB, yearB] = b.split(' ');
+                  const yearDiff = parseInt(yearA) - parseInt(yearB);
+                  if (yearDiff !== 0) return yearDiff;
+                  const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                  return months.indexOf(monthA) - months.indexOf(monthB);
+              });
+
+              monthSelect.innerHTML = `
+                  <option value="">Tüm Aylar</option>
+                  ${monthYears.map(month => `<option value="${month}">${month}</option>`).join('')}
+              `;
+              const monthSelectContainer = document.createElement('div');
+              monthSelectContainer.className = 'date-filter-container';
+              monthSelectContainer.appendChild(monthSelect);
+              const tableTypeSelect = document.createElement('select');
+              tableTypeSelect.className = 'date-select';
+              tableTypeSelect.style.marginLeft = '20px';
+              const uniqueMarks = getUniqueMarks();
+              tableTypeSelect.innerHTML = `
+                  <option value="ALL">Tümü</option>
+                  ${uniqueMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
+              `;
+              monthSelectContainer.appendChild(tableTypeSelect);
+              const exportControls = document.createElement('div');
+              exportControls.className = 'export-controls';
+              exportControls.style.cssText = `
+                  display: flex;
+                  align-items: center;
+                  margin-left: auto;
+                  gap: 15px;
+              `;
+              const checkboxContainer = document.createElement('div');
+              checkboxContainer.style.cssText = `
+                  display: flex;
+                  align-items: center;
+                  gap: 15px;
+              `;
+              const excelLabel = document.createElement('label');
+              excelLabel.style.cssText = `
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                  cursor: pointer;
+              `;
+              const excelRadio = document.createElement('input');
+              excelRadio.type = 'radio';
+              excelRadio.name = 'monthlyExportType';
+              excelRadio.value = 'excel';
+              excelRadio.style.cursor = 'pointer';
+              excelLabel.appendChild(excelRadio);
+              excelLabel.appendChild(document.createTextNode('Excel'));
+              const pdfLabel = document.createElement('label');
+              pdfLabel.style.cssText = `
+                  display: flex; align-items: center; gap: 5px; cursor: pointer;`;
+              const pdfRadio = document.createElement('input');
+              pdfRadio.type = 'radio';
+              pdfRadio.name = 'monthlyExportType';
+              pdfRadio.value = 'pdf';
+              pdfRadio.style.cursor = 'pointer';
+              pdfLabel.appendChild(pdfRadio);
+              pdfLabel.appendChild(document.createTextNode('PDF'));
+
+              checkboxContainer.appendChild(excelLabel);
+              checkboxContainer.appendChild(pdfLabel);
+              const exportButton = document.createElement('button');
+              exportButton.textContent = 'Dışa Aktar';
+              exportButton.className = 'export-button';
+              exportButton.style.cssText = `
+                  padding: 8px 16px;
+                  background-color: #4CAF50;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  font-size: 14px;
+              `;
+              exportButton.addEventListener('click', function () {
+                const selectedFormat = document.querySelector('input[name="monthlyExportType"]:checked')?.value;
+                const selectedMonth = monthSelect.value;
+                const selectedType = tableTypeSelect.value;
+                const tables = document.querySelectorAll('.weekly-report-table');
+                const today = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
+
+                if (selectedFormat === 'excel') {
+                  const wb = XLSX.utils.book_new();
+
+                  tables.forEach((table, index) => {
+                    if (table.style.display !== 'none') {
+                      const tableTitle = table.previousElementSibling;
+                      const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
+                      const ws_data = [];
+                      const headers = [];
+                      table.querySelectorAll('thead th').forEach(th => {
+                        headers.push(th.textContent);
+                      });
+                      ws_data.push(headers);
+
+                      table.querySelectorAll('tbody tr').forEach(tr => {
+                        const row = [];
+                        tr.querySelectorAll('td').forEach((td, i) => {
+                          if (i === 2) {
+                            const inputValue = td.querySelector('input')?.value || '0';
+                            row.push(inputValue);
+                          } else {
+                            row.push(td.textContent || '');
+                          }
+                        });
+                        ws_data.push(row);
+                      });
+
+                      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                      XLSX.utils.book_append_sheet(wb, ws, tableType);
+                    }
+                  });
+
+                  XLSX.writeFile(wb, `Aylik_Rapor_${selectedMonth || 'Tum'}_${today}.xlsx`);
+                } else if (selectedFormat === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'landscape' });
+                    let currentY = 20;
+                    const visibleTables = Array.from(tables).filter(table => table.style.display !== 'none');
+                    visibleTables.forEach((table, index) => {
+                      if (index > 0) {
+                        doc.addPage();
+                        currentY = 20;
+                      }
+                      
+                      doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+                      doc.setFont("Roboto");
+                      const tableTitle = table.previousElementSibling;
+                      const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
+                      
+                      doc.text(`${tableType} - ${selectedMonth || 'Tüm Aylar'}`, 14, currentY);
+
+                      doc.autoTable({
+                        html: table,
+                        startY: currentY + 5,
+                        theme: 'striped',
+                        styles: { 
+                          font: 'Roboto',   
+                          fontStyle: 'normal',
+                          fontSize: 10,
+                          cellPadding: 2
+                        },
+                        headStyles: { font: 'Roboto',
+                          fontStyle: 'bold',
+                          fontSize: 11,
+                          fillColor: [76, 175, 80] },
+                        margin: { left: 14, right: 14 },
+                        didDrawPage: function (data) {
+                          currentY = data.cursor.y + 15;
+                        } 
+                      });
+                    });
+
+                    doc.save(`Aylik_Rapor_${selectedMonth || 'Tum'}_${today}.pdf`);
+                  }                  
+              });
+
+              exportControls.appendChild(checkboxContainer);
+              exportControls.appendChild(exportButton);
+              monthSelectContainer.appendChild(exportControls);
+              reportsContainer.appendChild(monthSelectContainer);
+            
+              monthSelect.addEventListener('change', function() {
+                  const selectedMonth = this.value;
+                  const selectedType = tableTypeSelect.value;
+                  const existingTables = reportsContainer.querySelectorAll('.weekly-report-table');
+                  const existingTitles = reportsContainer.querySelectorAll('h4');
+                  existingTables.forEach(table => table.remove());
+                  existingTitles.forEach(title => title.remove());
+
+                  let marksToShow = [];
+                  if (selectedType === 'ALL') {
+                      marksToShow = getUniqueMarks();
+                  } else {
+                      marksToShow = [selectedType];
+                  }
+                  marksToShow.forEach(mark => {
+                          const processes = [
+                              'SMD BOT',
+                              'SMD TOP',
+                              'TH Lehimleme',
+                              'Panel Test',
+                              'Depaneling',
+                              'Vidalama',
+                              'Lens AA',
+                              'Sızdırmazlık',
+                              'EOL Flaş',
+                              'EOL',
+                              'Lazer Markalama',
+                              'Son Kontrol',
+                          ];
+                          const tableTitle = document.createElement('h4');  
+                          tableTitle.textContent = `Marka: ${mark}`;
+                          tableTitle.style.marginTop = '30px';
+                          tableTitle.style.marginBottom = '15px';
+
+                          let filteredData = window.processedSuccessRows.filter(row => 
+                              row[7] && row[7].toUpperCase() === mark
+                          );
+
+                          if (selectedMonth) {
+                              filteredData = filteredData.filter(row => 
+                                  getMonthYear(row[6]) === selectedMonth
+                              );
+                          }
+                          const table = document.createElement('table');
+                          table.className = 'weekly-report-table';
+                          table.innerHTML = `
+                              <thead>
+                                  <tr>
+                                      <th>Prosesler</th>
+                                      <th>OK Adet</th>
+                                      <th>Scrap Adet</th>
+                                      <th>Total NOK Adet</th>
+                                      <th>Yüzde NOK</th>
+                                      <th>Açıklama</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  ${processes.map(process => {
+                                      const processData = filteredData.filter(row => 
+                                          row[8] && row[8].toUpperCase() === process.toUpperCase()
+                                      );
+                                      const okTotal = processData.reduce((total, row) => {
+                                          const okCount = parseInt(row[11]) || 0;
+                                          return total + okCount;
+                                      }, 0);
+                                      const nokTotal = processData.reduce((total, row) => {
+                                          if (!row[12] || row[12] === "0") return total;
+                                          const matches = row[12].match(/(\d+)\*\w+/g) || [];
+                                          return total + matches.reduce((sum, match) => 
+                                              sum + (parseInt(match.split('*')[0]) || 0), 0);
+                                      }, 0);
+                                      const nokPercentage = (okTotal + nokTotal) > 0 ? ((nokTotal / (okTotal + nokTotal)) * 100).toFixed(2) : '0.00';
+                                      return `
+                                          <tr>
+                                              <td>${process}</td>
+                                              <td>${okTotal || '0'}</td>
+                                              <td><input type="number" min="0" 
+                                                  class="scrap-input" 
+                                                  value="0" 
+                                                  style="width: 60px; padding: 8px;"
+                                                  onblur="this.value = this.value || '0'"></td>
+                                              <td>${nokTotal || '0'}</td>
+                                              <td>${nokPercentage}%</td>
+                                              <td style="white-space: pre-line;">${parseErrorCodes(processData.map(row => row[12]).join('+'))}</td>
+                                          </tr>
+                                      `;
+                                  }).join('')}
+                              </tbody>
+                          `;
+                          reportsContainer.appendChild(tableTitle);
+                          reportsContainer.appendChild(table);
+                  });
+              });
+              monthSelect.dispatchEvent(new Event('change'));
+          }
         });
-        
         reportsGrid.appendChild(card);
       });
       reportsContainer.appendChild(title);
       reportsContainer.appendChild(reportsGrid);
       tablesContainer.appendChild(reportsContainer);
     });
-    // Drag and drop olayları
     dropZone.addEventListener('dragover', e => {
       e.preventDefault();
       dropZone.classList.add('drag-over');
     });
-
     dropZone.addEventListener('dragleave', e => {
       e.preventDefault();
       dropZone.classList.remove('drag-over');
     });
-
     dropZone.addEventListener('drop', e => {
       e.preventDefault();
       dropZone.classList.remove('drag-over');
       handleFile(e.dataTransfer.files[0]);
     });
-
-    // File input değişiklik olayı
     fileInput.addEventListener('change', e => {
       if (e.target.files[0]) {
         handleFile(e.target.files[0]);
       }
     });
-
-    // Drop zone tıklama olayı - dosya input'unu temizle
     dropZone.addEventListener('click', (e) => {
-      // Eğer tıklama file input'un kendisinden geliyorsa, hiçbir şey yapma
       if (e.target === fileInput) return;
-      
-      // File input'u temizle ve tıkla
       fileInput.value = '';
       fileInput.click();
     });
-    function updateNokPercentage(input) {
-        const row = input.closest('tr');
-        const scrapValue = parseInt(input.value) || 0;
-        const nokCell = row.cells[3];
-        const nokValue = parseInt(nokCell.textContent) || 0;
-        const percentageCell = row.cells[4];
-        const okTotal = parseInt(input.dataset.ok) || 0;
-        const totalNOK = nokValue + scrapValue;
-        const newPercentage = okTotal > 0 ? ((totalNOK / okTotal) * 100).toFixed(2) : '0.00';
-        percentageCell.textContent = `${newPercentage}%`;
-    }
-
     function handleFile(file) {
       if (!file) return;
-
       document.getElementById('buttonContainer').style.display = 'none';
-
       showProgress();
       tablesContainer.innerHTML = '';
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
@@ -1634,8 +1981,6 @@
         let successCount = 0;
         let errorCount = 0;
         const totalRows = json.length - 1;
-
-        // İlerleme göstergesi için batch işleme
         function processRows(startIndex) {
           const batchSize = 50;
           const endIndex = Math.min(startIndex + batchSize, json.length);
@@ -1645,15 +1990,12 @@
             if (i === 0) { // Header satırı için kontrol etme
                     continue;
                 }
-                
-                // Email kontrolü (4. sütun) ve ID kontrolü (1. sütun)
             if (row[3] === "alihanaykanat@buyutech.com.tr" || 
                 (typeof row[0] === 'number' && row[0] < 189)) {
-                continue; // Bu satırı atla
+                continue; 
                 }
             const newRow = [...row];
             let isError = false;
-
             try {
               if (typeof row[6] === 'number') {
                 const dateObj = excelDateToJSDate(row[6]);
@@ -1690,32 +2032,23 @@
               successCount++;
             }
           }
-
           updateProgress(endIndex - 1, totalRows);
-
           if (endIndex < json.length) {
-            // Sonraki batch'i işlemek için kısa bir bekleme
             setTimeout(() => processRows(endIndex), 10);
           } else {
             // İşlem tamamlandı
             finishProcessing();
           }
         }
-
         function finishProcessing() {
           hideProgress();
-
           document.getElementById('buttonContainer').style.display = 'flex';
 
           window.processedHeaders = headers;
           window.processedSuccessRows = successRows;
           window.processedErrorRows = errorRows;
-
-          // Dosya işlemi tamamlandıktan sonra input'u temizle
           fileInput.value = '';
         }
-
-        // İşleme başla
         if (totalRows > 0) {
           processRows(1);
         } else {
@@ -1723,7 +2056,6 @@
           fileInput.value = '';
         }
       };
-
       reader.readAsArrayBuffer(file);
     }
   </script>

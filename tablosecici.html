@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Üretim Kontrolü</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -522,6 +521,72 @@
         background: white;
         margin-bottom: 40px;
     }
+    .date-range-container {
+        padding: 20px 10px;
+        margin: 20px 0;
+        background: #f5f5f5;
+        border-radius: 8px;
+    }
+
+    .date-slider-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    #date-range-label {
+        font-weight: bold;
+        color: #444;
+    }
+
+    #date-range-value {
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    #date-slider {
+        height: 8px;
+        margin: 30px 10px;
+    }
+
+    .date-slider-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: -20px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .date-label {
+        position: relative;
+        top: -10px;
+    }
+
+    /* noUiSlider özelleştirme */
+    .noUi-connect {
+        background: #007bff;
+    }
+
+    .noUi-handle {
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 50%;
+        background-color: white;
+        box-shadow: 0 0 0 2px #007bff !important;
+        cursor: pointer;
+    }
+
+    .noUi-handle:before, 
+    .noUi-handle:after {
+        display: none;
+    }
+
+    .noUi-tooltip {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-color: #007bff;
+    }
 
     .weekly-report-table th,
     .weekly-report-table td {
@@ -579,6 +644,17 @@
         <p class="drop-text">Dosyayı buraya sürükleyin veya tıklayın</p>
         <p class="drop-subtext">Excel dosyaları (.xlsx, .xls) desteklenir</p>
       </div>
+    </div>
+    <div class="date-range-container">
+        <div class="date-slider-info">
+            <span id="date-range-label">Tarih Aralığı: </span>
+            <span id="date-range-value">Seçilen tarih aralığı</span>
+        </div>
+        <div id="date-slider"></div>
+        <div class="date-slider-labels">
+            <span class="date-label" id="min-date">Başlangıç</span>
+            <span class="date-label" id="max-date">Bitiş</span>
+        </div>
     </div>
 
     <div class="button-container" id="buttonContainer" style="display: none;">
@@ -750,7 +826,98 @@
       const codes = extractTextValues(text);
       return checkListContains(codes, validList);
     }
+    // Veri kümesindeki tarih aralığını bulun
+    function findDateRange(data) {
+        const dates = data.map(row => {
+            const parts = row[6].split('.'); // tarih formatı: DD.MM.YYYY
+            return new Date(parts[2], parts[1]-1, parts[0]); // JS aylar 0-11 arasında
+        });
+        
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(Math.max(...dates));
+        
+        // Tam hafta başı/sonu yapın
+        minDate.setDate(minDate.getDate() - minDate.getDay()); // Haftanın başına git (Pazar)
+        maxDate.setDate(maxDate.getDate() + (6 - maxDate.getDay())); // Haftanın sonuna git (Cumartesi)
+        
+        return [minDate, maxDate];
+    }
 
+    // Tarih kaydırıcısını oluştur
+    function createDateSlider(data) {
+        const [minDate, maxDate] = findDateRange(data);
+        
+        const dateSlider = document.getElementById('date-slider');
+        const dateRangeValue = document.getElementById('date-range-value');
+        const minDateLabel = document.getElementById('min-date');
+        const maxDateLabel = document.getElementById('max-date');
+        
+        // Başlangıç ve bitiş etiketlerini ayarla
+        minDateLabel.textContent = formatDate(minDate);
+        maxDateLabel.textContent = formatDate(maxDate);
+        
+        // noUiSlider oluştur
+        noUiSlider.create(dateSlider, {
+            start: [minDate.getTime(), maxDate.getTime()], // Unix timestamp
+            connect: true,
+            step: 24 * 60 * 60 * 1000, // 1 gün
+            range: {
+                'min': minDate.getTime(),
+                'max': maxDate.getTime()
+            },
+            format: {
+                to: function(value) {
+                    return new Date(value);
+                },
+                from: function(value) {
+                    return new Date(value).getTime();
+                }
+            },
+            tooltips: [
+                {
+                    to: function(date) {
+                        return formatDate(date);
+                    }
+                },
+                {
+                    to: function(date) {
+                        return formatDate(date);
+                    }
+                }
+            ]
+        });
+        
+        // Değer değiştiğinde
+        dateSlider.noUiSlider.on('update', function(values, handle) {
+            const startDate = formatDate(values[0]);
+            const endDate = formatDate(values[1]);
+            dateRangeValue.textContent = `${startDate} - ${endDate}`;
+            
+            // Tablolara filtreleme uygula
+            filterTablesByDateRange(values[0], values[1]);
+        });
+    }
+
+    // Tarih formatını düzenleyen yardımcı fonksiyon
+    function formatDate(date) {
+        return `${date.getDate()}.${date.getMonth()+1}.${date.getFullYear()}`;
+    }
+
+    // Seçilen tarih aralığına göre tabloları filtrele
+    function filterTablesByDateRange(startDate, endDate) {
+        // Burada tablolarınızı filtreleyecek kodları ekleyin
+        // window.processedSuccessRows verisini filtreleyip tabloları güncelleyin
+        
+        // Örnek:
+        const filteredData = window.processedSuccessRows.filter(row => {
+            const parts = row[6].split('.'); // tarih formatı: DD.MM.YYYY
+            const rowDate = new Date(parts[2], parts[1]-1, parts[0]);
+            return rowDate >= startDate && rowDate <= endDate;
+        });
+        
+        // Filtrelenmiş veriyle tabloları güncelleyin
+        updateTables(filteredData);
+    }
     function getWeekFromDate(dateString) {
       if (!dateString || typeof dateString !== 'string') return '';
       
@@ -1401,14 +1568,12 @@
 
                 const tableTypeSelect = document.createElement('select');
                 tableTypeSelect.className = 'date-select';
-                tableTypeSelect.style.marginLeft = '20px';  // Hafta seçiciden sonra boşluk bırakmak için
+                tableTypeSelect.style.marginLeft = '20px'; 
                 const uniqueMarks = getUniqueMarks();
                 tableTypeSelect.innerHTML = `
                     <option value="ALL">Tümü</option>
                     ${uniqueMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
                 `;
-
-                weekSelectContainer.appendChild(tableTypeSelect);
 
                 const exportControls = document.createElement('div');
                 exportControls.className = 'export-controls';
@@ -1964,6 +2129,25 @@
       fileInput.value = '';
       fileInput.click();
     });
+    function updateTables(filteredData) {
+        // Haftaları güncelle
+        const weeks = [...new Set(filteredData.map(row =>
+            getWeekFromDate(row[6])
+        ))].sort();
+        
+        // Hafta seçici dropdown'ı güncelle
+        const weekSelect = document.getElementById('week-select');
+        if (weekSelect) {
+            weekSelect.innerHTML = `
+                <option value="">Tüm Haftalar</option>
+                ${weeks.map(week => `<option value="${week}">${week}</option>`).join('')}
+            `;
+        }
+        
+        // Tabloları güncelle
+        // Bu bölümü mevcut tablo oluşturma mantığınıza göre değiştirin
+        // ...
+    }
     function handleFile(file) {
       if (!file) return;
       document.getElementById('buttonContainer').style.display = 'none';

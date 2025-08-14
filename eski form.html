@@ -1216,7 +1216,7 @@
             "main-table"
         );
         tablesContainer.appendChild(mainTable);
-      }
+    }
         
         if (window.processedErrorRows && window.processedErrorRows.length > 0) {
         const errTable = createTable(
@@ -1226,8 +1226,8 @@
             true
         );
         tablesContainer.appendChild(errTable);
-      }
-    });
+    }
+});
     document.getElementById('analysisBtn').addEventListener('click', function() {
         tablesContainer.innerHTML = '';
     
@@ -1323,15 +1323,6 @@
         updateResults();
     });
 
-    function getUniqueMarks() {
-      if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
-         return [];
-      }
-        return [...new Set(window.processedSuccessRows.map(row => 
-          row[7] && row[7].toUpperCase() || 'BİLİNMEYEN'
-        ))].filter(Boolean).sort();
-    }
-
     document.getElementById('reportsBtn').addEventListener('click', function() {
       tablesContainer.innerHTML = '';
 
@@ -1391,6 +1382,7 @@
                     }
                 });
 
+
                 weekSelect.innerHTML = `
                     <option value="">Tüm Haftalar</option>
                     ${weeks.map(week => `<option value="${week}">${week}</option>`).join('')}
@@ -1401,11 +1393,14 @@
 
                 const tableTypeSelect = document.createElement('select');
                 tableTypeSelect.className = 'date-select';
-                tableTypeSelect.style.marginLeft = '20px';  // Hafta seçiciden sonra boşluk bırakmak için
-                const uniqueMarks = getUniqueMarks();
+                tableTypeSelect.style.marginLeft = '20px';  
+                const allTypes = [...new Set(window.processedSuccessRows.map(row => row[7]?.toUpperCase()))]
+                    .filter(Boolean)
+                    .sort();
+
                 tableTypeSelect.innerHTML = `
-                    <option value="ALL">Tümü</option>
-                    ${uniqueMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
+                    <option value="BOTH">Tüm Markalar</option>
+                    ${allTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
                 `;
 
                 weekSelectContainer.appendChild(tableTypeSelect);
@@ -1503,47 +1498,51 @@
                             }
                         });
                         XLSX.writeFile(wb, `Haftalik_Rapor_${selectedWeek || 'Tum'}_${today}.xlsx`);
-                    }else if (selectedFormat === 'pdf') {
-                      const { jsPDF } = window.jspdf;
-                      const doc = new jsPDF({ orientation: 'landscape' });
-                      let currentY = 20;
+                    } else if (selectedFormat === 'pdf') {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ orientation: 'landscape' });
+                        let currentY = 20;
 
-                      tables.forEach((table, index) => {
-                        if (index === 1) { // bu if bloğu kalkabilir eğer yeni sayfa açmak istemiyorsanız
-                          doc.addPage();
-                          currentY = 20; 
-                        }
-                        doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
-                        doc.setFont("Roboto");
-                        const tableTitle = table.previousElementSibling;
-                        const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
+                        const visibleTables = Array.from(tables).filter(table => table.style.display !== 'none');
+                        
+                        visibleTables.forEach((table, index) => {
+                            if (index > 0) {
+                                doc.addPage();
+                                currentY = 20;
+                            }
+                            
+                            doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+                            doc.setFont("Roboto");
+                            
+                            const tableTitle = table.previousElementSibling;
+                            const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
+                            
+                            doc.text(`${tableType} - Haftalık Rapor: ${selectedWeek || 'Tüm Haftalar'}`, 14, currentY);
 
-                        doc.text(`${tableType} - Haftalık Rapor: ${selectedWeek || 'Tüm Haftalar'}`, 14, currentY);
-
-                        doc.autoTable({
-                          html: table,
-                          startY: currentY + 5,
-                          theme: 'striped',
-                          styles: {
-                            font: 'Roboto',   
-                            fontStyle: 'normal',
-                            fontSize: 10,
-                            cellPadding: 2
-                          },
-                          headStyles: {
-                            font: 'Roboto',
-                            fontStyle: 'bold',
-                            fontSize: 11,
-                            fillColor: [76, 175, 80] 
-                          },
-                          margin: { left: 14, right: 14 },
-                          didDrawPage: function (data) {
-                            currentY = data.cursor.y + 15;
-                          }
+                            doc.autoTable({
+                                html: table,
+                                startY: currentY + 5,
+                                theme: 'striped',
+                                styles: {
+                                    font: 'Roboto',   
+                                    fontStyle: 'normal',
+                                    fontSize: 10,
+                                    cellPadding: 2
+                                },
+                                headStyles: {
+                                    font: 'Roboto',
+                                    fontStyle: 'bold',
+                                    fontSize: 11,
+                                    fillColor: [76, 175, 80] 
+                                },
+                                margin: { left: 14, right: 14 },
+                                didDrawPage: function (data) {
+                                    currentY = data.cursor.y + 15;
+                                }
+                            });
                         });
-                      });
 
-                      doc.save(`Haftalik_Rapor_${selectedWeek || 'Tum'}_${today}.pdf`);
+                        doc.save(`Haftalik_Rapor_${selectedWeek || 'Tum'}_${today}.pdf`);
                     }
 
                 });
@@ -1578,27 +1577,33 @@
                     const existingTitles = reportsContainer.querySelectorAll('h4');
                     existingTables.forEach(table => table.remove());
                     existingTitles.forEach(title => title.remove());
+                    // Satır 1: Marka listesini oluştur
+                  const allTypes = [...new Set(window.processedSuccessRows.map(row => row[7]?.toUpperCase()))]
+                      .filter(Boolean)
+                      .sort();
 
-                    let marksToShow = [];
-                    if (selectedType === 'ALL') {
-                        marksToShow = getUniqueMarks();
-                    } else {
-                        marksToShow = [selectedType];
-                    }
-                    marksToShow.forEach(mark => {
-                        const tableTitle = document.createElement('h4');
-                        tableTitle.textContent = `Marka: ${mark}`;
-                        tableTitle.style.marginTop = '30px';
-                        tableTitle.style.marginBottom = '15px';
+                  // Satır 2: Gösterilecek markaları seç (tüm markalar mı yoksa sadece biri mi)
+                  const tablesToShow = selectedType === 'BOTH' 
+                      ? allTypes 
+                      : allTypes.filter(type => type === selectedType);
 
-                        let filteredData = window.processedSuccessRows.filter(row =>
-                            row[7] && row[7].toUpperCase() === mark
+                  // Satır 3: Seçilen markalara göre tablo oluştur
+                  tablesToShow.forEach(tableType => {
+
+                    const tableTitle = document.createElement('h4');
+                    tableTitle.textContent = `${tableType}`;
+                    tableTitle.style.marginTop = '30px';
+                    tableTitle.style.marginBottom = '15px';
+
+                    let filteredData = window.processedSuccessRows.filter(row =>
+                        row[7] && row[7].toUpperCase() === tableType
+                    );
+                    if (selectedWeek) {
+                        filteredData = filteredData.filter(row =>
+                            getWeekFromDate(row[6]) === selectedWeek
                         );
-                        if (selectedWeek) {
-                            filteredData = filteredData.filter(row =>
-                                getWeekFromDate(row[6]) === selectedWeek
-                            );
-                        }
+                    }
+                
                 const table = document.createElement('table');
                 table.className = 'weekly-report-table';
                 table.innerHTML = `
@@ -1692,11 +1697,15 @@
               const tableTypeSelect = document.createElement('select');
               tableTypeSelect.className = 'date-select';
               tableTypeSelect.style.marginLeft = '20px';
-              const uniqueMarks = getUniqueMarks();
+              const allTypes = [...new Set(window.processedSuccessRows.map(row => row[7]?.toUpperCase()))]
+              .filter(Boolean)
+              .sort();
+
               tableTypeSelect.innerHTML = `
-                  <option value="ALL">Tümü</option>
-                  ${uniqueMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
+                  <option value="BOTH">Tüm Markalar</option>
+                  ${allTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
               `;
+
               monthSelectContainer.appendChild(tableTypeSelect);
               const exportControls = document.createElement('div');
               exportControls.className = 'export-controls';
@@ -1761,9 +1770,9 @@
                 if (selectedFormat === 'excel') {
                   const wb = XLSX.utils.book_new();
 
-                  tables.forEach((table, index) => {
-                    if (table.style.display !== 'none') {
-                      const tableTitle = table.previousElementSibling;
+                  const visibleTables = Array.from(tables).filter(table => table.style.display !== 'none');
+                  visibleTables.forEach((table, index) => {
+                      const tableTitle = table.previousElementSibling; // h4 başlık elementi
                       const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
                       const ws_data = [];
                       const headers = [];
@@ -1788,26 +1797,25 @@
                       const ws = XLSX.utils.aoa_to_sheet(ws_data);
                       XLSX.utils.book_append_sheet(wb, ws, tableType);
                     }
-                  });
+                  );
 
                   XLSX.writeFile(wb, `Aylik_Rapor_${selectedMonth || 'Tum'}_${today}.xlsx`);
                 } else if (selectedFormat === 'pdf') {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF({ orientation: 'landscape' });
                     let currentY = 20;
-                    const visibleTables = Array.from(tables).filter(table => table.style.display !== 'none');
-                    visibleTables.forEach((table, index) => {
-                      if (index > 0) {
+                    
+                    tables.forEach((table, index) => {
+                      const tableTitle = table.previousElementSibling;
+                      const tableType = tableTitle ? tableTitle.textContent : selectedType;
+                      if (selectedType === 'BOTH' && index === 1) {
                         doc.addPage();
                         currentY = 20;
                       }
                       
                       doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
                       doc.setFont("Roboto");
-                      const tableTitle = table.previousElementSibling;
-                      const tableType = tableTitle ? tableTitle.textContent : `Tablo_${index + 1}`;
-                      
-                      doc.text(`${tableType} - ${selectedMonth || 'Tüm Aylar'}`, 14, currentY);
+                      doc.text(`${tableType} - Aylık Rapor: ${selectedMonth || 'Tüm Aylar'}`, 14, currentY);
 
                       doc.autoTable({
                         html: table,
@@ -1847,13 +1855,14 @@
                   existingTables.forEach(table => table.remove());
                   existingTitles.forEach(title => title.remove());
 
-                  let marksToShow = [];
-                  if (selectedType === 'ALL') {
-                      marksToShow = getUniqueMarks();
-                  } else {
-                      marksToShow = [selectedType];
-                  }
-                  marksToShow.forEach(mark => {
+                  const allTypes = [...new Set(window.processedSuccessRows.map(row => row[7]?.toUpperCase()))]
+                      .filter(Boolean)
+                      .sort();
+
+                  const tablesToShow = selectedType === 'BOTH' ? allTypes : [selectedType];
+
+                  tablesToShow.forEach(tableType => {
+                      if (selectedType === 'BOTH' || selectedType === tableType) {
                           const processes = [
                               'SMD BOT',
                               'SMD TOP',
@@ -1868,13 +1877,13 @@
                               'Lazer Markalama',
                               'Son Kontrol',
                           ];
-                          const tableTitle = document.createElement('h4');  
-                          tableTitle.textContent = `Marka: ${mark}`;
+                          const tableTitle = document.createElement('h4');
+                          tableTitle.textContent = `${tableType}`;
                           tableTitle.style.marginTop = '30px';
                           tableTitle.style.marginBottom = '15px';
 
                           let filteredData = window.processedSuccessRows.filter(row => 
-                              row[7] && row[7].toUpperCase() === mark
+                              row[7] && row[7].toUpperCase() === tableType
                           );
 
                           if (selectedMonth) {
@@ -1930,13 +1939,15 @@
                           `;
                           reportsContainer.appendChild(tableTitle);
                           reportsContainer.appendChild(table);
+                      }
                   });
               });
               monthSelect.dispatchEvent(new Event('change'));
-          }
+            }
         });
+
         reportsGrid.appendChild(card);
-      });
+      });  
       reportsContainer.appendChild(title);
       reportsContainer.appendChild(reportsGrid);
       tablesContainer.appendChild(reportsContainer);
