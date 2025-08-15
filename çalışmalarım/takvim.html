@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Takvim & Görevler</title>
+  <style>
+    :root{
+      --primary:#2b7cff; --accent:#e91e63; --bg:#f4f6fb; --card:#fff;
+      --muted:#6b7280; --radius:10px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrapper{max-width:1200px;margin:24px auto;padding:16px;display:flex;gap:16px;}
+    /* left: plan */
+    .panel{
+      width:300px;
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 6px 18px rgba(20,20,40,.06);
+      padding:12px;
+      display:flex;flex-direction:column;
+      gap:12px;
+    }
+    .panel h3{margin:0;padding:6px 4px;color:var(--primary);font-size:18px}
+    .plan-list{list-style:none;padding:0;margin:0;overflow:auto;max-height:520px}
+    .plan-item + .plan-item{border-top:1px solid #f0f2f6}
+    .small-btn{border:0;padding:6px 8px;border-radius:6px;background:#f1f5f9;cursor:pointer}
+    .add-row{display:flex;gap:8px}
+    .add-row input{flex:1;padding:8px;border:1px solid #e6edf6;border-radius:8px}
+    .add-row button{background:var(--primary);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    /* main calendar */
+    .main{
+      flex:1; display:flex; flex-direction:column; gap:12px;
+    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .controls{display:flex;gap:8px;align-items:center}
+    .view-btn{background:transparent;border:1px solid transparent;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .view-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .nav-btn{background:#fff;border:1px solid #e6eefb;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .month-title{font-weight:600;font-size:18px}
+    .calendar{
+      background:var(--card);
+      border-radius:12px;
+      padding:12px;
+      box-shadow:0 6px 18px rgba(20,20,40,.04);
+    }
+    .weekdays, .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .weekdays{margin-bottom:8px;color:var(--muted);font-weight:600}
+    .cell{
+      min-height:90px;background:#fff;border-radius:8px;padding:8px;position:relative;border:1px solid #f3f6fb;cursor:pointer;
+      display:flex;flex-direction:column;
+    }
+    #evtTooltip{
+     position:fixed;
+     z-index:9999;
+     background:#111827;
+     color:#fff;
+     padding:8px 10px;
+     border-radius:8px;
+     font-size:13px;
+     box-shadow:0 6px 20px rgba(0,0,0,.35);
+     display:none;
+     max-width:320px;
+     pointer-events:none;
+    }
+    #evtTooltip .time{font-size:12px;opacity:0.8;margin-bottom:6px}
+    #evtTooltip .desc{font-size:13px;opacity:0.95;white-space:normal}
+    .cell.empty{background:transparent;border:0;cursor:default}
+    .cell .date{font-size:13px;color:var(--muted);margin-bottom:6px}
+    .marker{display:inline-block;background:var(--accent);color:#fff;padding:2px 6px;border-radius:10px;font-size:12px;margin-top:auto;align-self:flex-start}
+    .cell .events{display:flex;flex-direction:column;gap:4px;overflow:hidden}
+    .event-pill{background:#f1f7ff;padding:4px 6px;border-radius:6px;font-size:12px;color:#0b3a66;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* year view month box */
+
+    .year-month{padding:12px;border-radius:10px;background:#fff;display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-height:80px}
+    .year-month .mname{font-weight:600}
+    .year-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}
+    /* modal */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:40}
+    .modal{background:var(--card);padding:16px;border-radius:12px;width:360px;box-shadow:0 10px 40px rgba(10,10,30,.2)}
+    .modal h4{margin:0 0 8px}
+    .modal input[type="text"],.modal textarea,.modal input[type="time"]{width:100%;padding:8px;border:1px solid #eef4fb;border-radius:8px;margin-bottom:8px}
+    .modal .row{display:flex;gap:8px}
+    .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+    .btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.ghost{background:#f3f6fb}
+    .btn.primary{background:var(--primary);color:#fff}
+    /* responsive */
+    @media(max-width:900px){
+      .wrapper{padding:12px}
+      .panel{width:100%;order:2}
+      .main{order:1}
+      .year-grid{grid-template-columns:repeat(3,1fr)}
+    }
+    .event-pill { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-right:6px; }
+    .event-pill.completed { text-decoration: line-through; opacity:0.6; background:#f3f7ff; color:#4b5563; }
+    .event-pill .title { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .repeat-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+    .repeat-row select, .repeat-row input[type="number"]{padding:8px;border-radius:8px;border:1px solid #eef4fb}
+    .plan-item { display:flex; gap:8px; align-items:center; padding:8px; border-radius:8px; justify-content:flex-start; cursor:grab; user-select:none; }
+    .plan-item.dragging { opacity:0.5; transform:scale(0.98); cursor:grabbing; }
+    .plan-actions { display:flex; gap:6px; align-items:center; order:0; margin-right:8px; }
+    .plan-text { flex:1; order:1; }
+    .small-btn { background:transparent; border:0; padding:4px; font-size:12px; border-radius:6px; cursor:pointer; color:var(--muted); }
+    .small-btn:active{ transform:translateY(1px); }
+    /* placeholder when dragging over list */
+    .placeholder { height:48px; border-radius:8px; background:linear-gradient(90deg,#f8fafc,#fff); border:2px dashed #e6eefb; margin:4px 0; }   
+    </style>
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <aside class="panel" aria-label="Planlar">
+      <h3>PLAN</h3>
+      <ul id="planList" class="plan-list"></ul>
+      <div class="add-row">
+        <input id="planInput" placeholder="Yeni plan..." />
+        <button id="planAdd">Ekle</button>
+      </div>
+      <div id="evtTooltip" role="note" aria-hidden="true"></div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="controls">
+          <button id="prev" class="nav-btn">◀</button>
+          <div class="month-title" id="monthTitle">—</div>
+          <button id="next" class="nav-btn">▶</button>
+        </div>
+
+        <div>
+          <button class="view-btn" data-view="month" id="viewMonth">Ay</button>
+          <button class="view-btn" data-view="week" id="viewWeek">Hafta</button>
+          <button class="view-btn" data-view="day" id="viewDay">Gün</button>
+          <button class="view-btn" data-view="year" id="viewYear">Yıl</button>
+        </div>
+      </div>
+
+      <section class="calendar" id="calendarWrap" aria-label="Takvim">
+        <div class="weekdays" id="weekdays"></div>
+        <div class="days" id="daysGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h4 id="modalTitle">Etkinlik</h4>
+      <input type="text" id="evtTitle" placeholder="Başlık">
+      <input type="time" id="evtTime" value="12:00">
+      <textarea id="evtDesc" rows="3" placeholder="Açıklama (opsiyonel)"></textarea>
+      <div class="repeat-row">
+           <label for="evtRepeat" style="min-width:80px;margin:0">Tekrarlama</label>
+           <select id="evtRepeat">
+             <option value="none">Yok</option>
+             <option value="daily">Günlük</option>
+             <option value="weekly">Haftalık</option>
+             <option value="monthly" selected>Aylık</option>
+             <option value="yearly">Yıllık</option>
+           </select>
+           <input id="evtRepeatCount" type="number" min="1" value="12" title="Kaç dönem" style="width:80px;">
+         </div>
+      <div class="actions">
+        <button class="btn ghost" id="cancelBtn">İptal</button>
+        <button class="btn primary" id="saveBtn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // basit takvim + görevler, localStorage
+    (function(){
+      const monthTitle = document.getElementById('monthTitle');
+      const daysGrid = document.getElementById('daysGrid');
+      const weekdaysEl = document.getElementById('weekdays');
+      const prevBtn = document.getElementById('prev');
+      const nextBtn = document.getElementById('next');
+      const viewBtns = document.querySelectorAll('.view-btn');
+      const overlay = document.getElementById('overlay');
+      const modalTitle = document.getElementById('modalTitle');
+      const evtTitle = document.getElementById('evtTitle');
+      const evtTime = document.getElementById('evtTime');
+      const evtDesc = document.getElementById('evtDesc');
+      const saveBtn = document.getElementById('saveBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+      const evtRepeat = document.getElementById('evtRepeat');
+      const evtRepeatCount = document.getElementById('evtRepeatCount');
+
+      const planList = document.getElementById('planList');
+      const planInput = document.getElementById('planInput');
+      const planAdd = document.getElementById('planAdd');
+
+      const weekNames = ['Pzr','Pzt','Sal','Çar','Per','Cum','Cmt'];
+      const monthNames = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+      const tooltipEl = document.getElementById('evtTooltip');
+
+      let view = localStorage.getItem('cal_view') || 'month'; // month|week|day|year
+      let cursor = new Date(); // gösterilen ay/hafta/gün
+      let selectedDate = null;
+      let events = JSON.parse(localStorage.getItem('calendarEvents') || '{}');
+      let plans = JSON.parse(localStorage.getItem('plans') || '[]');
+
+      function saveAll(){ localStorage.setItem('calendarEvents', JSON.stringify(events)); localStorage.setItem('plans', JSON.stringify(plans)); localStorage.setItem('cal_view', view); }
+
+      // render weekdays header
+      function renderWeekdays(){
+        weekdaysEl.innerHTML = '';
+        weekNames.forEach(w=>{
+          const d = document.createElement('div'); d.textContent = w; weekdaysEl.appendChild(d);
+        });
+        weekdaysEl.style.display = (view === 'year') ? 'none' : 'grid';
+      }
+
+      // utility
+      function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+      function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+      function pad(n){ return n<10? '0'+n : ''+n; }
+      function keyForDate(dt){ return `${dt.getFullYear()}-${dt.getMonth()+1}-${dt.getDate()}`; }
+
+      // render month view
+      function renderMonth(){
+        daysGrid.style.gridTemplateColumns = 'repeat(7,1fr)';
+        daysGrid.innerHTML = '';
+        const first = startOfMonth(cursor);
+        const last = endOfMonth(cursor);
+        monthTitle.textContent = `${monthNames[cursor.getMonth()]} ${cursor.getFullYear()}`;
+
+        // compute leading empties (assuming week starts Sunday - index 0)
+        const lead = first.getDay();
+        // previous month tail
+        for(let i=0;i<lead;i++){
+          const cell = document.createElement('div'); cell.className='cell empty'; daysGrid.appendChild(cell);
+        }
+        for(let d=1; d<= last.getDate(); d++){
+          const dt = new Date(cursor.getFullYear(), cursor.getMonth(), d);
+          const cell = createDayCell(dt);
+          daysGrid.appendChild(cell);
+        }
+        // fill to complete weeks
+        const totalCells = daysGrid.children.length;
+        const rem = (7 - (totalCells % 7)) % 7;
+        for(let i=0;i<rem;i++){ const cell=document.createElement('div');cell.className='cell empty';daysGrid.appendChild(cell); }
+      }
+
+      // render week view
+      function renderWeek(){
+        daysGrid.style.gridTemplateColumns = 'repeat(7,1fr)';
+        daysGrid.innerHTML = '';
+        // compute week start (Sunday)
+        const dayIndex = cursor.getDay();
+        const start = new Date(cursor); start.setDate(cursor.getDate()-dayIndex);
+        monthTitle.textContent = `Hafta - ${start.getDate()}.${start.getMonth()+1}.${start.getFullYear()}`;
+        for(let i=0;i<7;i++){
+          const dt=new Date(start); dt.setDate(start.getDate()+i);
+          const cell = createDayCell(dt,true);
+          daysGrid.appendChild(cell);
+        }
+      }
+
+      // render day view
+      function renderDay(){
+        daysGrid.style.gridTemplateColumns = 'repeat(1,1fr)';
+        daysGrid.innerHTML = '';
+        const dt = cursor;
+        monthTitle.textContent = `${dt.getDate()} ${monthNames[dt.getMonth()]} ${dt.getFullYear()}`;
+        const cell = createDayCell(dt,true,true);
+        daysGrid.appendChild(cell);
+      }
+      
+      // render year view
+      function renderYear(){
+        // show 12 months as boxes with count; hide weekdays
+        weekdaysEl.style.display = 'none';
+        daysGrid.style.gridTemplateColumns = 'repeat(4,1fr)';
+        daysGrid.innerHTML = '';
+        monthTitle.textContent = `${cursor.getFullYear()}`;
+        for(let m=0;m<12;m++){
+          const box = document.createElement('div');
+          box.className = 'year-month';
+          const name = document.createElement('div'); name.className = 'mname'; name.textContent = monthNames[m];
+          const lastDay = new Date(cursor.getFullYear(), m+1, 0).getDate();
+          // count events in that month
+          let count = 0;
+          for(let d=1; d<=lastDay; d++){
+            const k = `${cursor.getFullYear()}-${m+1}-${d}`;
+            if(events[k]) count += events[k].length;
+          }
+          const cnt = document.createElement('div'); cnt.className = 'marker'; cnt.textContent = count;
+          box.appendChild(name);
+          box.appendChild(cnt);
+          // preview some events list inside small area
+          const mini = document.createElement('div'); mini.style.marginTop='6px'; mini.style.fontSize='12px'; mini.style.color='#333';
+          // collect up to 3 event titles
+          const items = [];
+          for(let d=1; d<=lastDay && items.length<3; d++){
+            const k = `${cursor.getFullYear()}-${m+1}-${d}`;
+            if(events[k]){
+              events[k].forEach(ev=> { if(items.length<3) items.push(`${d} ${ev.title}`); });
+            }
+          }
+          if(items.length){
+            items.forEach(it=>{ const e=document.createElement('div'); e.textContent=it; e.style.opacity='0.9'; e.style.whiteSpace='nowrap'; e.style.overflow='hidden'; e.style.textOverflow='ellipsis'; mini.appendChild(e); });
+          } else {
+            const none = document.createElement('div'); none.textContent = 'Etkinlik yok'; none.style.opacity='0.6'; mini.appendChild(none);
+          }
+          box.appendChild(mini);
+
+          // click -> açılacak ay görünümü
+          box.addEventListener('click', ()=>{
+            cursor.setMonth(m);
+            view = 'month';
+            saveAll();
+            setActiveView();
+            rerender();
+          });
+          daysGrid.appendChild(box);
+        }
+      }
+      
+    function showTooltip(html, pageX, pageY){
+      tooltipEl.innerHTML = html;
+      tooltipEl.style.display = 'block';
+      const pad = 12;
+      const left = Math.min(window.innerWidth - tooltipEl.offsetWidth - pad, pageX + pad);
+      const top = Math.min(window.innerHeight - tooltipEl.offsetHeight - pad, pageY + pad);
+      tooltipEl.style.left = left + 'px';
+      tooltipEl.style.top = top + 'px';
+      tooltipEl.setAttribute('aria-hidden','false');
+    }
+    function moveTooltip(pageX, pageY){
+      const pad = 12;
+      const left = Math.min(window.innerWidth - tooltipEl.offsetWidth - pad, pageX + pad);
+      const top = Math.min(window.innerHeight - tooltipEl.offsetHeight - pad, pageY + pad);
+      tooltipEl.style.left = left + 'px';
+      tooltipEl.style.top = top + 'px';
+    }
+    function hideTooltip(){
+      tooltipEl.style.display = 'none';
+      tooltipEl.setAttribute('aria-hidden','true');
+    }
+
+      // create a day cell element
+    function createDayCell(dateObj, large=false, single=false){
+        const k = keyForDate(dateObj);
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        const dateDiv = document.createElement('div'); dateDiv.className='date'; dateDiv.textContent = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]}`;
+        cell.appendChild(dateDiv);
+
+        const evContainer = document.createElement('div'); evContainer.className='events';
+        if(events[k] && events[k].length){
+          events[k].slice(0,3).forEach(ev=>{
+            const pill = document.createElement('div');
+            pill.className='event-pill';
+            if(ev.completed) pill.classList.add('completed');
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'title';
+            titleSpan.textContent = (ev.time? ev.time+' • ':'') + ev.title;
+
+            // tıklayınca tamamlandı toggle (modal açılmasını engelle)
+            pill.addEventListener('click', (e) => {
+              e.stopPropagation();
+              ev.completed = !ev.completed;
+              saveAll();
+              rerender();
+            });
+
+            pill.addEventListener('mouseenter', (e) => {
+              e.stopPropagation();
+              const timeHtml = ev.time ? `<div class="time">${ev.time}</div>` : '';
+             const descHtml = ev.desc ? `<div class="desc">${escapeHtml(ev.desc)}</div>` : `<div class="desc" style="opacity:.7">Açıklama yok</div>`;
+              showTooltip(`${timeHtml}<strong>${escapeHtml(ev.title)}</strong>${descHtml}`, e.pageX, e.pageY);
+            });
+            pill.addEventListener('mousemove', (e) => {
+              moveTooltip(e.pageX, e.pageY);
+            });
+            pill.addEventListener('mouseleave', (e) => {
+              hideTooltip();
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'small-btn del';
+            delBtn.textContent = '✖';
+            delBtn.title = 'Etkinliği Sil';
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deleteEvent(k, ev.id);
+            });
+
+            pill.appendChild(titleSpan);
+            pill.appendChild(delBtn);
+            evContainer.appendChild(pill);
+          });
+          if(events[k].length>3){
+            const more = document.createElement('div'); more.className='marker'; more.textContent = `${events[k].length}`;
+            cell.appendChild(more);
+          }
+        }
+        cell.appendChild(evContainer);
+        // click opens modal to add/edit event for that date
+        cell.addEventListener('click', (e)=>{
+          if(cell.classList.contains('empty')) return;
+          selectedDate = new Date(dateObj);
+          openModalForDate(selectedDate);
+        });
+        return cell;
+    }
+    function escapeHtml(str){
+        if(!str) return '';
+        return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    }
+
+      // silme fonksiyonu
+    function deleteEvent(dateKey, eventId){
+        if(!events[dateKey]) return;
+        events[dateKey] = events[dateKey].filter(ev => ev.id !== eventId);
+        if(events[dateKey].length === 0) delete events[dateKey];
+        saveAll();
+        rerender();
+    }
+
+      // modal handling
+    function openModalForDate(dt){
+        overlay.style.display = 'flex';
+        modalTitle.textContent = `Etkinlik - ${dt.getDate()}.${dt.getMonth()+1}.${dt.getFullYear()}`;
+        evtTitle.value=''; evtDesc.value=''; evtTime.value='12:00';
+        evtTitle.focus();
+    }
+    function closeModal(){ overlay.style.display='none'; }
+
+    function updateRepeatVisibility(){
+      if(!evtRepeat) return;
+      evtRepeatCount.style.display = (evtRepeat.value === 'none') ? 'none' : 'inline-block';
+    }
+    evtRepeat?.addEventListener('change', updateRepeatVisibility);
+    updateRepeatVisibility();
+
+    saveBtn.addEventListener('click', ()=>{
+        const title = evtTitle.value.trim();
+        if(!title){ alert('Başlık girin'); return; }
+        const time = evtTime.value;
+        const desc = evtDesc.value;
+        const repeat = evtRepeat ? evtRepeat.value : 'none';
+        let count = evtRepeatCount ? parseInt(evtRepeatCount.value, 10) || 1 : 1;
+        if(repeat === 'none') count = 1;
+    cancelBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+    
+    for(let i=0;i<count;i++){
+          const d = new Date(selectedDate);
+          if(i>0){
+            if(repeat === 'daily') d.setDate(d.getDate() + i);
+            else if(repeat === 'weekly') d.setDate(d.getDate() + 7 * i);
+            else if(repeat === 'monthly') d.setMonth(d.getMonth() + i);
+            else if(repeat === 'yearly') d.setFullYear(d.getFullYear() + i);
+          }
+          const k = keyForDate(d);
+          if(!events[k]) events[k]=[];
+          // her tekrar için benzersiz id yarat
+          events[k].push({
+            title,
+            time,
+            desc,
+            id: Date.now() + Math.floor(Math.random()*100000) + i,
+            completed: false,
+            recurring: repeat === 'none' ? null : repeat
+          });
+        }
+        saveAll(); closeModal(); rerender();
+      });
+
+      // plans CRUD
+    function renderPlans(){
+        planList.innerHTML = '';
+        plans.forEach((p, idx) => {
+          const li = document.createElement('li');
+          li.className = 'plan-item';
+          li.draggable = true;
+          li.dataset.id = String(p.id);
+
+          const actions = document.createElement('div');
+          actions.className = 'plan-actions';
+
+          const doneBtn = document.createElement('button');
+          doneBtn.className = 'small-btn';
+          doneBtn.textContent = p.done ? '✓' : '◻';
+          doneBtn.addEventListener('click', (e) => { e.stopPropagation(); plans[idx].done = !plans[idx].done; saveAll(); renderPlans(); });
+
+          const delBtn = document.createElement('button');
+          delBtn.className = 'small-btn';
+          delBtn.textContent = '✖';
+          delBtn.addEventListener('click', (e) => { e.stopPropagation(); plans.splice(idx, 1); saveAll(); renderPlans(); });
+
+          actions.appendChild(doneBtn);
+          actions.appendChild(delBtn);
+
+          const txt = document.createElement('div');
+          txt.className = 'plan-text';
+          txt.textContent = p.text;
+          if (p.done) { txt.style.textDecoration = 'line-through'; txt.style.opacity = '0.6'; }
+          // append actions first so they appear at beginning
+          li.appendChild(actions);
+          li.appendChild(txt);
+          planList.appendChild(li);
+
+          // drag events
+          li.addEventListener('dragstart', (e) => {
+            li.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            // set plain data to satisfy some browsers
+            e.dataTransfer.setData('text/plain', li.dataset.id);
+          });
+          li.addEventListener('dragend', () => {
+            li.classList.remove('dragging');
+            // after drop, reorder plans array to match DOM
+            const ids = Array.from(planList.children).filter(n => n.dataset && n.dataset.id).map(n => n.dataset.id);
+            plans = ids.map(id => plans.find(p => String(p.id) === id)).filter(Boolean);
+            saveAll();
+            renderPlans();
+          });
+        });
+
+        // dragover on list -> determine insertion point
+        planList.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          const afterElement = getDragAfterElement(planList, e.clientY);
+          const dragging = document.querySelector('.plan-item.dragging');
+          if(!dragging) return;
+          if(afterElement == null) planList.appendChild(dragging);
+          else planList.insertBefore(dragging, afterElement);
+        });
+      }
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.plan-item:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > (closest.offset || -Infinity)) {
+            return { offset, element: child };
+          } else {
+            return closest;
+          }
+        }, { offset: -Infinity }).element || null;
+      }
+    planAdd.addEventListener('click', ()=>{ const v=planInput.value.trim(); if(!v) return; plans.push({text:v,done:false,id:Date.now()}); planInput.value=''; saveAll(); renderPlans(); });
+    planInput.addEventListener('keypress',(e)=>{ if(e.key==='Enter') planAdd.click(); });
+
+      // navigation
+    prevBtn.addEventListener('click', ()=>{
+        if(view==='month'){ cursor.setMonth(cursor.getMonth()-1); } else if(view==='week'){ cursor.setDate(cursor.getDate()-7);} else if(view==='year'){ cursor.setFullYear(cursor.getFullYear()-1);} else { cursor.setDate(cursor.getDate()-1); }
+        rerender();
+      });
+      nextBtn.addEventListener('click', ()=>{
+        if(view==='month'){ cursor.setMonth(cursor.getMonth()+1); } else if(view==='week'){ cursor.setDate(cursor.getDate()+7);} else if(view==='year'){ cursor.setFullYear(cursor.getFullYear()+1);} else { cursor.setDate(cursor.getDate()+1); }
+        rerender();
+      });
+
+      viewBtns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          view = b.dataset.view; saveAll(); setActiveView(); rerender();
+        });
+      });
+
+    function setActiveView(){
+        viewBtns.forEach(b=>b.classList.remove('active'));
+        document.querySelector(`.view-btn[data-view="${view}"]`)?.classList.add('active');
+    }
+
+    function rerender(){
+        renderWeekdays();
+        if(view==='month') renderMonth();
+        else if(view==='week') renderWeek();
+        else if(view==='day') renderDay();
+        else renderYear();
+        renderPlans();
+    }
+
+      // initial load
+      setActiveView();
+      rerender();
+    })();
+  </script>
+</body>
+</html>
