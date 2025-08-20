@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>KPI Hesapalama</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --bg:#f7f9fc; --card:#fff; --text:#0f172a; --muted:#64748b;
+      --border:#e5e7eb; --accent:#2563eb; --accent-200:#bfdbfe;
+    }
+    *{box-sizing:border-box}
+    body{font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Arial;margin:16px;background:var(--bg);color:var(--text)}
+    .drop{border:2px dashed #cbd5e1;padding:16px;text-align:center;border-radius:10px;background:#fff}
+    .drop.active{border-color:var(--accent);background:#eef5ff}
+    .hidden{display:none!important}
+    .msg{margin-top:8px;color:#334155;font-size:14px}
+    .topbar{
+      display:flex; gap:8px; flex-wrap:wrap; margin:14px 0;
+      background:#fff; border:1px solid var(--border); border-radius:10px; padding:8px;
+    }
+    .btn-tab{
+      appearance:none; border:1px solid var(--border); background:#f8fafc; color:var(--text);
+      padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;
+    }
+    .btn-tab:hover{border-color:var(--accent); background:#eef5ff}
+    .btn-tab.active{border-color:var(--accent); background:#e0ecff}
+    .panel{background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px}
+    .panel-title{font-weight:700; margin:4px 0 10px; color:#0f172a}
+    .table-wrap{
+      margin-top:8px; border:1px solid var(--border); border-radius:8px;
+      overflow:auto; max-height:70vh; background:#fff;
+    }
+    .table-wrap table{border-collapse:collapse; font-size:13px; width:max-content; min-width:100%;table-layout: fixed;}
+    .table-wrap th, .table-wrap td{border:1px solid #e5e7eb; padding:6px 8px; white-space:nowrap}
+    .table-wrap th{background:#f3f6fb; position:sticky; top:0; z-index:1;padding: 6px 8px;}
+    .info-bar{display:flex; gap:8px; flex-wrap:wrap;margin:8px 0 6px; justify-content: flex-start;align-items: center;}
+    .chip{background:#f1f5f9; border:1px solid var(--border);border-radius:999px; padding:6px 10px; font-size:12px; color:#0f172a;}
+    .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;}
+    .loading-popup{background:white;padding:24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;min-width:200px;}
+    .spinner{font-size:24px;animation:spin 1s linear infinite;margin-bottom:12px;}
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading { animation: spin 1s linear infinite; }
+  </style>
+</head>
+<body>
+  <h2>KPI Hesapalama Analizi</h2>
+  <div id="dropArea" class="drop">
+    <div><strong>Dosyanızı buraya sürükleyip bırakın</strong></div>
+    <div style="margin:8px 0;">veya</div>
+    <div>
+      <button id="browseBtn" class="btn-tab">Bilgisayardan Seç</button>
+      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" />
+    </div>
+    <div id="msg" class="msg"></div>
+      <span id="loadingSpinner" class="hidden">⏳</span>
+      <span id="msgText"></span>
+  </div>
+  <div class="topbar hidden" id="topbar">
+    <button class="btn-tab active" id="tab-main"   data-target="panel-main">Ana Tablo</button>
+    <button class="btn-tab"        id="tab-2"      data-target="panel-2">Duruş süreleri Analizi</button>
+    <button class="btn-tab"        id="tab-3"      data-target="panel-3">Proses Analizleri</button>
+    <button class="btn-tab"        id="tab-4"      data-target="panel-4">Buton 4</button>
+    <button class="btn-tab"        id="tab-5"      data-target="panel-5">Buton 5</button>
+    <button class="btn-tab"        id="tab-6"      data-target="panel-6">Buton 6</button>
+    <button class="btn-tab"        id="tab-7"      data-target="panel-7">Buton 7</button>
+    <button class="btn-tab"        id="tab-8"      data-target="panel-8">Buton 8</button>
+    <button class="btn-tab"        id="tab-9"      data-target="panel-9">Buton 9</button>
+    <button class="btn-tab"        id="tab-10"     data-target="panel-10">Buton 10</button>
+  </div>
+  <div id="panel-main" class="panel hidden">
+    <div class="panel-title">Ana Tablo</div>
+    <div id="fileInfoBar" class="info-bar hidden">
+        <span class="chip" id="chipName">📄 —</span>
+        <span class="chip" id="chipSize">📦 —</span>
+        <span class="chip" id="chipSheet">📑 —</span>
+        <span class="chip" id="chipRows">📋 —</span>
+        <span class="chip" id="chipCols">📐 —</span>
+        <div class="chip" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+            <span>📅 Tarih Aralığı:</span>
+            <input type="date" id="dateFrom" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
+            <span>-</span>
+            <input type="date" id="dateTo" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
+            <button id="clearFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
+        </div>
+  </div>
+    <div id="tableWrap" class="table-wrap"></div>
+  </div>
+  <div id="panel-2"  class="panel hidden">
+    <div class="panel-title">Duruş Süreleri Analizi</div>
+    <div id="durusTableWrap" class="table-wrap"></div>
+  </div>
+  <div id="panel-3"  class="panel hidden"><div class="panel-title">Buton 3</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-4"  class="panel hidden"><div class="panel-title">Buton 4</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-5"  class="panel hidden"><div class="panel-title">Buton 5</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-6"  class="panel hidden"><div class="panel-title">Buton 6</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-7"  class="panel hidden"><div class="panel-title">Buton 7</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-8"  class="panel hidden"><div class="panel-title">Buton 8</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-9"  class="panel hidden"><div class="panel-title">Buton 9</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-10" class="panel hidden"><div class="panel-title">Buton 10</div>
+  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-popup">
+      <div class="spinner">⏳</div>
+      <div id="loadingText">Yükleniyor...</div>
+    </div>
+  </div>  
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const dropArea = $('dropArea');
+        const browseBtn = $('browseBtn');
+        const fileInput = $('fileInput');
+        const msg = $('msg');
+        const topbar = $('topbar');
+        const tableWrap = $('tableWrap');
+        const fileInfoBar = document.getElementById('fileInfoBar');
+        const chipName    = document.getElementById('chipName');
+        const chipSize    = document.getElementById('chipSize');
+        const chipSheet   = document.getElementById('chipSheet');
+        const chipRows    = document.getElementById('chipRows');
+        const chipCols    = document.getElementById('chipCols');
+        const clearFilter = document.getElementById('clearFilter');
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const msgText = document.getElementById('msgText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText'); 
+
+        let allErrorRows = [];
+        let workbookRef = null;
+        let allSuccessRows = []; // Tüm başarılı satırları saklamak için
+        let currentHeader = [];  // Header'ı saklamak için
+        const norm = s => String(s ?? '')
+            .toLowerCase()
+            .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g')
+            .replace(/[çÇ]/g, 'c').replace(/[öÖ]/g, 'o').replace(/[üÜ]/g, 'u')
+            .trim();
+        function findColIndex(headerRow, keywords) {
+            const H = headerRow.map(h => norm(h));
+            for (let i = 0; i < H.length; i++) {
+            const cell = H[i];
+            if (!cell) continue;
+            if (keywords.every(kw => cell.includes(kw))) return i;
+            }
+            return -1;
+        }
+        function excelDateToJSDate(serial){
+            const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+            return new Date(excelEpoch.getTime() + serial * 86400000);
+        }
+        function numToHHMM(n){
+            const frac = ((Number(n) % 1) + 1) % 1;    // günün kesir kısmı (0..1)
+            const totalMin = Math.round(frac * 24 * 60);
+            const hh = String(Math.floor(totalMin / 60) % 24).padStart(2,'0');
+            const mm = String(totalMin % 60).padStart(2,'0');
+            return `${hh}:${mm}`;
+        }
+        const Hatalar_list  = Array.from({length:93}, (_,i)=>`H${i}`);
+        const Duruslar_list = Array.from({length:25}, (_,i)=>`D${i}`);
+        function formatMDY_HHMMSS(d){
+            const M  = d.getMonth() + 1;
+            const D  = d.getDate();
+            const YY = String(d.getFullYear()).slice(-2);
+            const hh = String(d.getHours()).padStart(2,'0');
+            const mm = String(d.getMinutes()).padStart(2,'0');
+            const ss = String(d.getSeconds()).padStart(2,'0');
+            return `${M}.${D}.${YY} ${hh}:${mm}:${ss}`;
+        }
+        function createDurusAnalysisTable() {       //duruşlar tablosu
+            const headers = [
+            'ID', 'Name', 'OK Ürün', 'NOK Ürün', 'Çalışılan Süre (saat)',
+            'Çalışılan Süre (dk)', 'Net Süre', 'Kurulum Süresi', 'Makina Arızası',
+            'Personel Duruşu', 'Planlı Duruş', 'Plansız Duruş', 'Makina/Program Duruşları',
+            'Toplam Duruş', 'Planlanan Duruşlar', 'Personel Kaynaklı Duruşlar',
+            'Makine+Ekipman Kaynaklı Duruşlar'
+            ];
+            const durusTableWrap = document.getElementById('durusTableWrap');
+
+            if (!allSuccessRows.length) {
+                durusTableWrap.innerHTML = '<div style="padding:12px;color:#666">Önce veri yükleyin</div>';
+                return;
+            }
+            const idxID = findColIndex(currentHeader, ['id']);
+            const idxName = findColIndex(currentHeader, ['name']);
+            const idxOK = findColIndex(currentHeader, ['ok']);
+            const colgroup = '<colgroup>' + headers.map(() => '<col style="width:8ch">').join('') + '</colgroup>';
+            const ths = headers.map(h => `<th style="white-space:normal;word-wrap:break-word;">${esc(h)}</th>`).join('');
+
+            let tbody = '';
+            const maxRows = Math.min(allSuccessRows.length, 100); // İlk 100 satır
+            for (let i = 0; i < maxRows; i++) {
+                const row = allSuccessRows[i];
+                const id = row[idxID] || '';
+                const name = row[idxName] || '';
+                const okUrun = row[idxOK] || '';
+
+                tbody += `<tr>
+                    <td>${esc(id)}</td>
+                    <td>${esc(name)}</td>
+                    <td>${esc(okUrun)}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>`;
+            }
+            if (allSuccessRows.length > 100) {
+                tbody += `<tr><td colspan="17" style="text-align:center;padding:10px;background:#fff3cd;">İlk 100 kayıt gösteriliyor (Toplam: ${allSuccessRows.length})</td></tr>`;
+            }
+
+            durusTableWrap.innerHTML = `<table>${colgroup}<thead><tr>${ths}</tr></thead><tbody>${tbody}</tbody></table>`;
+        }
+        function normalizeDateTimeCell(v){
+            if (v instanceof Date && !isNaN(v)) {
+                return formatMDY_HHMMSS(v);
+            }
+            if (typeof v === 'number' && isFinite(v)) {
+                return formatMDY_HHMMSS(excelDateToJSDate(v));
+            }
+            if (typeof v === 'string'){
+                const s = v.trim();
+                if (s === '') return '';
+                if (!isNaN(s)) return formatMDY_HHMMSS(excelDateToJSDate(parseFloat(s)));
+                const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2})(?:\s+(\d{1,2}):([0-5]\d)(?::([0-5]\d))?)?$/);
+                if (m){
+                const M  = +m[1], D = +m[2], YY = String(+m[3]).padStart(2,'0');
+                const hh = String(+m[4] || 0).padStart(2,'0');
+                const mm = String(+m[5] || 0).padStart(2,'0');
+                const ss = String(+m[6] || 0).padStart(2,'0');
+                return `${M}.${D}.${YY} ${hh}:${mm}:${ss}`;
+                }
+                const d = new Date(s);
+                if (!isNaN(d)) return formatMDY_HHMMSS(d);
+
+                return s; // anlamlı değilse dokunma
+            }
+            return '';
+        }
+        
+        function normalizeTimeCell(v){
+            if (v instanceof Date && !isNaN(v)) {
+                const hh = String(v.getHours()).padStart(2,'0');
+                const mm = String(v.getMinutes()).padStart(2,'0');
+                return `${hh}:${mm}`;
+            }
+            if (typeof v === 'number' && isFinite(v)) {
+                // Excel'in günün kesri → HH:MM
+                const totalMin = Math.round((v % 1) * 24 * 60);
+                const hh = String(Math.floor(totalMin / 60) % 24).padStart(2,'0');
+                const mm = String(totalMin % 60).padStart(2,'0');
+                return `${hh}:${mm}`;
+            }
+            if (typeof v === 'string'){
+                const s = v.trim();
+                if (s === '') return '';
+                // "HH:MM" ya da "HH:MM:SS" gelirse HH:MM'e indir
+                const m = s.match(/^(\d{1,2}):([0-5]\d)(?::[0-5]\d)?$/);
+                if (m) return String(m[1]).padStart(2,'0') + ':' + m[2];
+                // "0.7123" gibi sayısal string gelirse de çevir
+                if (!isNaN(s)) return normalizeTimeCell(parseFloat(s));
+                return s;
+            }
+            return '';
+        }
+        function isValidMDYDateTime(s){
+            return /^(?:[1-9]|1[0-2])\.(?:[1-9]|[12]\d|3[01])\.\d{2}\s(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/
+                    .test(String(s||'').trim());
+        }
+        function isValidDateFormat(str){
+            return /^\d{2}\.\d{2}\.\d{4}$/.test(String(str));
+        }
+        function isTimeStringValid(timeString){
+            if (typeof timeString === "number") return timeString >= 0 && timeString <= 1;
+            if (typeof timeString === "string") return /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(timeString);
+            return false;
+        }
+        function isPatternMatch(input){
+            if (typeof input !== "string") return false;
+            const cleaned = input.replace(/\s/g,'');
+            return /^(\d+\*[A-Za-z0-9_]+)(\+\d+\*[A-Za-z0-9_]+)*$/.test(cleaned);
+        }
+        function extractTextValues(input){
+            if (!input || typeof input !== "string") return [];
+            const pattern = /\b\d+\s*\*\s*([A-Za-z0-9_]+)\s*\b/g;
+            const out=[]; let m;
+            while((m=pattern.exec(input))!==null){ if(m[1]) out.push(m[1].toUpperCase()); }
+            return out;
+        }
+
+        const containsAll = (list, allow) => list.every(x => allow.includes(x));
+
+        function isPatternValid(text, validList){
+            if (!text || text === "0") return true;            // boş/0 = sorun yok
+            if (!isPatternMatch(text)) return false;
+            const codes = extractTextValues(text);
+            return containsAll(codes, validList);
+        }
+        function showLoading(text = 'Yükleniyor...') {
+          loadingText.textContent = text;
+          loadingOverlay.classList.remove('hidden');
+        }
+        function hideLoading() {
+          loadingOverlay.classList.add('hidden');
+        }
+        function filterTableByDate() {    // tarihe före filtreleme burada 
+          const fromDate = dateFrom.value;
+          const toDate = dateTo.value;
+          if ((!fromDate && !toDate) || !allSuccessRows.length) return;
+          showLoading('Filtreleniyor...');
+          setTimeout(() => {
+              const dateColIndex = currentHeader.findIndex(h => 
+                  norm(h).includes('tarih') || norm(h).includes('date')
+              );
+              if (dateColIndex === -1) {
+                  alert('Tarih sütunu bulunamadı!');
+                  hideLoading();
+                  return;
+              }
+              const filteredRows = allSuccessRows.filter(row => {
+                  const cellDate = String(row[dateColIndex] || '').trim();
+                  const dateParts = cellDate.split('.');
+                  if (dateParts.length !== 3) return false;
+                  
+                  const cellDateFormatted = `${dateParts[2]}-${dateParts[1].padStart(2,'0')}-${dateParts[0].padStart(2,'0')}`;
+                  
+                  let matchesFrom = true;
+                  let matchesTo = true;
+                  
+                  if (fromDate) {
+                      matchesFrom = cellDateFormatted >= fromDate;
+                  }
+                  if (toDate) {
+                      matchesTo = cellDateFormatted <= toDate;
+                  }
+                  
+                  return matchesFrom && matchesTo;
+              });
+              const aoaFiltered = [currentHeader, ...filteredRows];
+              tableWrap.innerHTML = aoaToTable(aoaFiltered);
+              chipRows.textContent = `📋 Gösterilen: ${filteredRows.length} / Toplam: ${allSuccessRows.length}`;
+              
+              hideLoading();
+          }, 100);
+        }
+        function clearDateFilter() {
+            dateFrom.value = '';
+            dateTo.value = '';
+            if (allSuccessRows.length) {
+                const aoaAll = [currentHeader, ...allSuccessRows];
+                tableWrap.innerHTML = aoaToTable(aoaAll);
+                const errorCount = allErrorRows.length;
+                chipRows.textContent = `📋 Başarılı: ${allSuccessRows.length} / Hatalı: ${allErrorRows.length}`;
+            }
+        }
+        ['dragenter','dragover'].forEach(evt => {
+            dropArea.addEventListener(evt, e => {
+            e.preventDefault(); e.stopPropagation();
+            dropArea.classList.add('active');
+            });
+        });
+        ['dragleave','dragend','drop'].forEach(evt => {
+            dropArea.addEventListener(evt, e => {
+            e.preventDefault(); e.stopPropagation();
+            dropArea.classList.remove('active');
+            });
+        });
+        dropArea.addEventListener('drop', e => {
+            const file = e.dataTransfer?.files?.[0];
+            if (file) handleFile(file);
+        });
+        browseBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+        });
+        const esc = (x) => String(x ?? '').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+
+        function aoaToTable(aoa, defaultCh = 18, startRow = 0, endRow = 100) {
+            if (!aoa || aoa.length === 0) return '<div style="padding:12px;color:#666">Boş sayfa</div>';
+
+            const header = aoa[0] || [];
+            const Hn = header.map(norm);
+            const dateCols     = new Set();
+            const timeCols     = new Set();
+            const datetimeCols = new Set();
+
+            Hn.forEach((h, i) => {
+                if (h.includes('tarih') || h.includes('date')) {
+                    dateCols.add(i);
+                }
+                if ((h.includes('baslama') && h.includes('saat')) ||
+                    (h.includes('bitis')   && h.includes('saat'))) {
+                    timeCols.add(i);
+                }
+                if ((h.includes('start')      && h.includes('time')) ||
+                    (h.includes('completion') && h.includes('time'))) {
+                    datetimeCols.add(i);
+                }
+            });
+            
+            const colgroup = '<colgroup>' + header.map(() => `<col style="width:${defaultCh}ch">`).join('') + '</colgroup>';
+            const ths = header
+                .map((h, i) => `<th><div class="th-inner">${esc(h || ('Sütun ' + (i + 1)))}</div></th>`)
+                .join('');
+            let body = '';
+            for (let r = 1; r < aoa.length; r++) {
+                const row = aoa[r] || [];
+                let tds = '';
+                for (let c = 0; c < header.length; c++) {
+                    let v = row[c];
+                    if (timeCols.has(c)) {
+                        // Başlama saati, bitiş saati -> HH:MM formatı
+                        v = normalizeTimeCell(v);
+                    } else if (datetimeCols.has(c)) {
+                        // Start time, Completion time -> M.D.YY HH:MM:SS formatı
+                        v = normalizeDateTimeCell(v);
+                    } else if (dateCols.has(c)) {
+                        // Tarih sütunu
+                        if (v instanceof Date && !isNaN(v)) {
+                            v = v.toLocaleDateString('tr-TR');
+                        } else if (typeof v === 'number' && isFinite(v)) {
+                            v = excelDateToJSDate(v).toLocaleDateString('tr-TR');
+                        }
+                    }
+                    tds += `<td>${esc(v ?? '')}</td>`;
+                }
+                body += `<tr>${tds}</tr>`;
+            }
+            return `<table>${colgroup}<thead><tr>${ths}</tr></thead><tbody>${body}</tbody></table>`;
+        }
+        
+        function handleFile(file) {
+          showLoading('Dosya yükleniyor...');
+          const reader = new FileReader();
+          reader.onload = (e) => {
+              try {
+                  const data = new Uint8Array(e.target.result);
+                  const wb = XLSX.read(data, { type: 'array', cellDates: true });
+                  workbookRef = wb;
+
+                  const first = wb.SheetNames[0];
+                  if (!first) throw new Error('Excel içinde sayfa bulunamadı.');
+                  const sheet = wb.Sheets[first];
+
+                  const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '', blankrows: false });
+                  if (aoa.length === 0) throw new Error('Boş sayfa.');
+
+                  const header = aoa[0] || [];
+                  const rows   = aoa.slice(1);
+                  
+                  currentHeader = header;
+
+                  const idxDate  = (findColIndex(header, ['tarih']) >= 0) ? findColIndex(header, ['tarih']) : findColIndex(header, ['date']);
+                  
+                  const idxStart = (() => {
+                      const c3 = findColIndex(header, ['start','time']);         if (c3>=0) return c3;
+                      const c1 = findColIndex(header, ['baslama']);              if (c1>=0) return c1;
+                      const c4 = findColIndex(header, ['start']);                if (c4>=0) return c4;
+                      return -1;
+                  })();
+                  const idxEnd = (() => {
+                      const c3 = findColIndex(header, ['completion','time']);    if (c3>=0) return c3;
+                      const c4 = findColIndex(header, ['finish','time']);        if (c4>=0) return c4;
+                      const c5 = findColIndex(header, ['end','time']);           if (c5>=0) return c5;
+                      const c1 = findColIndex(header, ['bitis']);                if (c1>=0) return c1;
+                      const c6 = findColIndex(header, ['end']);                  if (c6>=0) return c6;
+                      return -1;
+                  })();
+                  
+                  const idxBaslamaSaat = findColIndex(header, ['baslama', 'saat']);
+                  const idxBitisSaat = findColIndex(header, ['bitis', 'saat']);
+                  
+                  const idxHata  = (()=>{ const a=findColIndex(header,['hata','kod']); if(a>=0)return a; const b=findColIndex(header,['hata','adet']); if(b>=0)return b; return -1; })();
+                  const idxDurus = (findColIndex(header, ['durus','kod']) >= 0) ? findColIndex(header, ['durus','kod']) : findColIndex(header, ['durus','sure']);
+                  const idxEmail = (()=>{ const e1=findColIndex(header,['email']); const e2=findColIndex(header,['e-posta']); const e3=findColIndex(header,['posta']); return Math.max(e1,e2,e3); })();
+                  const idxID    = (findColIndex(header, ['id']) >= 0) ? findColIndex(header, ['id']) : findColIndex(header, ['no']);
+
+                  const successRows = [];
+                  const errorRows   = [];
+                  
+                  for (const srcRow of rows) {
+                      // ÖN FİLTRE: email/id ile satırı tamamen at
+                      if (idxEmail >= 0) {
+                          const mail = String(srcRow[idxEmail] ?? '').trim().toLowerCase();
+                          if (mail === 'alihanaykanat@buyutech.com.tr') continue;
+                      }
+                      if (idxID >= 0) {
+                          const idVal = Number(srcRow[idxID]);
+                          if (Number.isFinite(idVal) && idVal < 189) continue;
+                      }
+
+                      const row = [...srcRow];
+                      let bad = false;
+
+                      if (idxDate >= 0) {
+                          const dv = row[idxDate];
+                          if (dv instanceof Date && !isNaN(dv)) {
+                              row[idxDate] = dv.toLocaleDateString('tr-TR');
+                          } else if (typeof dv === 'number' && isFinite(dv)) {
+                              row[idxDate] = excelDateToJSDate(dv).toLocaleDateString('tr-TR');
+                          }
+                          if (!isValidDateFormat(row[idxDate])) bad = true;
+                      }
+                      [idxStart, idxEnd].forEach(i => {
+                          if (i < 0) return;
+                          row[i] = normalizeDateTimeCell(row[i]);      // ör: 45297.9898 → "3.21.25 15:52:19"
+                          if (!row[i] || !isValidMDYDateTime(row[i])) {
+                              bad = true;
+                          }
+                      });
+                      [idxBaslamaSaat, idxBitisSaat].forEach(i => {
+                          if (i < 0) return;
+                          row[i] = normalizeTimeCell(row[i]);          // ör: 0.7123 → "17:04"
+                          if (!row[i] || !isTimeStringValid(row[i])) {
+                              bad = true;
+                          }
+                      });
+                      
+                      if (idxHata  >= 0 && !isPatternValid(String(row[idxHata]),  Hatalar_list))  bad = true;
+                      if (idxDurus >= 0 && !isPatternValid(String(row[idxDurus]), Duruslar_list)) bad = true;
+
+                      if (bad) errorRows.push(row);
+                      else     successRows.push(row);
+                  }
+                  allSuccessRows = successRows;
+                  allErrorRows = errorRows;
+                  
+                  const aoaSuccess = [header, ...successRows];
+                  tableWrap.innerHTML = aoaToTable(aoaSuccess);
+                  const rowsCount  = successRows.length;
+                  const errorCount = errorRows.length;
+                  const colsCount  = header.length;
+                  const sizeString = file.size >= 1048576
+                  ? `${(file.size/1048576).toFixed(1)} MB`
+                  : `${(file.size/1024).toFixed(1)} KB`;
+
+                  chipName.textContent  = `📄 ${file.name}`;
+                  chipSize.textContent  = `📦 ${sizeString}`;
+                  chipSheet.textContent = `📑 ${first}`;
+                  chipRows.textContent  = `📋 Başarılı: ${rowsCount} / Hatalı: ${errorCount}`;
+                  chipCols.textContent  = `📐 ${colsCount} sütun`;
+                  fileInfoBar.classList.remove('hidden');
+
+                  msg.textContent = `Yüklendi: ${file.name}`;
+                  hideLoading();
+                  showTopbarAndPanel('panel-main', 'tab-main');
+              } catch (err) {
+                  console.error(err);
+                  msg.textContent = 'Hata: ' + (err.message || err);
+                  hideLoading();
+              }
+          };
+          reader.onerror = () => { 
+              msg.textContent = 'Dosya okuma hatası.'; 
+              hideLoading();
+          };
+          reader.readAsArrayBuffer(file);
+        }
+
+        function showTopbarAndPanel(panelId, tabId){    //ana tabloya geçiş, paneller arası geçiş
+          if (panelId === 'panel-main' && allSuccessRows.length > 0) {
+            showLoading('Tablo yükleniyor...');   //ana tablo bekletme popup
+            setTimeout(() => {
+                  topbar.classList.remove('hidden');
+                  document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+                  document.getElementById(panelId).classList.remove('hidden');
+                  document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+                  document.getElementById(tabId).classList.add('active');
+                  
+                  hideLoading();
+              }, 50);
+              } else if (panelId === 'panel-2') {
+              showLoading('Duruş analizi hesaplanıyor...');
+              setTimeout(() => {
+                  createDurusAnalysisTable();
+                  topbar.classList.remove('hidden');
+                  document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+                  document.getElementById(panelId).classList.remove('hidden');
+                  document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+                  document.getElementById(tabId).classList.add('active');
+                  hideLoading();
+              }, 100);
+          } else {    // Diğer paneller için normal geçiş
+            topbar.classList.remove('hidden');
+            document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(panelId).classList.remove('hidden');
+            document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+          }
+        }
+        topbar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-tab');
+          if (!btn) return;
+          const target = btn.getAttribute('data-target');
+          if (!target) return;
+          showTopbarAndPanel(target, btn.id);
+        });
+        clearFilter.addEventListener('click', clearDateFilter);
+        dateFrom.addEventListener('change', () => {
+            dateTo.min = dateFrom.value; // Bitiş tarihi minimum başlangıç tarihi olur
+            filterTableByDate();
+        });
+        dateTo.addEventListener('change', filterTableByDate);
+    </script>
+</body>
+</html>

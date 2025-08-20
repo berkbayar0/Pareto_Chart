@@ -145,7 +145,9 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
             const pieChartBtn = document.getElementById('pieChartBtn');
             const lineChartBtn = document.getElementById('lineChartBtn');
             const paretoChartBtn = document.getElementById('paretoChartBtn');
-            
+            const Duruslar_list = Array.from({ length: 25 }, (_, i) => `D${i}`);
+            const DURUS_KODU_COL_INDEX = 14;
+
             let excelData = null;
             let errorChart = null;
             let currentChartType = 'bar';
@@ -206,6 +208,31 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                 });
                 activeButton.classList.add('active');
             }
+            function parseStoppageCodes(input) {
+                if (!input || input === "0") return {};
+                const totals = {};
+                const re = /(\d+)\s*\*\s*(D\d+)/gi;
+                let m;
+                while ((m = re.exec(String(input))) !== null) {
+                    const cnt = parseInt(m[1], 10);
+                    if (!Number.isFinite(cnt) || cnt <= 0) continue;
+                    const code = m[2].toUpperCase();
+                    totals[code] = (totals[code] ?? 0) + cnt;
+                }
+                return totals;
+            }
+            function isStoppagePatternValid(text) {
+                if (!text || text === "0") return false; // duruş yoksa bu satırı saymayacağız
+                const cleaned = String(text).replace(/\s/g, '');
+                if (!/^(\d+\*[A-Za-z0-9_-]+)(\+\d+\*[A-Za-z0-9_-]+)*$/.test(cleaned)) return false;
+                const codes = [];
+                const re = /\d+\*([A-Za-z0-9_-]+)/g;
+                let m;
+                while ((m = re.exec(cleaned)) !== null) {
+                    codes.push(m[1].toUpperCase());
+                }
+                return codes.every(c => Duruslar_list.includes(c));
+            }
             function handleFile(file) {
                 hideMessages();
                 showSpinner();
@@ -226,7 +253,18 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                             showError('Tabloda veri bulunamadı.');
                             return;
                         }
-                        processData(jsonData);      // Veriyi işle
+                        const cleanedJson = jsonData.filter((row, i) => {
+                        if (i === 0) return true;            // başlık satırı geçsin
+                        if (!row) return false;
+                        const emailCell = String(row[3] ?? '').trim().toLowerCase();
+                        if (emailCell === 'alihanaykanat@buyutech.com.tr') return false;
+                        const idVal = Number(row[0]);       //ID/No küçükse (<189) → sil (row[0] sayısal ise)
+                        if (Number.isFinite(idVal) && idVal < 189) return false;
+                        const durusCell = row[DURUS_KODU_COL_INDEX];        //Duruş metni geçerli değilse → sil
+                        if (!isStoppagePatternValid(durusCell)) return false;
+                        return true;
+                        });
+                        processData(cleanedJson);      // Veriyi işle
                     } catch (error) {
                         console.error('Dosya okuma hatası:', error);
                         showError('Dosya okuma hatası: ' + error.message);
@@ -244,17 +282,18 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                 try {
                     // Başlık satırının indeksini belirle
                     const headerIndex = 0;
-                    const dateColumnIndex = 6;  
-                    const errorColumnIndex = 12; 
+                    const dateColumnIndex = 6;
+                    const codeColumnIndex = DURUS_KODU_COL_INDEX; 
                     const processedData = [];
-                    for (let i = 1; i < jsonData.length; i++) {
+                    for (let i = headerIndex + 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
-                        if (!row || row.length <= errorColumnIndex) {       // Satır boş mu veya satırda yeteri kadar sütun var mı kontrol et
+                        const neededIndex = Math.max(dateColumnIndex, codeColumnIndex);
+                        if (!row || row.length <= neededIndex) {       // Satır boş mu veya satırda yeteri kadar sütun var mı kontrol et
                             continue;
                         }
                         const dateValue = row[dateColumnIndex];
-                        const errorValue = row[errorColumnIndex];
-                        if (!dateValue || !errorValue) {
+                        const codeValue = row[codeColumnIndex];
+                        if (!dateValue || !codeValue) {
                             continue;
                         }
                         let dateObj;
@@ -270,11 +309,11 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                         } catch (e) {
                             continue;
                         }
-                        const parsedErrors = parseErrorCodes(errorValue);       // Hata kodlarını parse et (3*h60+4*h55 formatı)
+                        const parsedCodes = parseStoppageCodes(codeValue);
                         processedData.push({
                             date: dateObj,
                             formattedDate: formatDate(dateObj),
-                            errors: parsedErrors
+                            errors: parsedCodes  
                         });
                     }
                     if (processedData.length === 0) {
@@ -283,9 +322,9 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                     }
                     excelData = processedData;      // Verileri kaydet ve sonuçları göster
 
-                    const dates = processedData.map(d => d.date);
-                    const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
-                    const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+                    const times = processedData.map(d => d.date.getTime());
+                    const minDate = new Date(Math.min(...times));
+                    const maxDate = new Date(Math.max(...times));
 
                     startDateInput.value = formatDateForInput(minDate);
                     endDateInput.value   = formatDateForInput(maxDate);
@@ -399,6 +438,8 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                 const errorCounts = {};
                 for (const item of data) {
                     for (const [errorCode, count] of Object.entries(item.errors)) {
+                        if (!/^D\d+$/.test(errorCode)) continue;
+                        if (!Duruslar_list.includes(errorCode)) continue;
                         if (errorCounts[errorCode]) {
                             errorCounts[errorCode] += count;
                         } else {
@@ -444,7 +485,7 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Hata Sayısı',
+                            label: 'Duruş Sayısı',
                             data: data,
                             backgroundColor: backgroundColors,
                             borderColor: borderColors,
@@ -455,7 +496,7 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {legend: {display: currentChartType === 'pie',position: 'right'},
-                            title: {display: true,text: 'Hata Kodlarının Dağılımı',font: {size: 16},padding: {bottom: 30}},
+                            title: {display: true,text: 'Duruş Kodlarının Dağılımı',font: {size: 16},padding: {bottom: 30}},
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
@@ -481,7 +522,7 @@ th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px
                                 title: {display: true,text: 'Toplam Sayı'},
                                 ticks: {precision: 0},
                                 display: currentChartType !== 'pie'},
-                            x: {title: {display: true,text: 'Hata Kodu'},
+                            x: {title: {display: true,text: 'Duruş Kodu'},
                                 display: currentChartType !== 'pie'}
                         }
                     }

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Hesaplama</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+:root {
+    --primary-purple: #6366f1;--primary-purple-hover: #4f46e5;--dark-purple: #312e81;--light-purple: #8b5cf6;--accent-purple: #a855f7;--background-light: #fefbff;--surface-light: #ffffff;--surface-elevated: #f8fafc;--surface-hover: #f1f5f9;
+    --text-primary: #1e293b;--text-secondary: #475569;--text-muted: #64748b;--border-color: #e2e8f0;--border-hover: #6366f1;--success-color: #10b981;--error-color: #ef4444;--warning-color: #f59e0b;--glass-bg: rgba(255, 255, 255, 0.8);--glass-border: rgba(99, 102, 241, 0.1);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+* {box-sizing: border-box;}
+body {font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;line-height: 1.6;max-width: 1400px;margin: 0 auto;padding: 20px;background: linear-gradient(135deg, #fefbff 0%, #f8fafc 50%, #f1f5f9 100%);color: var(--text-primary);min-height: 100vh;background-attachment: fixed;}
+.container {background: var(--surface-light);backdrop-filter: blur(10px);padding: 32px;border-radius: 24px;box-shadow: var(--shadow-xl), 0 0 0 1px var(--border-color);border: 1px solid var(--border-color);transition: all 0.3s ease;}
+.container:hover {box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.15), 0 0 0 1px var(--glass-border);transform: translateY(-1px);}
+h1 {background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-purple) 100%);-webkit-background-clip: text;background-clip: text;-webkit-text-fill-color: transparent;text-align: center;margin-bottom: 40px;font-size: 2.5rem;font-weight: 700;letter-spacing: -0.025em;}
+.file-input-area {border: 2px dashed var(--border-color);border-radius: 20px;padding: 48px 24px;text-align: center;margin-bottom: 24px;transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);background: var(--surface-elevated);position: relative;overflow: hidden;}
+.file-input-area::before {content: '';position: absolute;top: 0;left: 0;right: 0;bottom: 0;background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-purple) 100%);opacity: 0;transition: opacity 0.3s ease;z-index: -1;}
+.file-input-area.active {border-color: var(--border-hover);background: rgba(99, 102, 241, 0.05);transform: translateY(-3px);box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15),0 0 0 1px rgba(99, 102, 241, 0.2);}
+.file-input-area.active::before {opacity: 0.03;}
+.file-input-area h3 {margin-top: 0;color: var(--text-primary);font-size: 1.25rem;font-weight: 600;}
+.file-input-area p {color: var(--text-secondary);margin-bottom: 20px;font-size: 0.95rem;}
+#fileInput {display: none;}
+button {background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-purple) 100%);color: white;border: none;padding: 12px 24px;border-radius: 12px;cursor: pointer;font-size: 16px;font-weight: 600;transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3),0 1px 3px 0 rgba(0, 0, 0, 0.1);position: relative;overflow: hidden;}
+button::before {content: '';position: absolute;top: 0;left: -100%;width: 100%;height: 100%;background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);transition: left 0.5s;}
+button:hover {transform: translateY(-2px);box-shadow: 0 8px 25px 0 rgba(99, 102, 241, 0.4),0 4px 6px 0 rgba(0, 0, 0, 0.1);}
+button:hover::before {left: 100%;}
+button:active {transform: translateY(0);}
+.date-filter {margin: 24px 0;padding: 20px;background: var(--surface-light);border-radius: 16px;display: flex;flex-wrap: wrap;align-items: center;gap: 16px;border: 1px solid var(--border-color);box-shadow: var(--shadow-sm);}
+.date-filter label {font-weight: 600;color: var(--text-primary);margin-right: 8px;}
+.date-filter input[type="date"] {padding: 10px 14px;border: 1.5px solid var(--border-color);border-radius: 10px;background: var(--surface-elevated);color: var(--text-primary);font-size: 14px;transition: all 0.3s ease;}
+.date-filter input[type="date"]:focus {outline: none;border-color: var(--primary-purple);box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);background: var(--surface-light);}
+.results-container {margin-top: 0px;}
+.results-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 0px;}
+table {width: 100%;border-collapse: collapse;margin-top: 24px;border-radius: 16px;overflow: hidden;box-shadow: var(--shadow-lg);border: 1px solid var(--border-color);}
+th, td {border: 1px solid var(--border-color);padding: 16px 20px;text-align: left;}
+th {background: linear-gradient(135deg, var(--surface-elevated) 0%, #e2e8f0 100%);color: var(--text-primary);font-weight: 600;text-transform: uppercase;font-size: 0.875rem;letter-spacing: 0.05em;}
+td {background: var(--surface-light);color: var(--text-secondary);}
+tr:nth-child(even) td {background: var(--surface-elevated);}
+tr:hover td {background: rgba(99, 102, 241, 0.05);color: var(--text-primary);transform: scale(1.001);}
+.chart-container {margin-top: 32px;height: 450px;margin-bottom: 60px;background: var(--surface-light);border-radius: 20px;padding: 24px;border: 1px solid var(--border-color);box-shadow: var(--shadow-lg);}
+.chart-options {display: flex;justify-content: center;gap: 8px;margin-bottom: 20px;flex-wrap: wrap;}
+.chart-options button {padding: 8px 16px;background: var(--surface-elevated);color: var(--text-secondary);border: 1.5px solid var(--border-color);border-radius: 10px;cursor: pointer;transition: all 0.3s ease;font-size: 14px;font-weight: 500;box-shadow: var(--shadow-sm);}
+.chart-options button:hover {background: rgba(99, 102, 241, 0.1);color: var(--text-primary);border-color: var(--primary-purple);transform: translateY(-1px);box-shadow: var(--shadow-md);}
+.chart-options button.active {background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-purple) 100%);color: white;border-color: var(--primary-purple);box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);}
+.error-message {color: #dc2626;background: #fef2f2;padding: 16px;border-radius: 12px;margin-top: 16px;display: none;border: 1px solid #fecaca;box-shadow: var(--shadow-sm);}
+.success-message {color: #059669;background: #f0fdf4;padding: 16px;border-radius: 12px;margin-top: 16px;display: none;border: 1px solid #bbf7d0;box-shadow: var(--shadow-sm);}
+.spinner {border: 4px solid rgba(99, 102, 241, 0.2);width: 40px;height: 40px;border-radius: 50%;border-left-color: var(--primary-purple);animation: spin 1s linear infinite;display: none;margin: 32px auto;filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    body {padding: 12px;}
+    .container {padding: 20px;border-radius: 20px;}
+    h1 {font-size: 2rem;}
+    .file-input-area {padding: 32px 16px;}
+    .date-filter {flex-direction: column;align-items: stretch;gap: 12px;}
+    table {font-size: 14px;}
+    th, td {padding: 12px 8px;}
+    .chart-container {height: 350px;padding: 16px;}
+}
+::-webkit-scrollbar {width: 8px;}
+::-webkit-scrollbar-track {background: var(--surface-elevated);}
+::-webkit-scrollbar-thumb {background: var(--primary-purple);border-radius: 4px;}
+::-webkit-scrollbar-thumb:hover {background: var(--accent-purple);}
+*:focus {outline: 2px solid var(--primary-purple);outline-offset: 2px;}
+
+.file-input-area:hover {border-color: rgba(99, 102, 241, 0.3);box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);}
+input[type="date"]:hover {border-color: rgba(99, 102, 241, 0.4);}
+th {position: relative;}
+th::after {content: '';position: absolute;bottom: 0;left: 0;right: 0;height: 2px;background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-purple) 100%);opacity: 0.3;}
+    </style>
+</head>
+<body>
+    <div class="container">
+            <h1>KPI Hesaplama Dosyası</h1>
+        <div class="file-input-area" id="dropArea">
+            <h3>Excel Dosyanızı Yükleyin</h3>
+            <p>Dosyayı buraya sürükleyin veya dosya seçme diyaloğunu kullanın</p>
+            <input type="file" id="fileInput" accept=".xlsx, .xls">
+            <button id="browseButton">Dosya Seç</button>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        <div class="spinner" id="spinner"></div>
+        <div class="date-filter" id="dateFilter" style="display: none;">
+            <div>
+                <label for="startDate">Başlangıç Tarihi:</label>
+                <input type="date" id="startDate">
+            </div>
+            <div>
+                <label for="endDate">Bitiş Tarihi:</label>
+                <input type="date" id="endDate">
+            </div>
+            <button id="filterButton">Filtrele</button>
+        </div>
+        
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <div class="results-header">
+                <h2>Duruş Kodu Analizi</h2>
+            </div>
+            <div class="chart-container">
+                <div class="chart-options">
+                    <button id="barChartBtn" class="active">Çubuk Grafik</button>
+                    <button id="pieChartBtn">Pasta Grafik</button>
+                    <button id="lineChartBtn">Çizgi Grafik</button>
+                    <button id="paretoChartBtn">Pareto Grafik</button>
+                </div>
+                <canvas id="errorChart"></canvas>
+            </div>
+            
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Hata Kodu</th>
+                        <th>Toplam Sayı</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseButton = document.getElementById('browseButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const spinner = document.getElementById('spinner');
+            const dateFilter = document.getElementById('dateFilter');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const filterButton = document.getElementById('filterButton');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsBody = document.getElementById('resultsBody');
+            const barChartBtn = document.getElementById('barChartBtn');
+            const pieChartBtn = document.getElementById('pieChartBtn');
+            const lineChartBtn = document.getElementById('lineChartBtn');
+            const paretoChartBtn = document.getElementById('paretoChartBtn');
+            
+            
+            let excelData = null;
+            let errorChart = null;
+            let currentChartType = 'bar';
+            let currentErrorCounts = {};
+            let dateGuardsInitialized = false;
+            
+            barChartBtn.addEventListener('click', () => {
+                setActiveChartButton(barChartBtn);
+                currentChartType = 'bar';
+                createChart(currentErrorCounts);
+            });
+            pieChartBtn.addEventListener('click', () => {
+                setActiveChartButton(pieChartBtn);
+                currentChartType = 'pie';
+                createChart(currentErrorCounts);
+            });
+            lineChartBtn.addEventListener('click', () => {
+                setActiveChartButton(lineChartBtn);
+                currentChartType = 'line';
+                createChart(currentErrorCounts);
+            });
+            paretoChartBtn.addEventListener('click', () => {
+                setActiveChartButton(paretoChartBtn);
+                currentChartType = 'pareto';
+                createChart(currentErrorCounts);
+            });
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('active');
+            });
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.classList.remove('active');
+            });
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('active');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            browseButton.addEventListener('click', () => {
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+            filterButton.addEventListener('click', () => {
+                filterDataByDate();
+            });
+
+            function setActiveChartButton(activeButton) {
+                [barChartBtn, pieChartBtn, lineChartBtn, paretoChartBtn].forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                activeButton.classList.add('active');
+            }
+            function handleFile(file) {
+                hideMessages();
+                showSpinner();
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        // Form1 sayfasını kontrol et
+                        if (!workbook.Sheets['Form1']) {
+                            showError('Dosyada "Form1" sayfası bulunamadı.');
+                            return;
+                        }
+                        const worksheet = workbook.Sheets['Form1'];     // Table1'i kontrol et
+                        // Excel verilerini JSON formatına çevir
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+                        if (jsonData.length < 2) {
+                            showError('Tabloda veri bulunamadı.');
+                            return;
+                        }
+                        processData(jsonData);      // Veriyi işle
+                    } catch (error) {
+                        console.error('Dosya okuma hatası:', error);
+                        showError('Dosya okuma hatası: ' + error.message);
+                    } finally {
+                        hideSpinner();
+                    }
+                };
+                reader.onerror = function() {
+                    showError('Dosya okuma hatası.');
+                    hideSpinner();
+                };
+                reader.readAsArrayBuffer(file);
+            }
+            function processData(jsonData) {
+                try {
+                    // Başlık satırının indeksini belirle
+                    const headerIndex = 0;
+                    const dateColumnIndex = 6;  
+                    const errorColumnIndex = 12; 
+                    const processedData = [];
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length <= errorColumnIndex) {       // Satır boş mu veya satırda yeteri kadar sütun var mı kontrol et
+                            continue;
+                        }
+                        const dateValue = row[dateColumnIndex];
+                        const errorValue = row[errorColumnIndex];
+                        if (!dateValue || !errorValue) {
+                            continue;
+                        }
+                        let dateObj;
+                        try {
+                            if (typeof dateValue === 'number') {
+                                dateObj = new Date(Math.round((dateValue - 25569) * 86400 * 1000));
+                            } else {
+                                dateObj = new Date(dateValue);
+                            }
+                            if (isNaN(dateObj.getTime())) {
+                                continue;
+                            }
+                        } catch (e) {
+                            continue;
+                        }
+                        const parsedErrors = parseErrorCodes(errorValue);       // Hata kodlarını parse et (3*h60+4*h55 formatı)
+                        processedData.push({
+                            date: dateObj,
+                            formattedDate: formatDate(dateObj),
+                            errors: parsedErrors
+                        });
+                    }
+                    if (processedData.length === 0) {
+                        showError('İşlenebilir veri bulunamadı. Dosya formatını kontrol edin.');
+                        return;
+                    }
+                    excelData = processedData;      // Verileri kaydet ve sonuçları göster
+
+                    const dates = processedData.map(d => d.date);
+                    const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+                    const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+
+                    startDateInput.value = formatDateForInput(minDate);
+                    endDateInput.value   = formatDateForInput(maxDate);
+                    initDateGuards(minDate, maxDate);
+
+                    dateFilter.style.display = 'flex';
+                    displayResults(processedData);      // Sonuçları göster
+                    showSuccess('Dosya başarıyla işlendi. ' + processedData.length + ' kayıt bulundu.');
+                } catch (error) {
+                    console.error('Veri işleme hatası:', error);
+                    showError('Veri işleme hatası: ' + error.message);
+                }
+            }
+            // Hata kodlarını ayrıştırma fonksiyonu
+            function parseErrorCodes(errorString) {
+                if (!errorString) return {};
+                const errorStr = String(errorString).trim();
+                if (!errorStr) return {};
+
+                const result = {};
+                const parts = errorStr.split('+'); // "3*h60+4*h55" → ["3*h60", "4*h55"]
+
+                for (const part of parts) {
+                    const trimmed = part.trim();
+                    if (!trimmed) continue; 
+                    const mulSplit = trimmed.split('*');
+
+                    let count = 1;
+                    let codeRaw = trimmed;
+
+                    if (mulSplit.length > 1) {
+                    count = parseInt(mulSplit[0].trim(), 10);
+                    if (!Number.isFinite(count) || count <= 0) continue;
+                    codeRaw = mulSplit[1].trim();
+                    }
+                    const normalizedCode = codeRaw.replace(/\s+/g, '').toUpperCase();
+                    if (!normalizedCode) continue;
+                    if (!/^[A-Z0-9_-]+$/.test(normalizedCode)) continue;
+                    result[normalizedCode] = (result[normalizedCode] ?? 0) + count;
+                }
+                return result;
+            }
+            function parseInputDateLocal(yyyyMmDd) {
+                if (!yyyyMmDd) return null;
+                const [y, m, d] = yyyyMmDd.split('-').map(Number);
+                return new Date(y, m - 1, d); // yerel gün başlangıcı
+            }
+            function startOfDayLocal(d) {
+                return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+            }
+            function endOfDayLocal(d) {
+                return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+            }
+            function initDateGuards(minDate, maxDate) {
+                const minStr = formatDateForInput(minDate);
+                const maxStr = formatDateForInput(maxDate);
+                startDateInput.min = minStr;
+                startDateInput.max = maxStr;
+                endDateInput.min = startDateInput.value || minStr;
+                endDateInput.max = maxStr;
+                const onStartChange = () => {
+                    const startStr = startDateInput.value || minStr;
+                    endDateInput.min = startStr;          // end, start'tan geri olamaz
+                    if (endDateInput.value && endDateInput.value < startStr) {
+                        endDateInput.value = startStr;      // otomatik ileri al
+                    }
+                };
+                const onEndChange = () => {
+                    const endStr = endDateInput.value || maxStr;
+                    startDateInput.max = endStr;          // start, end'den ileri olamaz
+                    if (startDateInput.value && startDateInput.value > endStr) {
+                        startDateInput.value = endStr;      // otomatik geri çek
+                    }
+                };
+                onStartChange();
+                onEndChange();
+                if (!dateGuardsInitialized) {
+                    startDateInput.addEventListener('input', onStartChange);
+                    endDateInput.addEventListener('input', onEndChange);
+                    dateGuardsInitialized = true;
+                }
+            }
+            // Tarih filtreleme fonksiyonu
+            function filterDataByDate() {
+                if (!excelData) return;
+
+                const startRaw = startDateInput.value;
+                const endRaw   = endDateInput.value;
+                const startDate = startRaw ? startOfDayLocal(parseInputDateLocal(startRaw)) : null;
+                const endDate   = endRaw   ? endOfDayLocal(parseInputDateLocal(endRaw))   : null;
+                const startTS = startDate ? startDate.getTime() : -Infinity;
+                const endTS   = endDate   ? endDate.getTime()   :  Infinity;
+                const filteredData = excelData.filter(({ date }) => {
+                    const t = date.getTime();
+                    return t >= startTS && t <= endTS;
+                });
+                if (filteredData.length === 0) {
+                    showError('Seçilen tarih aralığında veri bulunamadı.');
+                    return;
+                }
+                displayResults(filteredData);
+                showSuccess(`Filtreleme başarılı. ${filteredData.length} kayıt bulundu.`);
+            }
+            // Sonuçları gösterme fonksiyonu
+            function displayResults(data) {
+                if (!data || data.length === 0) {
+                    resultsContainer.style.display = 'none';
+                    return;
+                }
+                // Tüm hata kodlarını topla
+                const errorCounts = {};
+                for (const item of data) {
+                    for (const [errorCode, count] of Object.entries(item.errors)) {
+                        if (errorCounts[errorCode]) {
+                            errorCounts[errorCode] += count;
+                        } else {
+                            errorCounts[errorCode] = count;
+                        }
+                    }
+                }
+                currentErrorCounts = errorCounts;
+                resultsBody.innerHTML = '';     // Sonuçları tablolaştır ve büyükten küçüğe sırala
+                const sortedErrors = Object.entries(errorCounts).sort((a, b) => b[1] - a[1]);
+                
+                for (const [errorCode, count] of sortedErrors) {
+                    const row = document.createElement('tr');
+                    const codeCell = document.createElement('td');
+                    codeCell.textContent = errorCode;
+                    const countCell = document.createElement('td');
+                    countCell.textContent = count;
+                    row.appendChild(codeCell);
+                    row.appendChild(countCell);
+                    resultsBody.appendChild(row);
+                }
+                createChart(errorCounts);
+                
+                resultsContainer.style.display = 'block';
+            }
+            // Grafik oluşturma fonksiyonu
+            function createChart(errorCounts) {
+                const ctx = document.getElementById('errorChart').getContext('2d');
+                if (errorChart) {
+                    errorChart.destroy();
+                }
+                const sortedEntries = Object.entries(errorCounts).sort((a, b) => b[1] - a[1]);
+                const labels = sortedEntries.map(entry => entry[0]);
+                const data = sortedEntries.map(entry => entry[1]);
+                const backgroundColors = labels.map((_, i) => {
+                    const hue = (i * 137.5) % 360;
+                    return `hsla(${hue}, 70%, 60%, 0.7)`;
+                });
+                const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+                // Grafik yapılandırması
+                const config = {
+                    type: currentChartType === 'pareto' ? 'bar' : currentChartType,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Hata Sayısı',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {legend: {display: currentChartType === 'pie',position: 'right'},
+                            title: {display: true,text: 'Hata Kodlarının Dağılımı',font: {size: 16},padding: {bottom: 30}},
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (currentChartType === 'pie') {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((value / total) * 100);
+                                            return `${label}: ${value} (${percentage}%)`;
+                                        } else if (currentChartType === 'pareto') {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((value / total) * 100);
+                                            return `${label}: ${value} (${percentage}%)`;
+                                        }
+                                        return context.dataset.label + ': ' + context.formattedValue;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {y: {beginAtZero: true,
+                                title: {display: true,text: 'Toplam Sayı'},
+                                ticks: {precision: 0},
+                                display: currentChartType !== 'pie'},
+                            x: {title: {display: true,text: 'Hata Kodu'},
+                                display: currentChartType !== 'pie'}
+                        }
+                    }
+                };
+                //pareto grafiği yapımı
+                if (currentChartType === 'pareto') {
+                    const total = data.reduce((a, b) => a + b, 0);
+                    let cumulativeSum = 0;
+                    const cumulativeData = data.map((value) => {
+                        cumulativeSum += value;
+                        return (cumulativeSum / total) * 100;
+                    });
+                    config.data.datasets.push({
+                        label: 'Kümülatif %',
+                        data: cumulativeData,
+                        type: 'line',
+                        yAxisID: 'percentage',
+                        borderColor: '#FF5722',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#FF5722',
+                        fill: false
+                    });
+                    config.options.scales.percentage = {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Kümülatif %'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    };
+                }
+                errorChart = new Chart(ctx, config);
+            }
+            // Yardımcı fonksiyonlar
+            function formatDate(date) {
+                return date.toLocaleDateString('tr-TR');
+            }
+            function formatDateForInput(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+            }
+            function hideMessages() {
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+            }
+            function showSpinner() {
+                spinner.style.display = 'block';
+            }
+            function hideSpinner() {
+                spinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
