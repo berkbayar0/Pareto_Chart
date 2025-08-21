@@ -34,9 +34,14 @@
       overflow:auto; max-height:70vh; background:#fff;
     }
     .table-wrap table{border-collapse:collapse; font-size:13px; width:max-content; min-width:100%;table-layout: fixed;}
-    .table-wrap th, .table-wrap td{border:1px solid #e5e7eb; padding:6px 8px; white-space:nowrap}
-    .table-wrap th{background:#f3f6fb; position:sticky; top:0; z-index:1;padding: 6px 8px;}
+    .table-wrap th, .table-wrap td{border:1px solid #e5e7eb; padding:6px 8px; white-space:normal;word-wrap: break-word;overflow-wrap: break-word;width: 8ch; min-width: 8ch;max-width: 8ch;}
+    .table-wrap th{background:#f3f6fb; position:sticky; top: 0px; z-index:1;padding: 6px 8px;}
+    .table-wrap tbody tr:hover {background-color: #f1f5f9 !important;cursor: pointer;}
+    .table-wrap tbody tr.selected {background-color: #dbeafe !important;border-left: 3px solid var(--accent);}
+    .table-wrap tbody tr.selected:hover {background-color: #bfdbfe !important;}
     .info-bar{display:flex; gap:8px; flex-wrap:wrap;margin:8px 0 6px; justify-content: flex-start;align-items: center;}
+    .filter-section {display: flex;gap: 8px;align-items: center;flex-wrap: wrap;}
+    .filter-dropdown {padding: 6px 10px;border: 1px solid #d1d5db;border-radius: 6px;font-size: 12px;background: white;cursor: pointer;min-width: 120px;max-width: 120px;}   .clear-filters-btn {padding: 4px 8px;background: #ef4444;color: white;border: none;border-radius: 4px;font-size: 11px;cursor: pointer;}
     .chip{background:#f1f5f9; border:1px solid var(--border);border-radius:999px; padding:6px 10px; font-size:12px; color:#0f172a;}
     .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;}
     .loading-popup{background:white;padding:24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;min-width:200px;}
@@ -63,7 +68,7 @@
   </div>
   <div class="topbar hidden" id="topbar">
     <button class="btn-tab active" id="tab-main"   data-target="panel-main">Ana Tablo</button>
-    <button class="btn-tab"        id="tab-2"      data-target="panel-2">Duruş süreleri Analizi</button>
+    <button class="btn-tab"        id="tab-2"      data-target="panel-2">Duruş Süreleri Analizi</button>
     <button class="btn-tab"        id="tab-3"      data-target="panel-3">Proses Analizleri</button>
     <button class="btn-tab"        id="tab-4"      data-target="panel-4">Buton 4</button>
     <button class="btn-tab"        id="tab-5"      data-target="panel-5">Buton 5</button>
@@ -83,16 +88,30 @@
         <span class="chip" id="chipCols">📐 —</span>
         <div class="chip" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
             <span>📅 Tarih Aralığı:</span>
-            <input type="date" id="dateFrom" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
+            <input type="date" id="dateFrom" max="" style=" border: 1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
             <span>-</span>
-            <input type="date" id="dateTo" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
+            <input type="date" id="dateTo" max="" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
             <button id="clearFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
+        </div>
+        </div>
+            <div id="mainPagination"></div>
+            <div id="tableWrap" class="table-wrap"></div>
         </div>
   </div>
     <div id="tableWrap" class="table-wrap"></div>
   </div>
   <div id="panel-2"  class="panel hidden">
     <div class="panel-title">Duruş Süreleri Analizi</div>
+    <div class="info-bar">
+        <div class="chip" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+            <span>📅 Tarih Aralığı:</span>
+            <input type="date" id="durusDateFrom" max="" style="border: 1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
+            <span>-</span>
+            <input type="date" id="durusDateTo" max="" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
+            <button id="durusClearFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
+        </div>
+    </div>
+    <div id="durusPagination"></div>
     <div id="durusTableWrap" class="table-wrap"></div>
   </div>
   <div id="panel-3"  class="panel hidden"><div class="panel-title">Buton 3</div>
@@ -137,12 +156,20 @@
         const msgText = document.getElementById('msgText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const loadingOverlay = document.getElementById('loadingOverlay');
-        const loadingText = document.getElementById('loadingText'); 
+        const loadingText = document.getElementById('loadingText');
+        const durusClearFilter = document.getElementById('durusClearFilter');
+        const durusDateFrom = document.getElementById('durusDateFrom');
+        const durusDateTo = document.getElementById('durusDateTo'); 
+
 
         let allErrorRows = [];
         let workbookRef = null;
         let allSuccessRows = []; // Tüm başarılı satırları saklamak için
         let currentHeader = [];  // Header'ı saklamak için
+        let currentFilters = {name: '',product: '',process: '',};       //filtreleme özellikleri
+        let uniqueValues = {name: [],product: [],process: [],};
+        let currentDurusFilters = {name: '',product: '',process: ''};
+        let durusUniqueValues = {name: [],product: [],process: []};
         const norm = s => String(s ?? '')
             .toLowerCase()
             .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g')
@@ -158,8 +185,8 @@
             return -1;
         }
         function excelDateToJSDate(serial){
-            const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-            return new Date(excelEpoch.getTime() + serial * 86400000);
+            const excelEpoch = new Date(1900, 0, 1);
+            return new Date(excelEpoch.getTime() + (serial - 2) * 86400000);
         }
         function numToHHMM(n){
             const frac = ((Number(n) % 1) + 1) % 1;    // günün kesir kısmı (0..1)
@@ -179,13 +206,57 @@
             const ss = String(d.getSeconds()).padStart(2,'0');
             return `${M}.${D}.${YY} ${hh}:${mm}:${ss}`;
         }
-        function createDurusAnalysisTable() {       //duruşlar tablosu
+        function filterDurusTableByDate() {     // duruşlar için tarih filtersini burda ekledim
+            const fromDate = durusDateFrom.value;
+            const toDate = durusDateTo.value;
+            if ((!fromDate && !toDate) || !allSuccessRows.length) return;
+            
+            showLoading('Duruşlar Filtreleniyor...');
+            setTimeout(() => {
+                const dateColIndex = currentHeader.findIndex(h => 
+                    norm(h).includes('tarih') || norm(h).includes('date')
+                );
+                if (dateColIndex === -1) {
+                    alert('Tarih sütunu bulunamadı!');
+                    hideLoading();
+                    return;
+                }
+                const filteredRows = allSuccessRows.filter(row => {
+                    const cellDate = String(row[dateColIndex] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    if (dateParts.length !== 3) return false;
+                    const cellDateFormatted = `${dateParts[2]}-${dateParts[1].padStart(2,'0')}-${dateParts[0].padStart(2,'0')}`;
+                    
+                    let matchesFrom = true;
+                    let matchesTo = true;
+                    if (fromDate) matchesFrom = cellDateFormatted >= fromDate;
+                    if (toDate) matchesTo = cellDateFormatted <= toDate;
+                    return matchesFrom && matchesTo;
+                });
+                window.filteredDurusRows = filteredRows;
+                currentDurusPage = 1;
+                createDurusAnalysisTable();
+                hideLoading();
+            }, 100);
+        }
+        function clearDurusDateFilter() {
+            durusDateFrom.value = '';
+            durusDateTo.value = '';
+            currentDurusPage = 1;
+            window.filteredDurusRows = allSuccessRows;
+            createDurusAnalysisTable();
+        }
+
+        let currentDurusPage = 1;       //duruşlar tablosu hazırlama fonksiyonu
+        const durusRowsPerPage = 400;
+
+        function createDurusAnalysisTable() {
             const headers = [
-            'ID', 'Name', 'OK Ürün', 'NOK Ürün', 'Çalışılan Süre (saat)',
-            'Çalışılan Süre (dk)', 'Net Süre', 'Kurulum Süresi', 'Makina Arızası',
-            'Personel Duruşu', 'Planlı Duruş', 'Plansız Duruş', 'Makina/Program Duruşları',
-            'Toplam Duruş', 'Planlanan Duruşlar', 'Personel Kaynaklı Duruşlar',
-            'Makine+Ekipman Kaynaklı Duruşlar'
+                'ID', 'Name', 'Tarih', 'Ürün Adı', 'Proses Adı', 'OK Ürün', 'NOK Ürün', 'Çalışılan Süre (saat)',
+                'Çalışılan Süre (dk)', 'Net Süre', 'Kurulum Süresi', 'Makina Arızası',
+                'Personel Duruşu', 'Planlı Duruş', 'Plansız Duruş', 'Makina/Program Duruşları',
+                'Toplam Duruş', 'Planlanan Duruşlar', 'Personel Kaynaklı Duruşlar',
+                'Makine+Ekipman Kaynaklı Duruşlar'
             ];
             const durusTableWrap = document.getElementById('durusTableWrap');
 
@@ -193,47 +264,246 @@
                 durusTableWrap.innerHTML = '<div style="padding:12px;color:#666">Önce veri yükleyin</div>';
                 return;
             }
+            const startIndex = (currentDurusPage - 1) * durusRowsPerPage;
+            const endIndex = startIndex + durusRowsPerPage;
+            const filteredRows = window.filteredDurusRows || allSuccessRows;
+            const totalPages = Math.ceil(filteredRows.length / durusRowsPerPage);
+            const pageRows = filteredRows.slice(startIndex, endIndex);
             const idxID = findColIndex(currentHeader, ['id']);
             const idxName = findColIndex(currentHeader, ['name']);
+            const idxTarih = findColIndex(currentHeader, ['tarih']);
+            const idxUrunAdi = findColIndex(currentHeader, ['urun', 'adi']);
+            const idxProsesAdi = findColIndex(currentHeader, ['proses', 'adi']);
             const idxOK = findColIndex(currentHeader, ['ok']);
-            const colgroup = '<colgroup>' + headers.map(() => '<col style="width:8ch">').join('') + '</colgroup>';
-            const ths = headers.map(h => `<th style="white-space:normal;word-wrap:break-word;">${esc(h)}</th>`).join('');
-
+            const idxBaslamaSaat = findColIndex(currentHeader, ['baslama', 'saat']);
+            const idxBitisSaat = findColIndex(currentHeader, ['bitis', 'saat']);
+            
+            const pagination = `
+            <div style="position:sticky;top:0;z-index:10;padding:8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;background:#f8fafc;margin-bottom:8px;border-radius:8px;box-shadow:0 -1px 6px rgba(0,0,0,0.1);">
+                <div class="filter-section">
+                    <span style="font-weight:500;font-size:12px;color:#374151;">Filtreler:</span>
+                    <select id="durusDropdownName" class="filter-dropdown">
+                        <option value="">Tüm İsimler</option>
+                        ${durusUniqueValues.name.map(val => `<option value="${esc(val)}" ${currentDurusFilters.name === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
+                    </select>
+                    <select id="durusDropdownProduct" class="filter-dropdown">
+                        <option value="">Tüm Ürünler</option>
+                        ${durusUniqueValues.product.map(val => `<option value="${esc(val)}" ${currentDurusFilters.product === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
+                    </select>
+                    <select id="durusDropdownProcess" class="filter-dropdown">
+                        <option value="">Tüm Prosesler</option>
+                        ${durusUniqueValues.process.map(val => `<option value="${esc(val)}" ${currentDurusFilters.process === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
+                    </select>
+                    <button class="clear-filters-btn" onclick="clearDurusFilters()">Temizle</button>
+                </div>
+                <div style="display:flex;align-items:center;">
+                    <button onclick="goToDurusPage(${currentDurusPage - 1})" ${currentDurusPage === 1 ? 'disabled' : ''} 
+                            style="padding:6px 12px;margin:0 4px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:12px;color:#374151;transition:all 0.2s;${currentDurusPage === 1 ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+                        ◀
+                    </button>
+                    <span style="margin:0 12px;font-weight:500;font-size:13px;color:#374151;">
+                        Sayfa ${currentDurusPage} / ${totalPages} (${filteredRows.length} kayıt)
+                    </span>
+                    <button onclick="goToDurusPage(${currentDurusPage + 1})" ${currentDurusPage === totalPages ? 'disabled' : ''} 
+                            style="padding:6px 12px;margin:0 4px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:12px;color:#374151;transition:all 0.2s;${currentDurusPage === totalPages ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+                        ▶
+                    </button>
+                </div>
+            </div>`;
+            const columnWidths = [
+                '3ch',   // ID
+                '20ch',  // Name  
+                '12ch',  // Tarih
+                '12ch',  // Ürün Adı
+                '20ch',  // Proses Adı
+                '8ch', '8ch', '10ch', '10ch', '8ch', '10ch', '10ch', '10ch', '8ch', '8ch', '11ch', '10ch', '11ch', '10ch', '12ch'
+            ];
+            const colgroup = '<colgroup>' + columnWidths.map(width => `<col style="width:${width}">`).join('') + '</colgroup>';
+            const ths = headers.map(h => `<th style="white-space:normal;word-wrap:break-word;width:8ch;min-width:8ch;max-width:8ch;">${esc(h)}</th>`).join('');        
+        
             let tbody = '';
-            const maxRows = Math.min(allSuccessRows.length, 100); // İlk 100 satır
-            for (let i = 0; i < maxRows; i++) {
-                const row = allSuccessRows[i];
+            for (const row of pageRows) {
                 const id = row[idxID] || '';
                 const name = row[idxName] || '';
+                const tarih = row[idxTarih] || '';
+                const urunAdi = row[idxUrunAdi] || '';
+                const prosesAdi = row[idxProsesAdi] || '';
                 const okUrun = row[idxOK] || '';
+                const startTime = row[idxBaslamaSaat] || '';
+                const endTime = row[idxBitisSaat] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
 
                 tbody += `<tr>
                     <td>${esc(id)}</td>
                     <td>${esc(name)}</td>
+                    <td>${esc(tarih)}</td>
+                    <td>${esc(urunAdi)}</td>
+                    <td>${esc(prosesAdi)}</td>
                     <td>${esc(okUrun)}</td>
                     <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td>${workingTime.formatted}</td>
+                    <td>${workingTime.totalMinutes}</td>
+                    <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
                 </tr>`;
             }
-            if (allSuccessRows.length > 100) {
-                tbody += `<tr><td colspan="17" style="text-align:center;padding:10px;background:#fff3cd;">İlk 100 kayıt gösteriliyor (Toplam: ${allSuccessRows.length})</td></tr>`;
-            }
-
+            const durusPagination = document.getElementById('durusPagination');
+            durusPagination.innerHTML = pagination;
             durusTableWrap.innerHTML = `<table>${colgroup}<thead><tr>${ths}</tr></thead><tbody>${tbody}</tbody></table>`;
+
+            setTimeout(() => {
+            setupDurusFilterListeners();
+            }, 10);
+        }
+        function goToDurusPage(page) {
+            const totalPages = Math.ceil(allSuccessRows.length / durusRowsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentDurusPage = page;
+                createDurusAnalysisTable();
+            }
+        }
+        function calculateWorkingTime(startTime, endTime) {
+            if (!startTime || !endTime) return { formatted: '0:00', totalMinutes: 0 };
+            
+            try {
+                // HH:MM formatını parse et
+                const parseTime = (timeStr) => {
+                    const match = String(timeStr).match(/^(\d{1,2}):(\d{2})$/);
+                    if (!match) return null;
+                    return { hours: parseInt(match[1]), minutes: parseInt(match[2]) };
+                };
+                
+                const start = parseTime(startTime);
+                const end = parseTime(endTime);
+                
+                if (!start || !end) return { formatted: '0:00', totalMinutes: 0 };
+                
+                // Dakikaya çevir
+                const startMinutes = start.hours * 60 + start.minutes;
+                let endMinutes = end.hours * 60 + end.minutes;
+                
+                // Eğer bitiş saati başlama saatinden küçükse, ertesi gün olarak hesapla
+                if (endMinutes <= startMinutes) {
+                    endMinutes += 24 * 60;
+                }
+                
+                const totalMinutes = endMinutes - startMinutes;
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                
+                return { 
+                    formatted: `${hours}:${String(minutes).padStart(2, '0')}`, 
+                    totalMinutes: totalMinutes 
+                };
+            } catch (error) {
+                return { formatted: '0:00', totalMinutes: 0 };
+            }
+        }
+        function extractDurusUniqueValues() {       //duruşlar için filtreleme yapan unique değer toplamna fonksiyonu
+            if (!allSuccessRows.length) return;
+            
+            const nameIdx = findColIndex(currentHeader, ['name']);
+            const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+            const processIdx = findColIndex(currentHeader, ['proses', 'adi']);
+            
+            const nameSet = new Set();
+            const productSet = new Set();
+            const processSet = new Set();
+            
+            allSuccessRows.forEach(row => {
+                if (nameIdx >= 0 && row[nameIdx]) nameSet.add(String(row[nameIdx]).trim());
+                if (productIdx >= 0 && row[productIdx]) productSet.add(String(row[productIdx]).trim());
+                if (processIdx >= 0 && row[processIdx]) processSet.add(String(row[processIdx]).trim());
+            });
+            
+            durusUniqueValues.name = Array.from(nameSet).sort();
+            durusUniqueValues.product = Array.from(productSet).sort();
+            durusUniqueValues.process = Array.from(processSet).sort();
+        }
+        function applyDurusFilters() {      //filtrele duruşlar
+            if (!allSuccessRows.length) return;
+            const nameIdx = findColIndex(currentHeader, ['name']);
+            const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+            const processIdx = findColIndex(currentHeader, ['proses', 'adi']);
+            
+            let filteredRows = allSuccessRows.filter(row => {
+                let matches = true;
+                if (currentDurusFilters.name && nameIdx >= 0) {
+                    const nameVal = String(row[nameIdx] || '').toLowerCase();
+                    matches = matches && nameVal.includes(currentDurusFilters.name.toLowerCase());
+                }
+                if (currentDurusFilters.product && productIdx >= 0) {
+                    const productVal = String(row[productIdx] || '').toLowerCase();
+                    matches = matches && productVal.includes(currentDurusFilters.product.toLowerCase());
+                }
+                if (currentDurusFilters.process && processIdx >= 0) {
+                    const processVal = String(row[processIdx] || '').toLowerCase();
+                    matches = matches && processVal.includes(currentDurusFilters.process.toLowerCase());
+                }
+                return matches;
+            });
+            const fromDate = durusDateFrom.value;
+            const toDate = durusDateTo.value;
+            if (fromDate || toDate) {
+                const dateColIndex = currentHeader.findIndex(h => 
+                    norm(h).includes('tarih') || norm(h).includes('date')
+                );
+                
+                if (dateColIndex >= 0) {
+                    filteredRows = filteredRows.filter(row => {
+                        const cellDate = String(row[dateColIndex] || '').trim();
+                        const dateParts = cellDate.split('.');
+                        if (dateParts.length !== 3) return false;
+                        
+                        const cellDateFormatted = `${dateParts[2]}-${dateParts[1].padStart(2,'0')}-${dateParts[0].padStart(2,'0')}`;
+                        
+                        let matchesFrom = true;
+                        let matchesTo = true;
+                        
+                        if (fromDate) matchesFrom = cellDateFormatted >= fromDate;
+                        if (toDate) matchesTo = cellDateFormatted <= toDate;
+                        
+                        return matchesFrom && matchesTo;
+                    });
+                }
+            }
+            currentDurusPage = 1;
+            window.filteredDurusRows = filteredRows; // Global'e kaydet
+            createDurusAnalysisTable();
+        }
+        function clearDurusFilters() {
+            currentDurusFilters = { name: '', product: '', process: '' };
+            durusDateFrom.value = '';
+            durusDateTo.value = '';
+            currentDurusPage = 1;
+            window.filteredDurusRows = allSuccessRows;
+            createDurusAnalysisTable();
+        }
+        function setupDurusFilterListeners() {
+            const dropdownName = document.getElementById('durusDropdownName');
+            const dropdownProduct = document.getElementById('durusDropdownProduct');
+            const dropdownProcess = document.getElementById('durusDropdownProcess');
+            
+            if (dropdownName) {
+                dropdownName.addEventListener('change', (e) => {
+                currentDurusFilters.name = e.target.value;
+                applyDurusFilters();
+                });
+            }
+            if (dropdownProduct) {
+                dropdownProduct.addEventListener('change', (e) => {
+                currentDurusFilters.product = e.target.value;
+                applyDurusFilters();
+                });
+            }
+            if (dropdownProcess) {
+                dropdownProcess.addEventListener('change', (e) => {
+                currentDurusFilters.process = e.target.value;
+                applyDurusFilters();
+                });
+            }
         }
         function normalizeDateTimeCell(v){
+            console.log('Normalizing date/time cell:', v);
             if (v instanceof Date && !isNaN(v)) {
                 return formatMDY_HHMMSS(v);
             }
@@ -398,11 +668,20 @@
         });
         const esc = (x) => String(x ?? '').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 
-        function aoaToTable(aoa, defaultCh = 18, startRow = 0, endRow = 100) {
+        let currentMainPage = 1;
+        const mainRowsPerPage = 400;
+
+        function aoaToTable(aoa, defaultCh = 18,) {
             if (!aoa || aoa.length === 0) return '<div style="padding:12px;color:#666">Boş sayfa</div>';
 
             const header = aoa[0] || [];
             const Hn = header.map(norm);
+            const dataRows = aoa.slice(1);
+            const totalPages = Math.ceil(dataRows.length / mainRowsPerPage);
+            
+            const startIndex = (currentMainPage - 1) * mainRowsPerPage;
+            const endIndex = startIndex + mainRowsPerPage;
+            const pageRows = dataRows.slice(startIndex, endIndex);
             const dateCols     = new Set();
             const timeCols     = new Set();
             const datetimeCols = new Set();
@@ -420,14 +699,51 @@
                     datetimeCols.add(i);
                 }
             });
-            
-            const colgroup = '<colgroup>' + header.map(() => `<col style="width:${defaultCh}ch">`).join('') + '</colgroup>';
-            const ths = header
-                .map((h, i) => `<th><div class="th-inner">${esc(h || ('Sütun ' + (i + 1)))}</div></th>`)
-                .join('');
+            const pagination = `
+            <div style="position:sticky;top:0;z-index:10;padding:8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;background:#f8fafc;margin-bottom:8px;border-radius:8px;box-shadow:0 -1px 6px rgba(0,0,0,0.1);">
+                <div class="filter-section">
+                    <span style="font-weight:500;font-size:12px;color:#374151;">Filtreler:</span>
+                    <select id="dropdownName" class="filter-dropdown">
+                        <option value="">Tüm İsimler</option>
+                        ${uniqueValues.name.map(val => `<option value="${esc(val)}" ${currentFilters.name === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
+                    </select>
+                    <select id="dropdownProduct" class="filter-dropdown">
+                        <option value="">Tüm Ürünler</option>
+                        ${uniqueValues.product.map(val => `<option value="${esc(val)}" ${currentFilters.product === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
+                    </select>
+                    <select id="dropdownProcess" class="filter-dropdown">
+                        <option value="">Tüm Prosesler</option>
+                        ${uniqueValues.process.map(val => `<option value="${esc(val)}" ${currentFilters.process === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
+                    </select>
+                    <button class="clear-filters-btn" onclick="clearAllFilters()">Temizle</button>
+                </div>
+                <div style="display:flex;align-items:center;">
+                    <button onclick="goToMainPage(${currentMainPage - 1})" ${currentMainPage === 1 ? 'disabled' : ''} 
+                            style="padding:6px 12px;margin:0 4px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:12px;color:#374151;transition:all 0.2s;${currentMainPage === 1 ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+                        ◀
+                    </button>
+                    <span style="margin:0 12px;font-weight:500;font-size:13px;color:#374151;">
+                        Sayfa ${currentMainPage} / ${totalPages} (${dataRows.length} kayıt)
+                    </span>
+                    <button onclick="goToMainPage(${currentMainPage + 1})" ${currentMainPage === totalPages ? 'disabled' : ''} 
+                            style="padding:6px 12px;margin:0 4px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:12px;color:#374151;transition:all 0.2s;${currentMainPage === totalPages ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+                        ▶
+                    </button>
+                </div>
+            </div>`;
+            const ths = header.map(h => `<th style="white-space:normal;word-wrap:break-word;width:8ch;min-width:8ch;max-width:8ch;">${esc(h)}</th>`).join('');
+            const columnWidths = [
+                '3ch',   // ID
+                '17ch',  // Tarih     
+                '17ch',  // Tarih
+                '28ch',  // mail
+                '20ch',  // name
+                '11ch', '15ch', '12ch', '15ch', '10ch', '10ch', '10ch', '25ch', '15ch', '25ch', '15ch', '10ch'
+            ];
+            const colgroup = '<colgroup>' + header.map((h, i) => `<col style="width:${columnWidths[i] || defaultCh + 'ch'}">`).join('') + '</colgroup>';
             let body = '';
-            for (let r = 1; r < aoa.length; r++) {
-                const row = aoa[r] || [];
+            for (let r = 0; r < pageRows.length; r++) {
+                const row = pageRows[r] || [];
                 let tds = '';
                 for (let c = 0; c < header.length; c++) {
                     let v = row[c];
@@ -449,16 +765,146 @@
                 }
                 body += `<tr>${tds}</tr>`;
             }
+            const mainPagination = document.getElementById('mainPagination');
+            mainPagination.innerHTML = pagination;
+            setTimeout(() => {
+                setupFilterListeners();
+            }, 10);
             return `<table>${colgroup}<thead><tr>${ths}</tr></thead><tbody>${body}</tbody></table>`;
         }
-        
+        function goToMainPage(page) {
+            const totalPages = Math.ceil(allSuccessRows.length / mainRowsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentMainPage = page;
+                const aoaSuccess = [currentHeader, ...allSuccessRows];
+                tableWrap.innerHTML = aoaToTable(aoaSuccess);
+            }
+        }
+        function applyColumnFilters() {
+            if (!allSuccessRows.length) return;
+            
+            const nameIdx = findColIndex(currentHeader, ['name']);
+            const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+            const processIdx = findColIndex(currentHeader, ['proses', 'adi']);
+            
+            let filteredRows = allSuccessRows.filter(row => {
+                let matches = true;
+                
+                if (currentFilters.name && nameIdx >= 0) {
+                    const nameVal = String(row[nameIdx] || '').toLowerCase();
+                    matches = matches && nameVal.includes(currentFilters.name.toLowerCase());
+                }
+                
+                if (currentFilters.product && productIdx >= 0) {
+                    const productVal = String(row[productIdx] || '').toLowerCase();
+                    matches = matches && productVal.includes(currentFilters.product.toLowerCase());
+                }
+                
+                if (currentFilters.process && processIdx >= 0) {
+                    const processVal = String(row[processIdx] || '').toLowerCase();
+                    matches = matches && processVal.includes(currentFilters.process.toLowerCase());
+                }
+                return matches;
+            });
+            const fromDate = dateFrom.value;
+            const toDate = dateTo.value;
+            
+            if (fromDate || toDate) {
+                const dateColIndex = currentHeader.findIndex(h => 
+                    norm(h).includes('tarih') || norm(h).includes('date')
+                );
+                
+                if (dateColIndex >= 0) {
+                    filteredRows = filteredRows.filter(row => {
+                        const cellDate = String(row[dateColIndex] || '').trim();
+                        const dateParts = cellDate.split('.');
+                        if (dateParts.length !== 3) return false;
+                        
+                        const cellDateFormatted = `${dateParts[2]}-${dateParts[1].padStart(2,'0')}-${dateParts[0].padStart(2,'0')}`;
+                        
+                        let matchesFrom = true;
+                        let matchesTo = true;
+                        
+                        if (fromDate) matchesFrom = cellDateFormatted >= fromDate;
+                        if (toDate) matchesTo = cellDateFormatted <= toDate;
+                        
+                        return matchesFrom && matchesTo;
+                    });
+                }
+            }
+            
+            currentMainPage = 1; // Filtreleme sonrası ilk sayfaya dön
+            const aoaFiltered = [currentHeader, ...filteredRows];
+            tableWrap.innerHTML = aoaToTable(aoaFiltered);
+            
+            chipRows.textContent = `📋 Gösterilen: ${filteredRows.length} / Toplam: ${allSuccessRows.length}`;
+            setupFilterListeners();
+        }
+        function extractUniqueValues() {
+            if (!allSuccessRows.length) return;
+            
+            const nameIdx = findColIndex(currentHeader, ['name']);
+            const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+            const processIdx = findColIndex(currentHeader, ['proses', 'adi']);
+            
+            const nameSet = new Set();
+            const productSet = new Set();
+            const processSet = new Set();
+            
+            allSuccessRows.forEach(row => {
+                if (nameIdx >= 0 && row[nameIdx]) nameSet.add(String(row[nameIdx]).trim());
+                if (productIdx >= 0 && row[productIdx]) productSet.add(String(row[productIdx]).trim());
+                if (processIdx >= 0 && row[processIdx]) processSet.add(String(row[processIdx]).trim());
+            });
+            
+            uniqueValues.name = Array.from(nameSet).sort();
+            uniqueValues.product = Array.from(productSet).sort();
+            uniqueValues.process = Array.from(processSet).sort();
+        }
+        function clearAllFilters() {
+            currentFilters = { name: '', product: '', process: '',};
+            dateFrom.value = '';
+            dateTo.value = '';
+            currentMainPage = 1;
+            
+            if (allSuccessRows.length) {
+                const aoaAll = [currentHeader, ...allSuccessRows];
+                tableWrap.innerHTML = aoaToTable(aoaAll);
+                chipRows.textContent = `📋 Başarılı: ${allSuccessRows.length} / Hatalı: ${allErrorRows.length}`;
+                setupFilterListeners();
+            }
+        }
+        function setupFilterListeners() {
+            const dropdownName = document.getElementById('dropdownName');
+            const dropdownProduct = document.getElementById('dropdownProduct');
+            const dropdownProcess = document.getElementById('dropdownProcess');
+            
+            if (dropdownName) {
+                dropdownName.addEventListener('change', (e) => {
+                    currentFilters.name = e.target.value;
+                    applyColumnFilters();
+                });
+            }
+            if (dropdownProduct) {
+                dropdownProduct.addEventListener('change', (e) => {
+                    currentFilters.product = e.target.value;
+                    applyColumnFilters();
+                });
+            }
+            if (dropdownProcess) {
+                dropdownProcess.addEventListener('change', (e) => {
+                    currentFilters.process = e.target.value;
+                    applyColumnFilters();
+                });
+            }
+        }
         function handleFile(file) {
           showLoading('Dosya yükleniyor...');
           const reader = new FileReader();
           reader.onload = (e) => {
               try {
                   const data = new Uint8Array(e.target.result);
-                  const wb = XLSX.read(data, { type: 'array', cellDates: true });
+                  const wb = XLSX.read(data, { type: 'array', cellDates: false });
                   workbookRef = wb;
 
                   const first = wb.SheetNames[0];
@@ -546,6 +992,9 @@
                       else     successRows.push(row);
                   }
                   allSuccessRows = successRows;
+                  extractUniqueValues();    
+                  extractDurusUniqueValues();
+                  window.filteredDurusRows = allSuccessRows;
                   allErrorRows = errorRows;
                   
                   const aoaSuccess = [header, ...successRows];
@@ -593,7 +1042,7 @@
                   hideLoading();
               }, 50);
               } else if (panelId === 'panel-2') {
-              showLoading('Duruş analizi hesaplanıyor...');
+              showLoading('Duruş Süreleri Hazırlanıyor...');
               setTimeout(() => {
                   createDurusAnalysisTable();
                   topbar.classList.remove('hidden');
@@ -624,6 +1073,26 @@
             filterTableByDate();
         });
         dateTo.addEventListener('change', filterTableByDate);
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFrom').max = today;
+            document.getElementById('dateTo').max = today;
+        });
+        durusClearFilter.addEventListener('click', clearDurusDateFilter);
+        durusDateFrom.addEventListener('change', () => {
+            durusDateTo.min = durusDateFrom.value;
+            filterDurusTableByDate();
+        });
+        durusDateTo.addEventListener('change', filterDurusTableByDate);
+
+        // DOMContentLoaded event'ine duruş tarih input'larını ekle:
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFrom').max = today;
+            document.getElementById('dateTo').max = today;
+            document.getElementById('durusDateFrom').max = today;
+            document.getElementById('durusDateTo').max = today;
+        });
     </script>
 </body>
 </html>
