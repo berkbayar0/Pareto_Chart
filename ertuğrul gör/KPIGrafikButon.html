@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>KPI Hesapalama</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root{
       --bg:#f7f9fc; --card:#fff; --text:#0f172a; --muted:#64748b;
@@ -53,6 +53,9 @@
     .loading { animation: spin 1s linear infinite; }
     .ok-column {background-color: #dcfce7 }
     .nok-column {background-color: #fecaca}
+    .chart-type-btn {padding: 8px 16px;border: 1px solid #d1d5db;background: #fff;border-radius: 6px;cursor: pointer;font-size: 12px;transition: all 0.2s;}
+    .chart-type-btn:hover {border-color: var(--accent);background: #f0f9ff;}
+    .chart-type-btn.active {background: var(--accent);color: white;border-color: var(--accent);}
   </style>
 </head>
 <body>
@@ -71,8 +74,8 @@
   <div class="topbar hidden" id="topbar">
     <button class="btn-tab active" id="tab-main"   data-target="panel-main">Ana Tablo</button>
     <button class="btn-tab"        id="tab-2"      data-target="panel-2">Duruş Süreleri Analizi</button>
-    <button class="btn-tab"        id="tab-3"      data-target="panel-3">Proses Analizleri</button>
-    <button class="btn-tab"        id="tab-4"      data-target="panel-4">Buton 4</button>
+    <button class="btn-tab"        id="tab-3"      data-target="panel-3">Grafik Analizi</button>
+    <button class="btn-tab"        id="tab-4"      data-target="panel-4">Proses Analizi</button>
     <button class="btn-tab"        id="tab-5"      data-target="panel-5">Buton 5</button>
     <button class="btn-tab"        id="tab-6"      data-target="panel-6">Buton 6</button>
     <button class="btn-tab"        id="tab-7"      data-target="panel-7">Buton 7</button>
@@ -113,9 +116,67 @@
     <div id="durusPagination"></div>
     <div id="durusTableWrap" class="table-wrap"></div>
   </div>
-  <div id="panel-3"  class="panel hidden"><div class="panel-title">Buton 3</div>
-  <div>Buraya özelliğin gelecektir.</div></div>
-  <div id="panel-4"  class="panel hidden"><div class="panel-title">Buton 4</div>
+  <div id="panel-3"  class="panel hidden"><div class="panel-title">Grafik Analizi</div>
+    <div class="panel-title">Grafiksel Analizler</div>
+    <div class="info-bar">
+        <div class="filter-section">
+            <span style="font-weight:500;font-size:12px;color:#374151;">Filtreler:</span>
+            <select id="chartDropdownName" class="filter-dropdown">
+                <option value="">Tüm İsimler</option>
+            </select>
+            <select id="chartDropdownProduct" class="filter-dropdown">
+                <option value="">Tüm Ürünler</option>
+            </select>
+            <select id="chartDropdownProcess" class="filter-dropdown">
+                <option value="">Tüm Prosesler</option>
+            </select>
+            <button class="clear-filters-btn" onclick="clearChartFilters()">Temizle</button>
+        </div>
+        <div class="chip" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+            <span>Tarih Aralığı:</span>
+            <input type="date" id="chartDateFrom" max="" style="border: 1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
+            <span>-</span>
+            <input type="date" id="chartDateTo" max="" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
+            <button id="chartClearDateFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
+        </div>
+    </div>        
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+            <!-- Grafik türü seçimi -->
+        <div style="grid-column:1/-1;background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e5e7eb;">
+            <label style="font-weight:600;margin-bottom:8px;display:block;">Grafik Türü Seçin:</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="chart-type-btn active" data-chart="ok-nok">OK/NOK Dağılımı</button>
+                <button class="chart-type-btn" data-chart="working-time">Çalışma Süreleri</button>
+                <button class="chart-type-btn" data-chart="downtime">Duruş Analizi</button>
+                <button class="chart-type-btn" data-chart="efficiency">Verimlilik Analizi</button>
+                <button class="chart-type-btn" data-chart="person-performance">Kişi Performansı</button>
+                <button class="chart-type-btn" data-chart="product-analysis">Ürün Analizi</button>
+            </div>
+        </div>
+            <!-- Ana grafik alanı -->
+        <div style="grid-column:1/-1;background:#fff;padding:16px;border-radius:8px;border:1px solid #e5e7eb;min-height:400px;">
+            <canvas id="mainChart" width="800" height="400"></canvas>
+        </div>
+        <div style="background:#fff;padding:16px;border-radius:8px;border:1px solid #e5e7eb;">
+            <h4 style="margin:0 0 12px;color:#374151;">Toplam Üretim</h4>
+            <div id="totalStats" style="font-size:14px;color:#6b7280;">
+                <div>OK Ürün: <span id="statTotalOK" style="color:#16a34a;font-weight:600;">-</span></div>
+                <div>NOK Ürün: <span id="statTotalNOK" style="color:#dc2626;font-weight:600;">-</span></div>
+                <div>Toplam: <span id="statTotal" style="font-weight:600;">-</span></div>
+                <div>Verimlilik: <span id="statEfficiency" style="color:#2563eb;font-weight:600;">-</span></div>
+            </div>
+        </div>
+        <div style="background:#fff;padding:16px;border-radius:8px;border:1px solid #e5e7eb;">
+            <h4 style="margin:0 0 12px;color:#374151;">Duruş Analizi</h4>
+            <div id="downtimeStats" style="font-size:14px;color:#6b7280;">
+                <div>Toplam Duruş: <span id="statTotalDowntime" style="font-weight:600;">-</span> dk</div>
+                <div>Planlı Duruş: <span id="statPlannedDowntime" style="color:#f59e0b;font-weight:600;">-</span> dk</div>
+                <div>Plansız Duruş: <span id="statUnplannedDowntime" style="color:#dc2626;font-weight:600;">-</span> dk</div>
+            </div>
+        </div>
+    </div>
+</div>
+  <div id="panel-4"  class="panel hidden"><div class="panel-title">Proses Analizi</div>
   <div>Buraya özelliğin gelecektir.</div></div>
   <div id="panel-5"  class="panel hidden"><div class="panel-title">Buton 5</div>
   <div>Buraya özelliğin gelecektir.</div></div>
@@ -271,6 +332,365 @@
             }
             return hataMap;
         }
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        //grafikler burada oluşturuyorum/////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+
+        let currentChart = null;
+        let chartFilters = { name: '', product: '', process: '' };
+        let chartUniqueValues = { name: [], product: [], process: [] };
+
+        function createChart(type = 'ok-nok') {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (currentChart) currentChart.destroy();
+            
+            const filteredData = getFilteredChartData();
+            switch(type) {
+                case 'ok-nok':
+                    currentChart = createOKNOKChart(ctx, filteredData);
+                    break;
+                case 'working-time':
+                    currentChart = createWorkingTimeChart(ctx, filteredData);
+                    break;
+                case 'downtime':
+                    currentChart = createDowntimeChart(ctx, filteredData);
+                    break;
+                case 'efficiency':
+                    currentChart = createEfficiencyChart(ctx, filteredData);
+                    break;
+                case 'person-performance':
+                    currentChart = createPersonPerformanceChart(ctx, filteredData);
+                    break;
+                case 'product-analysis':
+                    currentChart = createProductAnalysisChart(ctx, filteredData);
+                    break;
+            }
+            updateStatistics(filteredData);
+        }
+        // Filtrelenmiş veri alma
+        function getFilteredChartData() {
+            let filtered = allSuccessRows.filter(row => {
+                const nameIdx = findColIndex(currentHeader, ['name']);
+                const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+                const processIdx = findColIndex(currentHeader, ['proses', 'adi']);
+                const dateIdx = findColIndex(currentHeader, ['tarih']);
+                
+                let matches = true;
+                
+                if (chartFilters.name && nameIdx >= 0) {
+                    matches = matches && String(row[nameIdx] || '').toLowerCase().includes(chartFilters.name.toLowerCase());
+                }
+                if (chartFilters.product && productIdx >= 0) {
+                    matches = matches && String(row[productIdx] || '').toLowerCase().includes(chartFilters.product.toLowerCase());
+                }
+                if (chartFilters.process && processIdx >= 0) {
+                    matches = matches && String(row[processIdx] || '').toLowerCase().includes(chartFilters.process.toLowerCase());
+                }
+                
+                // Tarih filtresi
+                const fromDate = document.getElementById('chartDateFrom').value;
+                const toDate = document.getElementById('chartDateTo').value;
+                if ((fromDate || toDate) && dateIdx >= 0) {
+                    const cellDate = String(row[dateIdx] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    if (dateParts.length === 3) {
+                        const cellDateFormatted = `${dateParts[2]}-${dateParts[1].padStart(2,'0')}-${dateParts[0].padStart(2,'0')}`;
+                        if (fromDate && cellDateFormatted < fromDate) matches = false;
+                        if (toDate && cellDateFormatted > toDate) matches = false;
+                    }
+                }
+                
+                return matches;
+            });
+            
+            return filtered;
+        }
+        // İstatistikleri güncelleme
+        function updateStatistics(data) {
+            let totalOK = 0, totalNOK = 0, totalDowntime = 0, plannedDowntime = 0, unplannedDowntime = 0;
+            
+            const idxOK = findColIndex(currentHeader, ['ok']);
+            const idxHataKodlari = findColIndex(currentHeader, ['hata', 'kod']);
+            const idxDurusSureleri = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            data.forEach(row => {
+                const okUrun = parseInt(row[idxOK] || 0);
+                const hataMap = parseHataKodlari(row[idxHataKodlari] || '');
+                const nokUrun = Object.values(hataMap).reduce((sum, val) => sum + val, 0);
+                const durusMap = parseDurusSureleri(row[idxDurusSureleri] || '');
+                
+                totalOK += okUrun;
+                totalNOK += nokUrun;
+                
+                // Duruş hesaplamaları
+                const planned = (durusMap['D4'] || 0) + (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                const unplanned = Object.keys(durusMap).filter(k => !['D4','D12','D13','D18','D21'].includes(k)).reduce((sum, k) => sum + (durusMap[k] || 0), 0);
+            
+                plannedDowntime += planned;
+                unplannedDowntime += unplanned;
+                totalDowntime += planned + unplanned;
+            });
+            const total = totalOK + totalNOK;
+            const efficiency = total > 0 ? ((totalOK / total) * 100).toFixed(1) : 0;
+                            
+            document.getElementById('statTotalOK').textContent = totalOK;
+            document.getElementById('statTotalNOK').textContent = totalNOK;
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statEfficiency').textContent = efficiency + '%';
+            document.getElementById('statTotalDowntime').textContent = totalDowntime;
+            document.getElementById('statPlannedDowntime').textContent = plannedDowntime;
+            document.getElementById('statUnplannedDowntime').textContent = unplannedDowntime;   
+        }
+            // OK/NOK Pie Chart
+        function createOKNOKChart(ctx, data) {
+            let totalOK = 0, totalNOK = 0;
+            const idxOK = findColIndex(currentHeader, ['ok']);
+            const idxHataKodlari = findColIndex(currentHeader, ['hata', 'kod']);
+                
+            data.forEach(row => {
+                totalOK += parseInt(row[idxOK] || 0);
+                const hataMap = parseHataKodlari(row[idxHataKodlari] || '');
+                totalNOK += Object.values(hataMap).reduce((sum, val) => sum + val, 0);
+            });
+            return new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['OK Ürün', 'NOK Ürün'],
+                    datasets: [{
+                        data: [totalOK, totalNOK],
+                        backgroundColor: ['#16a34a', '#dc2626'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'OK/NOK Ürün Dağılımı' },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        function createWorkingTimeChart(ctx, data) {
+            const nameIdx = findColIndex(currentHeader, ['name']);
+            const idxBaslamaSaat = findColIndex(currentHeader, ['baslama', 'saat']);
+            const idxBitisSaat = findColIndex(currentHeader, ['bitis', 'saat']);
+                
+            const workingTimes = {};
+            data.forEach(row => {
+                const name = row[nameIdx] || 'Bilinmeyen';
+                const startTime = row[idxBaslamaSaat] || '';
+                const endTime = row[idxBitisSaat] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
+                    
+                if (!workingTimes[name]) workingTimes[name] = 0;
+                workingTimes[name] += workingTime.totalMinutes;
+            });
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(workingTimes),
+                    datasets: [{
+                        label: 'Çalışma Süresi (dakika)',
+                        data: Object.values(workingTimes),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { title: { display: true, text: 'Kişi Bazında Çalışma Süreleri' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+        function createDowntimeChart(ctx, data) {
+            const idxDurusSureleri = findColIndex(currentHeader, ['durus', 'sureleri']);
+                
+            let planned = 0, unplanned = 0;
+            data.forEach(row => {
+                const durusMap = parseDurusSureleri(row[idxDurusSureleri] || '');
+                planned += (durusMap['D4'] || 0) + (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                    
+                Object.keys(durusMap).forEach(key => {
+                    if (!['D4','D12','D13','D18','D21'].includes(key)) {
+                        unplanned += durusMap[key] || 0;
+                    }
+                });
+            });
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Planlı Duruş', 'Plansız Duruş'],
+                    datasets: [{
+                        data: [planned, unplanned],
+                        backgroundColor: ['#f59e0b', '#dc2626']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { title: { display: true, text: 'Duruş Türleri Dağılımı' } }
+                }
+            });
+        }
+            // Verimlilik Analizi
+        function createEfficiencyChart(ctx, data) {
+            const nameIdx = findColIndex(currentHeader, ['']);
+            const idxOK = findColIndex(currentHeader, ['ok']);
+            const idxHataKodlari = findColIndex(currentHeader, ['hata', 'kod']);
+                
+            const efficiency = {};
+            data.forEach(row => {
+                const name = row[nameIdx] || 'Bilinmeyen';
+                const ok = parseInt(row[idxOK] || 0);
+                const hataMap = parseHataKodlari(row[idxHataKodlari] || '');
+                const nok = Object.values(hataMap).reduce((sum, val) => sum + val, 0);
+                const total = ok + nok;
+                    
+                if (!efficiency[name]) efficiency[name] = { ok: 0, total: 0 };
+                efficiency[name].ok += ok;
+                efficiency[name].total += total;
+            });
+                
+            const labels = Object.keys(efficiency);
+            const efficiencyData = labels.map(name => {
+                const eff = efficiency[name];
+                return eff.total > 0 ? (eff.ok / eff.total * 100).toFixed(1) : 0;
+            });
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Verimlilik (%)',
+                        data: efficiencyData,
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { title: { display: true, text: 'Kişi Bazında Verimlilik Oranları' } },
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+        // Kişi Performansı
+        function createPersonPerformanceChart(ctx, data) {
+            const nameIdx = findColIndex(currentHeader, ['name']);
+            const idxOK = findColIndex(currentHeader, ['ok']);
+                
+            const performance = {};
+            data.forEach(row => {
+                const name = row[nameIdx] || 'Bilinmeyen';
+                const ok = parseInt(row[idxOK] || 0);
+                    
+                if (!performance[name]) performance[name] = 0;
+                performance[name] += ok;
+            });
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(performance),
+                    datasets: [{
+                            label: 'Toplam OK Ürün',
+                            data: Object.values(performance),
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            fill: true
+                    }]
+                },
+                options: {
+                        responsive: true,
+                        plugins: { title: { display: true, text: 'Kişi Performans Grafiği' } },
+                        scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+            // Ürün Analizi
+        function createProductAnalysisChart(ctx, data) {
+                const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+                const idxOK = findColIndex(currentHeader, ['ok']);
+                
+                const products = {};
+                data.forEach(row => {
+                    const product = row[productIdx] || 'Bilinmeyen';
+                    const ok = parseInt(row[idxOK] || 0);
+                    
+                    if (!products[product]) products[product] = 0;
+                    products[product] += ok;
+                });
+                
+                return new Chart(ctx, {
+                    type: 'horizontalBar',
+                    data: {
+                        labels: Object.keys(products),
+                        datasets: [{
+                            label: 'Toplam Üretim',
+                            data: Object.values(products),
+                            backgroundColor: '#06b6d4'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { title: { display: true, text: 'Ürün Bazında Üretim Miktarları' } },
+                        scales: { x: { beginAtZero: true } }
+                    }
+                });
+        }// Grafik filtre fonksiyonları
+        function extractChartUniqueValues() {
+                if (!allSuccessRows.length) return;
+                
+                const nameIdx = findColIndex(currentHeader, ['name']);
+                const productIdx = findColIndex(currentHeader, ['urun', 'adi']);
+                const processIdx = findColIndex(currentHeader, ['proses', 'adi']);
+                
+                const nameSet = new Set();
+                const productSet = new Set();
+                const processSet = new Set();
+                
+                allSuccessRows.forEach(row => {
+                    if (nameIdx >= 0 && row[nameIdx]) nameSet.add(String(row[nameIdx]).trim());
+                    if (productIdx >= 0 && row[productIdx]) productSet.add(String(row[productIdx]).trim());
+                    if (processIdx >= 0 && row[processIdx]) processSet.add(String(row[processIdx]).trim());
+                });
+                
+                chartUniqueValues.name = Array.from(nameSet).sort();
+                chartUniqueValues.product = Array.from(productSet).sort();
+                chartUniqueValues.process = Array.from(processSet).sort();
+        }
+
+        function populateChartFilters() {
+                const dropdownName = document.getElementById('chartDropdownName');
+                const dropdownProduct = document.getElementById('chartDropdownProduct');
+                const dropdownProcess = document.getElementById('chartDropdownProcess');
+                
+                if (dropdownName) {
+                    dropdownName.innerHTML = '<option value="">Tüm İsimler</option>' + 
+                        chartUniqueValues.name.map(val => `<option value="${esc(val)}">${esc(val)}</option>`).join('');
+                }
+                if (dropdownProduct) {
+                    dropdownProduct.innerHTML = '<option value="">Tüm Ürünler</option>' + 
+                        chartUniqueValues.product.map(val => `<option value="${esc(val)}">${esc(val)}</option>`).join('');
+                }
+                if (dropdownProcess) {
+                    dropdownProcess.innerHTML = '<option value="">Tüm Prosesler</option>' + 
+                        chartUniqueValues.process.map(val => `<option value="${esc(val)}">${esc(val)}</option>`).join('');
+                }
+        }
+
+        function clearChartFilters() {
+                chartFilters = { name: '', product: '', process: '' };
+                document.getElementById('chartDateFrom').value = '';
+                document.getElementById('chartDateTo').value = '';
+                populateChartFilters();
+                createChart(document.querySelector('.chart-type-btn.active')?.dataset.chart || 'ok-nok');
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        //grafikler bitti////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
 
         let currentDurusPage = 1;       //duruşlar tablosu hazırlama fonksiyonu
         const durusRowsPerPage = 400;
@@ -1161,6 +1581,19 @@
                   document.getElementById(tabId).classList.add('active');
                   hideLoading();
               }, 100);
+              } else if (panelId === 'panel-3') {
+                showLoading('Grafikler Hazırlanıyor...');
+                setTimeout(() => {
+                    extractChartUniqueValues();
+                    populateChartFilters();
+                    createChart('ok-nok');
+                    topbar.classList.remove('hidden');
+                    document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+                    document.getElementById(panelId).classList.remove('hidden');
+                    document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                    hideLoading();
+                }, 100);
           } else {    // Diğer paneller için normal geçiş
             topbar.classList.remove('hidden');
             document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
@@ -1201,6 +1634,13 @@
             document.getElementById('dateTo').max = today;
             document.getElementById('durusDateFrom').max = today;
             document.getElementById('durusDateTo').max = today;
+        });
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('chart-type-btn')) {
+                document.querySelectorAll('.chart-type-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                createChart(e.target.dataset.chart);
+            }
         });
     </script>
 </body>
