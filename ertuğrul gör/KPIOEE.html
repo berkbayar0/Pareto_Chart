@@ -71,7 +71,7 @@
   <div class="topbar hidden" id="topbar">
     <button class="btn-tab active" id="tab-main"   data-target="panel-main">Ana Tablo</button>
     <button class="btn-tab"        id="tab-2"      data-target="panel-2">Duruş Süreleri Analizi</button>
-    <button class="btn-tab"        id="tab-3"      data-target="panel-3">Grafik Analizi</button>
+    <button class="btn-tab"        id="tab-3"      data-target="panel-3">OEE Analizi</button>
     <button class="btn-tab"        id="tab-4"      data-target="panel-4">Proses Analizi</button>
     <button class="btn-tab"        id="tab-5"      data-target="panel-5">Buton 5</button>
     <button class="btn-tab"        id="tab-6"      data-target="panel-6">Buton 6</button>
@@ -113,64 +113,94 @@
     <div id="durusPagination"></div>
     <div id="durusTableWrap" class="table-wrap"></div>
   </div>
-    <div id="panel-3"  class="panel hidden">
-        <div class="panel-title">Grafik Analizi</div>
-        <div class="info-bar">
-            <div class="chip" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-                <span>Tarih Aralığı:</span>
-                <input type="date" id="grafikDateFrom" max="" style="border: 1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
-                <span>-</span>
-                <input type="date" id="grafikDateTo" max="" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
-                <button id="grafikClearFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
+<div id="panel-3"  class="panel hidden">
+    <div class="panel-title">OEE Analizi</div>
+    <div class="info-bar">
+        <div class="chip" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+            <span>Tarih Aralığı:</span>
+            <input type="date" id="grafikDateFrom" max="" style="border: 1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Başlangıç">
+            <span>-</span>
+            <input type="date" id="grafikDateTo" max="" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
+            <button id="grafikClearFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
+        </div>
+    </div>
+    <div style="margin-top:15px;">
+        <!-- Sol Tablo - Toplam Üretim -->
+        <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-right:15px;min-width:200px;">
+            <h4 style="margin:0 0 12px 0;color:#374151;font-size:14px;font-weight:600;text-align:center;border-bottom:1px solid #f3f4f6;padding-bottom:8px;">Toplam Üretim</h4>
+            <div style="font-size:13px;line-height:1.6;">
+                <div style="display:flex;justify-content:space-between;padding:3px 0;">
+                    <span>OK Ürün:</span>
+                    <span id="grafikOkUrun" style="color:#059669;font-weight:500;">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;">
+                    <span>NOK Ürün:</span>
+                    <span id="grafikNokUrun" style="color:#dc2626;font-weight:500;">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #f3f4f6;margin-top:6px;padding-top:6px;">
+                    <span>Toplam:</span>
+                    <span id="grafikToplam" style="font-weight:600;">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;">
+                    <span>Verimlilik:</span>
+                    <span id="grafikVerimlilik" style="color:#2563eb;font-weight:500;">0%</span>
+                </div>
             </div>
         </div>
-        <div style="margin-top:15px;">
-            <!-- Sol Tablo - Toplam Üretim -->
-            <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-right:15px;min-width:200px;">
-                <h4 style="margin:0 0 12px 0;color:#374151;font-size:14px;font-weight:600;text-align:center;border-bottom:1px solid #f3f4f6;padding-bottom:8px;">Toplam Üretim</h4>
-                <div style="font-size:13px;line-height:1.6;">
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
-                        <span>OK Ürün:</span>
-                        <span id="grafikOkUrun" style="color:#059669;font-weight:500;">0</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
-                        <span>NOK Ürün:</span>
-                        <span id="grafikNokUrun" style="color:#dc2626;font-weight:500;">0</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #f3f4f6;margin-top:6px;padding-top:6px;">
-                        <span>Toplam:</span>
-                        <span id="grafikToplam" style="font-weight:600;">0</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
-                        <span>Verimlilik:</span>
-                        <span id="grafikVerimlilik" style="color:#2563eb;font-weight:500;">0%</span>
-                    </div>
+        
+        <!-- Sağ Tablo - Duruş Analizi -->
+        <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;min-width:280px;">
+            <h4 style="margin:0 0 12px 0;color:#374151;font-size:14px;font-weight:600;text-align:center;border-bottom:1px solid #f3f4f6;padding-bottom:8px;">Duruş Analizi</h4>
+            <div style="font-size:13px;line-height:1.6;">
+                <div style="display:flex;justify-content:space-between;padding:3px 0;">
+                    <span>Toplam Duruş:</span>
+                    <span id="grafikToplamDurus" style="color:#dc2626;font-weight:500;">0 dk (0dk)</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;">
+                    <span>Planlı Duruş:</span>
+                    <span id="grafikPlanliDurus" style="color:#f59e0b;font-weight:500;">0 dk (0dk)</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;">
+                    <span>Plansız Duruş:</span>
+                    <span id="grafikPlansizDurus" style="color:#dc2626;font-weight:500;">0 dk (0dk)</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #f3f4f6;margin-top:6px;padding-top:6px;">
+                    <span>Toplam Çalışılan(Net):</span>
+                    <span id="grafikToplamCalisma" style="color:#059669;font-weight:500;">0 dk (0dk)</span>
                 </div>
             </div>
-            <!-- Sağ Tablo - Duruş Analizi -->
-            <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;min-width:280px;">
-                <h4 style="margin:0 0 12px 0;color:#374151;font-size:14px;font-weight:600;text-align:center;border-bottom:1px solid #f3f4f6;padding-bottom:8px;">Duruş Analizi</h4>
-                <div style="font-size:13px;line-height:1.6;">
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
-                        <span>Toplam Duruş:</span>
-                        <span id="grafikToplamDurus" style="color:#dc2626;font-weight:500;">0 dk (0dk)</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
-                        <span>Planlı Duruş:</span>
-                        <span id="grafikPlanliDurus" style="color:#f59e0b;font-weight:500;">0 dk (0dk)</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
-                        <span>Plansız Duruş:</span>
-                        <span id="grafikPlansizDurus" style="color:#dc2626;font-weight:500;">0 dk (0dk)</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #f3f4f6;margin-top:6px;padding-top:6px;">
-                        <span>Toplam Çalışılan(Net):</span>
-                        <span id="grafikToplamCalisma" style="color:#059669;font-weight:500;">0 dk (0dk)</span>
-                    </div>
-                </div>
+        </div>
+        
+        <!-- Aylık Analiz Tablosu -->
+        <div style="margin-top:30px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
+                <span style="font-weight:600;color:#374151;">Yıl Seçimi:</span>
+                <select id="yilFiltresi" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:white;cursor:pointer;min-width:100px;">
+                    <option value="">Tüm Yıllar</option>
+                </select>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                <table id="aylikAnaliz" style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:left;">Ay</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Toplam Çalışılan Süre</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Planlanan Duruşlar</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Planlanan Duruş %</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Personel Kaynaklı Duruşlar</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Personel Duruş %</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Makine+Ekipman Duruşlar</th>
+                            <th style="padding:12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Makine+Ekipman %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="aylikAnalizBody">
+                        <!-- Buraya JavaScript ile satırlar eklenecek -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
   <div id="panel-4"  class="panel hidden"><div class="panel-title">Buton 4</div>
   <div>Buraya özelliğin gelecektir.</div></div>
   <div id="panel-5"  class="panel hidden"><div class="panel-title">Buton 5</div>
@@ -218,6 +248,8 @@
         const grafikClearFilter = document.getElementById('grafikClearFilter');
         const grafikDateFrom = document.getElementById('grafikDateFrom');
         const grafikDateTo = document.getElementById('grafikDateTo'); 
+        const yilFiltresi = document.getElementById('yilFiltresi');
+
 
 
         let allErrorRows = [];
@@ -462,6 +494,155 @@
             grafikDateFrom.value = '';
             grafikDateTo.value = '';
             calculateGrafikStats();
+        }
+        function populateYilFiltresi() {
+            if (!allSuccessRows.length) return;
+            
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            
+            if (dateColIndex < 0) return;
+            
+            const yillar = new Set();
+            
+            allSuccessRows.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length === 3) {
+                    yillar.add(dateParts[2]);
+                }
+            });
+            
+            const yilArray = Array.from(yillar).sort();
+            yilFiltresi.innerHTML = '<option value="">Tüm Yıllar</option>';
+            yilArray.forEach(yil => {
+                yilFiltresi.innerHTML += `<option value="${yil}">${yil}</option>`;
+            });
+        }
+
+        function createAylikAnaliz() {
+            if (!allSuccessRows.length) {
+                document.getElementById('aylikAnalizBody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>';
+                return;
+            }
+            
+            const secilenYil = yilFiltresi.value;
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            
+            if (dateColIndex < 0) return;
+            
+            // Ayları filtrele
+            let filteredRows = allSuccessRows;
+            if (secilenYil) {
+                filteredRows = allSuccessRows.filter(row => {
+                    const cellDate = String(row[dateColIndex] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    return dateParts.length === 3 && dateParts[2] === secilenYil;
+                });
+            }
+            
+            // Ay isimları
+            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            
+            // İndeksleri bul
+            const idxBaslamaSaat = findColIndex(currentHeader, ['baslama', 'saat']);
+            const idxBitisSaat = findColIndex(currentHeader, ['bitis', 'saat']);
+            const idxDurusSureleri = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            // Aylık veriler
+            const aylikData = {};
+            
+            // Her ayı başlat
+            for (let i = 1; i <= 12; i++) {
+                aylikData[i] = {
+                    toplamCalisma: 0,
+                    planlananDurus: 0,
+                    personelDurus: 0,
+                    makineEkipmanDurus: 0
+                };
+            }
+            
+            // Verileri işle
+            filteredRows.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length !== 3) return;
+                
+                const ay = parseInt(dateParts[1]);
+                if (ay < 1 || ay > 12) return;
+                
+                // Çalışma süresi hesapla
+                const startTime = row[idxBaslamaSaat] || '';
+                const endTime = row[idxBitisSaat] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
+                
+                // Duruş süreleri
+                const durusSureleriText = row[idxDurusSureleri] || '';
+                const durusMap = parseDurusSureleri(durusSureleriText);
+                
+                const kurulumSuresi = durusMap['D4'] || 0;
+                const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                const planlananDuruslar = kurulumSuresi + planliDurus;
+                
+                const personelKaynakliDuruslar = durusMap['D19'] || 0;
+                
+                const makinaArizasi = durusMap['D17'] || 0;
+                const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+                const makineEkipmanDuruslar = makinaArizasi + makineProgramDurus;
+                
+                aylikData[ay].toplamCalisma += workingTime.totalMinutes;
+                aylikData[ay].planlananDurus += planlananDuruslar;
+                aylikData[ay].personelDurus += personelKaynakliDuruslar;
+                aylikData[ay].makineEkipmanDurus += makineEkipmanDuruslar;
+            });
+            
+            // Tabloyu oluştur
+            let tbody = '';
+            for (let i = 1; i <= 12; i++) {
+                const data = aylikData[i];
+                
+                // Yüzdeler
+                const planlananYuzde = data.toplamCalisma > 0 ? ((data.planlananDurus / data.toplamCalisma) * 100).toFixed(1) : '0.0';
+                const personelYuzde = data.toplamCalisma > 0 ? ((data.personelDurus / data.toplamCalisma) * 100).toFixed(1) : '0.0';
+                const makineYuzde = data.toplamCalisma > 0 ? ((data.makineEkipmanDurus / data.toplamCalisma) * 100).toFixed(1) : '0.0';
+                
+                tbody += `
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;font-weight:500;">${aylar[i-1]}</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;">${formatAylikSure(data.toplamCalisma)}</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;">${formatAylikSure(data.planlananDurus)}</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;color:#f59e0b;font-weight:500;">${planlananYuzde}%</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;">${formatAylikSure(data.personelDurus)}</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;color:#dc2626;font-weight:500;">${personelYuzde}%</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;">${formatAylikSure(data.makineEkipmanDurus)}</td>
+                    <td style="padding:10px 12px;border:1px solid #e5e7eb;text-align:center;color:#dc2626;font-weight:500;">${makineYuzde}%</td>
+                </tr>`;
+            }
+            
+            document.getElementById('aylikAnalizBody').innerHTML = tbody;
+        }
+
+        function formatGunSaatDakika(dakika) {
+            if (dakika === 0) return '0g 0s 0dk';
+            
+            const gun = Math.floor(dakika / (24 * 60));
+            const saat = Math.floor((dakika % (24 * 60)) / 60);
+            const kalanDakika = dakika % 60;
+            
+            return `${gun}g ${saat}s ${kalanDakika}dk`;
+        }
+        function formatAylikSure(dakika) {
+            if (dakika === 0) return '0g 0s 0dk (0 dk)';
+            
+            const gun = Math.floor(dakika / (24 * 60));
+            const saat = Math.floor((dakika % (24 * 60)) / 60);
+            const kalanDakika = dakika % 60;
+            
+            return `${gun}g ${saat}s ${kalanDakika}dk (${dakika} dk)`;
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1360,9 +1541,11 @@
                   hideLoading();
               }, 100);
               } else if (panelId === 'panel-3') {
-                showLoading('Grafik Analizi Hazırlanıyor...');
+                showLoading('OEE Analizi Hazırlanıyor...');
                 setTimeout(() => {
                     calculateGrafikStats();
+                    populateYilFiltresi();
+                    createAylikAnaliz();
                     topbar.classList.remove('hidden');
                     document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
                     document.getElementById(panelId).classList.remove('hidden');
@@ -1429,6 +1612,8 @@
             document.getElementById('grafikDateFrom').max = today;
             document.getElementById('grafikDateTo').max = today;
         });
+        // Yıl filtresi event listener
+        yilFiltresi.addEventListener('change', createAylikAnaliz);
     </script>
 </body>
 </html>
