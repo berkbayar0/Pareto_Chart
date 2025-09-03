@@ -27,8 +27,8 @@
       overflow:auto; max-height:70vh; background:#fff;
     }
     .table-wrap table{border-collapse:collapse; font-size:13px; width:max-content; min-width:100%;table-layout: fixed;}
-    .table-wrap th, .table-wrap td{border:1px solid #e5e7eb; padding:6px 8px; white-space:normal;word-wrap: break-word;overflow-wrap: break-word;width: 8ch; min-width: 8ch;max-width: 8ch;}
-    .table-wrap th{background:#f3f6fb; position:sticky; top: 0px; z-index:1;padding: 6px 8px;}
+    .table-wrap th, .table-wrap td{border:1px solid #e5e7eb; padding:4px 8px; white-space:normal;word-wrap: break-word;overflow-wrap: break-word;width: 8ch; min-width: 8ch;max-width: 8ch;}
+    .table-wrap th{background:#f3f6fb; position:sticky; top: 0px; z-index:1;padding: 4px 8px;}
     .table-wrap tbody tr:hover {background-color: #f1f5f9 !important;cursor: pointer;}
     .table-wrap tbody tr.selected {background-color: #dbeafe !important;border-left: 3px solid var(--accent);}
     .table-wrap tbody tr.selected:hover {background-color: #bfdbfe !important;}
@@ -50,6 +50,17 @@
     .proses-btn:hover {border-color: var(--accent);background: #f0f9ff}
     .proses-btn.active {border-color: var(--accent);background: var(--accent);color: white;}
     .proses-section {margin-top: 15px;}
+    .multi-select-dropdown { position: relative; display: inline-block; }
+    .multi-select-button { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; background: white; cursor: pointer; min-width: 120px; max-width: 120px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .multi-select-button:hover { border-color: #9ca3af; }
+    .multi-select-dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 200px; max-width: 250px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); border: 1px solid #d1d5db; border-radius: 6px; z-index: 1000; max-height: 200px; overflow-y: auto; top: 100%; left: 0; }
+    .multi-select-dropdown-content.show { display: block; }
+    .multi-select-option { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+    .multi-select-option:hover { background-color: #f9fafb; }
+    .multi-select-option:last-child { border-bottom: none; }
+    .multi-select-checkbox { margin-right: 8px; cursor: pointer; }
+    .dropdown-arrow { margin-left: 8px; transition: transform 0.2s; }
+    .dropdown-arrow.open { transform: rotate(180deg); }
   </style>
 </head>
 <body>
@@ -219,9 +230,15 @@
             <select id="smdYilFiltresi" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:white;cursor:pointer;min-width:100px;">
                 <option value="">Tüm Yıllar</option>
             </select>
+            <button onclick="showReferansTabloPopup()" style="
+                padding: 6px 12px; background: #2563eb; color: white; border: none; 
+                border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+                margin-left: auto; display: flex; align-items: center; gap: 6px;
+            ">Referans Tablosu
+            </button>
         </div>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
-            <table id="smdAnalyzTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table id="smdAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">Ay</th>
@@ -266,11 +283,12 @@
         </div>
         
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
-            <table id="lensAnalyzTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table id="lensAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">Ay</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;">Hafta</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Ürün</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">OK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:90px;">Makinaya Giren</th>
@@ -307,11 +325,12 @@
             </select>
         </div>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
-            <table id="eolAnalyzTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table id="eolAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">Ay</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;">Hafta</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Ürün</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">OK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Toplam</th>
@@ -347,11 +366,12 @@
             </select>
         </div>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
-            <table id="sizdirmazlikAnalyzTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table id="sizdirmazlikAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">Ay</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;">Hafta</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Ürün</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">OK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">TOPLAM</th>
@@ -374,11 +394,12 @@
         </div>
         
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
-            <table id="lazerAnalyzTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table id="lazerAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">Ay</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;">Hafta</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Ürün</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">OK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Toplam</th>
@@ -399,11 +420,12 @@
             </select>
         </div>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
-            <table id="sonKontrolAnalyzTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table id="sonKontrolAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">Ay</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;">Hafta</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Ürün</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">OK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Toplam</th>
@@ -473,7 +495,7 @@
         let currentHeader = [];  // Header'ı saklamak için
         let currentFilters = {name: '',product: '',process: '',};       //filtreleme özellikleri
         let uniqueValues = {name: [],product: [],process: [],};
-        let currentDurusFilters = {name: '',product: '',process: ''};
+        let currentDurusFilters = {name: [],product: [],process: []};
         let durusUniqueValues = {name: [],product: [],process: []};
         const norm = s => String(s ?? '')
             .toLowerCase()
@@ -839,6 +861,116 @@
         let currentDurusPage = 1;       //duruşlar tablosu hazırlama fonksiyonu
         const durusRowsPerPage = 400;
 
+        function createMultiSelectDropdown(containerId, options, selectedValues, placeholder, onChangeCallback) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const selectedText = selectedValues.length === 0 ? placeholder : 
+                                 selectedValues.length === 1 ? selectedValues[0] :
+                                 `${selectedValues.length} seçildi`;
+            
+            container.innerHTML = `
+                <div class="multi-select-dropdown">
+                    <button type="button" class="multi-select-button" onclick="toggleMultiSelectDropdown('${containerId}')">
+                        <span class="selected-text">${selectedText}</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="multi-select-dropdown-content" id="${containerId}-content">
+                        ${options.map(option => `
+                            <div class="multi-select-option" onclick="toggleMultiSelectOption('${containerId}', '${option.replace(/'/g, "\\'")}')">
+                                <input type="checkbox" class="multi-select-checkbox" ${selectedValues.includes(option) ? 'checked' : ''}>
+                                <span>${option}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // Store callback function
+            container.dataset.callback = onChangeCallback.name;
+        }
+        
+        function toggleMultiSelectDropdown(containerId) {
+            const content = document.getElementById(containerId + '-content');
+            const arrow = document.querySelector(`#${containerId} .dropdown-arrow`);
+            
+            // Önce diğer tüm dropdown'ları kapat
+            document.querySelectorAll('.multi-select-dropdown-content').forEach(dropdown => {
+                if (dropdown.id !== containerId + '-content') {
+                    dropdown.classList.remove('show');
+                }
+            });
+            document.querySelectorAll('.dropdown-arrow').forEach(arr => {
+                if (arr !== arrow) {
+                    arr.classList.remove('open');
+                }
+            });
+            
+            // Bu dropdown'ı aç/kapat
+            content.classList.toggle('show');
+            arrow.classList.toggle('open');
+        }
+        
+        function toggleMultiSelectOption(containerId, option) {
+            const container = document.getElementById(containerId);
+            const checkbox = event.target.closest('.multi-select-option').querySelector('.multi-select-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            // Seçili değerleri güncelle
+            updateMultiSelectValues(containerId);
+            
+            // Callback'i çağır
+            const callbackName = container.dataset.callback;
+            if (window[callbackName]) {
+                window[callbackName]();
+            }
+        }
+        
+        function updateMultiSelectValues(containerId) {
+            const container = document.getElementById(containerId);
+            const checkboxes = container.querySelectorAll('.multi-select-checkbox');
+            const selectedValues = [];
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const optionText = checkbox.nextElementSibling.textContent;
+                    selectedValues.push(optionText);
+                }
+            });
+            
+            // Seçili değerleri filtrelere kaydet
+            if (containerId.includes('Name')) {
+                currentDurusFilters.name = selectedValues;
+            } else if (containerId.includes('Product')) {
+                currentDurusFilters.product = selectedValues;
+            } else if (containerId.includes('Process')) {
+                currentDurusFilters.process = selectedValues;
+            }
+            
+            // Button textini güncelle
+            const button = container.querySelector('.selected-text');
+            const placeholder = containerId.includes('Name') ? 'Tüm İsimler' :
+                               containerId.includes('Product') ? 'Tüm Ürünler' :
+                               'Tüm Prosesler';
+            
+            const selectedText = selectedValues.length === 0 ? placeholder :
+                                selectedValues.length === 1 ? selectedValues[0] :
+                                `${selectedValues.length} seçildi`;
+            button.textContent = selectedText;
+        }
+        
+        // Dropdown'ların dışına tıklandığında kapat
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.multi-select-dropdown')) {
+                document.querySelectorAll('.multi-select-dropdown-content').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+                document.querySelectorAll('.dropdown-arrow').forEach(arrow => {
+                    arrow.classList.remove('open');
+                });
+            }
+        });
+
         function createDurusAnalysisTable() {
             const headers = [
                 'ID', 'Name', 'Tarih', 'Ürün Adı', 'Proses Adı', 'OK Ürün', 'NOK Ürün', 'Çalışılan Süre (saat)',
@@ -873,18 +1005,9 @@
             <div style="position:sticky;top:0;z-index:10;padding:8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;background:#f8fafc;margin-bottom:8px;border-radius:8px;box-shadow:0 -1px 6px rgba(0,0,0,0.1);">
                 <div class="filter-section">
                     <span style="font-weight:500;font-size:12px;color:#374151;">Filtreler:</span>
-                    <select id="durusDropdownName" class="filter-dropdown">
-                        <option value="">Tüm İsimler</option>
-                        ${durusUniqueValues.name.map(val => `<option value="${esc(val)}" ${currentDurusFilters.name === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
-                    </select>
-                    <select id="durusDropdownProduct" class="filter-dropdown">
-                        <option value="">Tüm Ürünler</option>
-                        ${durusUniqueValues.product.map(val => `<option value="${esc(val)}" ${currentDurusFilters.product === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
-                    </select>
-                    <select id="durusDropdownProcess" class="filter-dropdown">
-                        <option value="">Tüm Prosesler</option>
-                        ${durusUniqueValues.process.map(val => `<option value="${esc(val)}" ${currentDurusFilters.process === val ? 'selected' : ''}>${esc(val)}</option>`).join('')}
-                    </select>
+                    <div id="durusDropdownName"></div>
+                    <div id="durusDropdownProduct"></div>
+                    <div id="durusDropdownProcess"></div>
                     <button class="clear-filters-btn" onclick="clearDurusFilters()">Temizle</button>
                 </div>
                 <div style="display:flex;align-items:center;">
@@ -1024,7 +1147,7 @@
             </tr>`;
             durusTableWrap.innerHTML = `<table>${colgroup}<thead><tr>${ths}</tr></thead><tbody>${tbody}</tbody></table>`;
             setTimeout(() => {
-            setupDurusFilterListeners();
+                setupDurusMultiSelectFilters();
             }, 10);
         }
         function goToDurusPage(page) {
@@ -1094,18 +1217,31 @@
             
             let filteredRows = allSuccessRows.filter(row => {
                 let matches = true;
-                if (currentDurusFilters.name && nameIdx >= 0) {
+                
+                // İsim filtresi - çoklu seçim
+                if (currentDurusFilters.name.length > 0 && nameIdx >= 0) {
                     const nameVal = String(row[nameIdx] || '').toLowerCase();
-                    matches = matches && nameVal.includes(currentDurusFilters.name.toLowerCase());
+                    matches = matches && currentDurusFilters.name.some(filterName => 
+                        nameVal.includes(filterName.toLowerCase())
+                    );
                 }
-                if (currentDurusFilters.product && productIdx >= 0) {
+                
+                // Ürün filtresi - çoklu seçim
+                if (currentDurusFilters.product.length > 0 && productIdx >= 0) {
                     const productVal = String(row[productIdx] || '').toLowerCase();
-                    matches = matches && productVal.includes(currentDurusFilters.product.toLowerCase());
+                    matches = matches && currentDurusFilters.product.some(filterProduct => 
+                        productVal.includes(filterProduct.toLowerCase())
+                    );
                 }
-                if (currentDurusFilters.process && processIdx >= 0) {
+                
+                // Proses filtresi - çoklu seçim
+                if (currentDurusFilters.process.length > 0 && processIdx >= 0) {
                     const processVal = String(row[processIdx] || '').toLowerCase();
-                    matches = matches && processVal.includes(currentDurusFilters.process.toLowerCase());
+                    matches = matches && currentDurusFilters.process.some(filterProcess => 
+                        processVal.includes(filterProcess.toLowerCase())
+                    );
                 }
+                
                 return matches;
             });
             const fromDate = durusDateFrom.value;
@@ -1138,37 +1274,41 @@
             createDurusAnalysisTable();
         }
         function clearDurusFilters() {
-            currentDurusFilters = { name: '', product: '', process: '' };
+            currentDurusFilters = { name: [], product: [], process: [] };
             durusDateFrom.value = '';
             durusDateTo.value = '';
             currentDurusPage = 1;
             window.filteredDurusRows = allSuccessRows;
             createDurusAnalysisTable();
         }
-        function setupDurusFilterListeners() {
-            const dropdownName = document.getElementById('durusDropdownName');
-            const dropdownProduct = document.getElementById('durusDropdownProduct');
-            const dropdownProcess = document.getElementById('durusDropdownProcess');
+        function setupDurusMultiSelectFilters() {
+            // Çoklu seçim dropdown'larını oluştur
+            createMultiSelectDropdown(
+                'durusDropdownName', 
+                durusUniqueValues.name, 
+                currentDurusFilters.name, 
+                'Tüm İsimler',
+                applyDurusFilters
+            );
             
-            if (dropdownName) {
-                dropdownName.addEventListener('change', (e) => {
-                currentDurusFilters.name = e.target.value;
-                applyDurusFilters();
-                });
-            }
-            if (dropdownProduct) {
-                dropdownProduct.addEventListener('change', (e) => {
-                currentDurusFilters.product = e.target.value;
-                applyDurusFilters();
-                });
-            }
-            if (dropdownProcess) {
-                dropdownProcess.addEventListener('change', (e) => {
-                currentDurusFilters.process = e.target.value;
-                applyDurusFilters();
-                });
-            }
+            createMultiSelectDropdown(
+                'durusDropdownProduct', 
+                durusUniqueValues.product, 
+                currentDurusFilters.product, 
+                'Tüm Ürünler',
+                applyDurusFilters
+            );
+            
+            createMultiSelectDropdown(
+                'durusDropdownProcess', 
+                durusUniqueValues.process, 
+                currentDurusFilters.process, 
+                'Tüm Prosesler',
+                applyDurusFilters
+            );
         }
+        window.applyDurusFilters = applyDurusFilters;
+
         function normalizeDateTimeCell(v){
             if (v instanceof Date && !isNaN(v)) {
                 return formatMDY_HHMMSS(v);
@@ -1346,6 +1486,207 @@
         const sizdirmazlikYilFiltresi = document.getElementById('sizdirmazlikYilFiltresi');
         const lazerYilFiltresi = document.getElementById('lazerYilFiltresi');
         const sonKontrolYilFiltresi = document.getElementById('sonKontrolYilFiltresi');
+        let referansTablosu = {
+            'DMS-BOT': { sure: 290, dizilenAdet: 92 },
+            'DMS-TOP': { sure: 245, dizilenAdet: 78 },
+            'SVC-BOT': { sure: 462, dizilenAdet: 75 },
+            'SVC-TOP': { sure: 275, dizilenAdet: 45 },
+            'TOFAŞ BOT': { sure: 815, dizilenAdet: 117 },
+            'TOFAŞ TOP': { sure: 906, dizilenAdet: 102 },
+            'FORD BOT': { sure: 0, dizilenAdet: 0 },
+            'FORD TOP': { sure: 0, dizilenAdet: 0 }
+        };
+
+        function showReferansTabloPopup() {
+            const popupHtml = `
+                <div id="referansPopup" style="
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.5); z-index: 10000; display: flex; 
+                    align-items: center; justify-content: center;
+                ">
+                    <div style="
+                        background: white; border-radius: 12px; padding: 20px; 
+                        max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px;">
+                            <h3 style="margin: 0; color: #374151; font-size: 18px; font-weight: 600;">Referans Tablosu Ayarları</h3>
+                            <button onclick="closeReferansPopup()" style="
+                                background: #ef4444; color: white; border: none; border-radius: 6px; 
+                                padding: 6px 12px; cursor: pointer; font-size: 14px; font-weight: 500;
+                            ">✕ Kapat</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="background: #f8fafc;">
+                                        <th style="padding: 10px; border: 1px solid #d1d5db; text-align: left; font-weight: 600;">Ürün Adı</th>
+                                        <th style="padding: 10px; border: 1px solid #d1d5db; text-align: center; font-weight: 600;">Süre (sn)</th>
+                                        <th style="padding: 10px; border: 1px solid #d1d5db; text-align: center; font-weight: 600;">Dizilen Adet</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="referansTableBody">
+                                    ${Object.entries(referansTablosu).map(([urun, values]) => `
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid #d1d5db; font-weight: 500;">${urun}</td>
+                                            <td style="padding: 8px; border: 1px solid #d1d5db; text-align: center;">
+                                                <input type="number" value="${values.sure}" 
+                                                       data-urun="${urun}" data-field="sure"
+                                                       style="width: 80px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center;">
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #d1d5db; text-align: center;">
+                                                <input type="number" value="${values.dizilenAdet}" 
+                                                       data-urun="${urun}" data-field="dizilenAdet"
+                                                       style="width: 80px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center;">
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                            <button onclick="resetReferansToDefaults()" style="
+                                background: #6b7280; color: white; border: none; border-radius: 6px; 
+                                padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
+                            ">🔄 Varsayılana Dön</button>
+                            <button onclick="saveReferansValues()" style="
+                                background: #059669; color: white; border: none; border-radius: 6px; 
+                                padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
+                            ">💾 Kaydet ve Uygula</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', popupHtml);
+        }
+
+        function closeReferansPopup() {
+            const popup = document.getElementById('referansPopup');
+            if (popup) popup.remove();
+        }
+
+        function resetReferansToDefaults() {
+            referansTablosu = {
+                'DMS-BOT': { sure: 290, dizilenAdet: 92 },
+                'DMS-TOP': { sure: 245, dizilenAdet: 78 },
+                'SVC-BOT': { sure: 462, dizilenAdet: 75 },
+                'SVC-TOP': { sure: 275, dizilenAdet: 45 },
+                'TOFAŞ BOT': { sure: 815, dizilenAdet: 117 },
+                'TOFAŞ TOP': { sure: 906, dizilenAdet: 102 },
+                'FORD BOT': { sure: 0, dizilenAdet: 0 },
+                'FORD TOP': { sure: 0, dizilenAdet: 0 }
+            };
+            
+            // Input'ları güncelle
+            document.querySelectorAll('#referansTableBody input').forEach(input => {
+                const urun = input.dataset.urun;
+                const field = input.dataset.field;
+                if (referansTablosu[urun]) {
+                    input.value = referansTablosu[urun][field];
+                }
+            });
+        }
+
+        function saveReferansValues() {
+            // Input değerlerini oku ve kaydet
+            document.querySelectorAll('#referansTableBody input').forEach(input => {
+                const urun = input.dataset.urun;
+                const field = input.dataset.field;
+                const value = parseInt(input.value) || 0;
+                
+                if (!referansTablosu[urun]) {
+                    referansTablosu[urun] = { sure: 0, dizilenAdet: 0 };
+                }
+                referansTablosu[urun][field] = value;
+            });
+            
+            // Popup'ı kapat
+            closeReferansPopup();
+            
+            // SMD tablosunu yeniden oluştur
+            createSmdAnalysisTable();
+            
+            // Başarı mesajı
+            alert('✅ Referans değerleri kaydedildi ve tablolar güncellendi!');
+        }
+
+        function calculateDizilenKompanent(fullProductName, dizilenAdet, fire) {
+            // Ürün adından referans tablosundaki key'i bul
+            let referansKey = null;
+            let referansDeger = 0;
+            
+            console.log('Aranan ürün:', fullProductName); // Debug için
+            console.log('Referans tablosu:', referansTablosu); // Debug için
+            
+            // Önce tam eşleşme ara
+            if (referansTablosu[fullProductName]) {
+                referansKey = fullProductName;
+                referansDeger = referansTablosu[referansKey].dizilenAdet;
+            } else {
+                // Eğer tam eşleşme yoksa, benzer eşleşme ara
+                const productUpper = fullProductName.toUpperCase();
+                console.log('Büyük harf ürün:', productUpper); // Debug için
+                
+                for (const key of Object.keys(referansTablosu)) {
+                    const keyUpper = key.toUpperCase();
+                    console.log('Kontrol edilen key:', keyUpper); // Debug için
+                    
+                    // Daha esnek eşleşme - parçalı eşleşme
+                    if (productUpper.includes('SVC') && keyUpper.includes('SVC')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    } else if (productUpper.includes('DMS') && keyUpper.includes('DMS')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    } else if (productUpper.includes('TOFAŞ') && keyUpper.includes('TOFAŞ')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    } else if (productUpper.includes('FORD') && keyUpper.includes('FORD')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansDeger = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!referansKey || referansDeger === 0) {
+                console.log('Referans bulunamadı için - döndürüyor'); // Debug için
+                return '-'; // Referans bulunamadı
+            }
+            
+            const dizilenKompanent = (dizilenAdet * referansDeger) + fire;
+            console.log(`Hesaplama: (${dizilenAdet} * ${referansDeger}) + ${fire} = ${dizilenKompanent}`); // Debug için
+            
+            return dizilenKompanent;
+        }
 
         function populateYilFiltresiForProses(selectElement) {
             if (!allSuccessRows.length) return;
@@ -1389,7 +1730,26 @@
         function getWeekNumber(date) {
             const d = new Date(date);
             d.setHours(0, 0, 0, 0);
-            const dayOfWeek = (d.getDay() + 6) % 7; // Pazartesi = 0, Pazar = 6
+            
+            // Ocak ayı özel durumu
+            if (d.getMonth() === 0) { // Ocak ayı
+                if (d.getDate() <= 7) { // Ocağın ilk 7 günü
+                    const firstDay = new Date(d.getFullYear(), 0, 1);
+                    const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
+                    const firstWeekEnd = new Date(firstDay.getTime() + (6 - firstDayOfWeek) * 86400000);
+                    
+                    if (d <= firstWeekEnd) {
+                        return 1; // W1
+                    }
+                }
+                const jan1 = new Date(d.getFullYear(), 0, 1);
+                const jan1DayOfWeek = (jan1.getDay() + 6) % 7;
+                const firstWeekEnd = new Date(jan1.getTime() + (6 - jan1DayOfWeek) * 86400000);
+                const daysSinceFirstWeekEnd = Math.floor((d.getTime() - firstWeekEnd.getTime()) / 86400000);
+                
+                return Math.floor(daysSinceFirstWeekEnd / 7) + 2; // W2'den başla
+            }
+            const dayOfWeek = (d.getDay() + 6) % 7;
             const target = new Date(d.getTime() - dayOfWeek * 86400000);
             
             const jan4 = new Date(target.getFullYear(), 0, 4);
@@ -1397,7 +1757,6 @@
             const firstWeekStart = new Date(jan4.getTime() - jan4DayOfWeek * 86400000);
             
             const weekNumber = Math.floor((target.getTime() - firstWeekStart.getTime()) / (7 * 86400000)) + 1;
-            
             return Math.max(1, weekNumber);
         }
         function getMonthWeeks(year, month) {
@@ -1409,13 +1768,40 @@
             let weekNumber = 1;
             let currentWeekStart = new Date(year, 0, 1);
             
-            const firstDayOfWeek = (currentWeekStart.getDay() + 6) % 7; // Pazartesi = 0
-            currentWeekStart.setDate(currentWeekStart.getDate() - firstDayOfWeek);
+            // Ocak ayı W1 için özel durum
+            if (month === 1) {
+                // Ocak W1: Ocağın ilk gününden o haftanın sonuna kadar
+                const firstDay = new Date(year, 0, 1); // 1 Ocak
+                const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // Pazartesi = 0
+                const firstWeekEnd = new Date(firstDay.getTime() + (6 - firstDayOfWeek) * 86400000);
+                
+                const startDay = String(firstDay.getDate()).padStart(2, '0');
+                const endDay = String(firstWeekEnd.getDate()).padStart(2, '0');
+                const shortRange = `(${startDay}-${endDay})`;
+                
+                weeks.push({
+                    weekNum: `W1`,
+                    startDate: firstDay.toLocaleDateString('tr-TR'),
+                    endDate: firstWeekEnd.toLocaleDateString('tr-TR'),
+                    range: `${firstDay.toLocaleDateString('tr-TR')} - ${firstWeekEnd.toLocaleDateString('tr-TR')}`,
+                    shortRange: shortRange,
+                    weekNumber: 1
+                });
+                
+                // W2'den itibaren normal hesaplama
+                currentWeekStart = new Date(firstWeekEnd.getTime() + 86400000); // Ertesi gün
+                weekNumber = 2;
+            } else {
+                // Diğer aylar için normal hesaplama
+                const firstDayOfWeek = (currentWeekStart.getDay() + 6) % 7; // Pazartesi = 0
+                currentWeekStart.setDate(currentWeekStart.getDate() - firstDayOfWeek);
+            }
             
             while (currentWeekStart <= yearEnd) {
                 const weekEnd = new Date(currentWeekStart.getTime() + 6 * 86400000);
                 const monthDayCounts = {};
                 
+                // Haftanın her günü için ay sayımı (başlangıç ve bitiş dahil)
                 for (let d = new Date(currentWeekStart); d <= weekEnd; d.setDate(d.getDate() + 1)) {
                     const monthIndex = d.getMonth() + 1; // 1-12
                     monthDayCounts[monthIndex] = (monthDayCounts[monthIndex] || 0) + 1;
@@ -1431,7 +1817,7 @@
                     }
                 });
                 
-                 if (majorityMonth === month && weekNumber <= 52) {
+                if (majorityMonth === month && weekNumber <= 52) {
                     const startDay = String(currentWeekStart.getDate()).padStart(2, '0');
                     const endDay = String(weekEnd.getDate()).padStart(2, '0');
                     const shortRange = `(${startDay}-${endDay})`;
@@ -1451,201 +1837,338 @@
             return weeks;
         }
         function createProsesAnalysisTable(tableBodyId, yilFiltresiElement, columnCount, prosesFilters = []) {
-            if (!allSuccessRows.length) {
-                document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>`;
-                return;
-            }
-            const secilenYil = yilFiltresiElement.value || new Date().getFullYear();
-            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
-                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-            const ayRenkleri = [
-                '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
-                '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
-            ];
-            const dateColIndex = currentHeader.findIndex(h => 
-                norm(h).includes('tarih') || norm(h).includes('date')
-            );
-            const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
-            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
-            const okIndex = findColIndex(currentHeader, ['ok']);
-            const nokIndex = findColIndex(currentHeader, ['hata', 'kod']); // NOK hesaplamak için
-            
-            if (dateColIndex < 0 || prosesAdiIndex < 0) {
-                document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Gerekli sütunlar bulunamadı</td></tr>`;
-                return;
-            }
-            
-            const filteredData = allSuccessRows.filter(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                return dateParts.length === 3 && dateParts[2] === String(secilenYil);
-            });
-            const prosesData = filteredData.filter(row => {
-                const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
-                return prosesFilters.some(filter => prosesAdi.includes(filter.toLowerCase()));
-            });
-            
-            const weeklyData = {};
-            
-            prosesData.forEach(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                if (dateParts.length !== 3) return;
-                
-                const tarih = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-                const weekNumber = getWeekNumber(tarih);
-                const ay = tarih.getMonth() + 1;
-                
-                const urunAdi = String(row[urunAdiIndex] || '');
-                const prosesAdi = String(row[prosesAdiIndex] || '');
-                const okUrun = parseInt(row[okIndex]) || 0;
-                
-                let nokUrun = 0;
-                if (nokIndex >= 0) {
-                    const hataKodlariText = row[nokIndex] || '';
-                    const hataMap = parseHataKodlari(hataKodlariText);
-                    nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
-                }
-                
-                const weekKey = `${ay}-${weekNumber}`;
-                const productKey = urunAdiIndex >= 0 ? `${urunAdi}-${prosesAdi}` : prosesAdi;
-                
-                if (!weeklyData[weekKey]) {
-                    weeklyData[weekKey] = {
-                        ay: ay,
-                        weekNumber: weekNumber,
-                        products: {}
-                    };
-                }
-                
-                if (!weeklyData[weekKey].products[productKey]) {
-                    weeklyData[weekKey].products[productKey] = {
-                        urunAdi: urunAdi,
-                        prosesAdi: prosesAdi,
-                        okUrun: 0,
-                        nokUrun: 0,
-                        toplamUrun: 0
-                    };
-                }
-                weeklyData[weekKey].products[productKey].okUrun += okUrun;
-                weeklyData[weekKey].products[productKey].nokUrun += nokUrun;
-                weeklyData[weekKey].products[productKey].toplamUrun += (okUrun + nokUrun);
-            });
-            
-            let tbody = '';
-            
-            for (let ay = 1; ay <= 12; ay++) {
-                const weeks = getMonthWeeks(parseInt(secilenYil), ay);
-                const ayRengi = ayRenkleri[ay - 1];
-                
-                if (weeks.length === 0) continue;
-                
-                let ayRowspanTotal = 0;
-                let ayWeeksData = [];
-                
-                weeks.forEach(week => {
-                    const weekKey = `${ay}-${week.weekNumber}`;
-                    const weekData = weeklyData[weekKey];
-                    
-                    if (weekData && Object.keys(weekData.products).length > 0) {
-                        const productCount = Object.keys(weekData.products).length;
-                        ayRowspanTotal += productCount;
-                        ayWeeksData.push({
-                            week: week,
-                            weekData: weekData,
-                            productCount: productCount
-                        });
-                    } else {
-                        ayRowspanTotal += 1;
-                        ayWeeksData.push({
-                            week: week,
-                            weekData: null,
-                            productCount: 1
-                        });
-                    }
-                });
-                
-                let ayFirstRow = true;
-                
-                ayWeeksData.forEach((weekInfo, weekIndex) => {
-                    const { week, weekData, productCount } = weekInfo;
-                    
-                    if (weekData && Object.keys(weekData.products).length > 0) {
-                        const products = Object.values(weekData.products);
-                        
-                        products.forEach((product, productIndex) => {
-                            const isFirstProductOfWeek = productIndex === 0;
-                            const weekRowspan = productCount;
-                            
-                            tbody += `<tr style="background-color:${ayRengi};">`;
-                            
-                            if (ayFirstRow) {
-                                tbody += `<td rowspan="${ayRowspanTotal}" style="padding:8px;border:1px solid #e5e7eb;text-align:center;background:${ayRengi};font-weight:600;vertical-align:middle;border-left:4px solid ${getDarkerColor(ayRengi)};">${aylar[ay-1]}</td>`;
-                                ayFirstRow = false;
-                            }
-                            if (isFirstProductOfWeek) {
-                                tbody += `<td rowspan="${weekRowspan}" style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-size:11px;white-space:nowrap;vertical-align:middle;">${week.weekNum} ${week.shortRange}</td>`;
-                            }
-                            if (urunAdiIndex >= 0 && product.urunAdi) {
-                                tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(product.urunAdi)}-${esc(product.prosesAdi)}</td>`;
-                                
-                                if (columnCount >= 4) tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                                if (columnCount >= 5) tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                                if (columnCount >= 6) tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`;
-                                
-                                const filledColumns = urunAdiIndex >= 0 ? (columnCount >= 6 ? 6 : columnCount >= 5 ? 5 : columnCount >= 4 ? 4 : 3) : 2;
-                                for (let i = filledColumns; i < columnCount; i++) {
-                                    tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                                }
-                            } else {
-                                if (columnCount >= 3) tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                                if (columnCount >= 4) tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                                if (columnCount >= 5) tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`;
-                                
-                                const filledColumns = columnCount >= 5 ? 5 : columnCount >= 4 ? 4 : columnCount >= 3 ? 3 : 2;
-                                for (let i = filledColumns; i < columnCount; i++) {
-                                    tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                                }
-                            }
-                            tbody += '</tr>';
-                        });
-                    } else {
-                        tbody += `<tr style="background-color:${ayRengi};">`;
-                        
-                        if (ayFirstRow) {
-                            tbody += `<td rowspan="${ayRowspanTotal}" style="padding:8px;border:1px solid #e5e7eb;text-align:center;background:${ayRengi};font-weight:600;vertical-align:middle;border-left:4px solid ${getDarkerColor(ayRengi)};">${aylar[ay-1]}</td>`;
-                            ayFirstRow = false;
-                        }
-                        
-                        tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;font-size:11px;white-space:nowrap;">${week.weekNum} ${week.shortRange}</td>`;
-                        
-                        for (let i = 2; i < columnCount; i++) {
-                            tbody += `<td style="padding:8px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                        }
-                        tbody += '</tr>';
-                    }
-                });
-            }
-            document.getElementById(tableBodyId).innerHTML = tbody;
+    if (!allSuccessRows.length) {
+        document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>`;
+        return;
+    }
+    const secilenYil = yilFiltresiElement.value || new Date().getFullYear();
+    const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    const ayRenkleri = [
+        '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
+        '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
+    ];
+    const dateColIndex = currentHeader.findIndex(h => 
+        norm(h).includes('tarih') || norm(h).includes('date')
+    );
+    const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
+    const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
+    const okIndex = findColIndex(currentHeader, ['ok']);
+    const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
+    const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+    const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+    const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
+    
+    if (dateColIndex < 0 || prosesAdiIndex < 0) {
+        document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Gerekli sütunlar bulunamadı</td></tr>`;
+        return;
+    }
+    
+    const filteredData = allSuccessRows.filter(row => {
+        const cellDate = String(row[dateColIndex] || '').trim();
+        const dateParts = cellDate.split('.');
+        return dateParts.length === 3 && dateParts[2] === String(secilenYil);
+    });
+    
+    // Proses filtresi uygula (sadece prosesFilters varsa)
+    const prosesData = prosesFilters.length > 0 ? 
+        filteredData.filter(row => {
+            const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
+            return prosesFilters.some(filter => prosesAdi.includes(filter.toLowerCase()));
+        }) : filteredData;
+    
+    const weeklyData = {};
+    
+    prosesData.forEach(row => {
+        const cellDate = String(row[dateColIndex] || '').trim();
+        const dateParts = cellDate.split('.');
+        if (dateParts.length !== 3) return;
+        
+        const tarih = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+        const weekNumber = getWeekNumber(tarih);
+        const ay = tarih.getMonth() + 1;
+        
+        const urunAdi = String(row[urunAdiIndex] || '');
+        const prosesAdi = String(row[prosesAdiIndex] || '');
+        const okUrun = parseInt(row[okIndex]) || 0;
+        
+        let nokUrun = 0;
+        if (nokIndex >= 0) {
+            const hataKodlariText = row[nokIndex] || '';
+            const hataMap = parseHataKodlari(hataKodlariText);
+            nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
         }
+        
+        // Süre hesaplaması
+        const startTime = row[baslamaSaatIndex] || '';
+        const endTime = row[bitisSaatIndex] || '';
+        const workingTime = calculateWorkingTime(startTime, endTime);
+        
+        // Duruş hesaplamaları
+        const durusSureleriText = row[durusSureleriIndex] || '';
+        const durusMap = parseDurusSureleri(durusSureleriText);
+        
+        // Duruş kodlarına göre süreleri hesapla
+        const kurulumSuresi = durusMap['D4'] || 0;
+        const makinaArizasi = durusMap['D17'] || 0;
+        const personelDurus = durusMap['D19'] || 0;
+        const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+        const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
+                            (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
+                            (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
+                            (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
+                            (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
+                            (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
+        const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+        const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
+        const netSure = workingTime.totalMinutes - toplamDurus;
+        
+        const weekKey = `${ay}-${weekNumber}`;
+        const productKey = urunAdiIndex >= 0 ? `${urunAdi}-${prosesAdi}` : prosesAdi;
+        
+        if (!weeklyData[weekKey]) {
+            weeklyData[weekKey] = {
+                ay: ay,
+                weekNumber: weekNumber,
+                products: {}
+            };
+        }
+        
+        if (!weeklyData[weekKey].products[productKey]) {
+            weeklyData[weekKey].products[productKey] = {
+                urunAdi: urunAdi,
+                prosesAdi: prosesAdi,
+                okUrun: 0,
+                nokUrun: 0,
+                toplamUrun: 0,
+                toplamSure: 0,
+                netSure: 0,
+                toplamDurus: 0,
+                plansizDurus: 0,
+                planliDurus: 0,
+                personelDurus: 0,
+                makinaArizasi: 0,
+                setupSuresi: 0,
+                makineProgramDurus: 0
+            };
+        }
+        
+        const product = weeklyData[weekKey].products[productKey];
+        product.okUrun += okUrun;
+        product.nokUrun += nokUrun;
+        product.toplamUrun += (okUrun + nokUrun);
+        product.toplamSure += workingTime.totalMinutes;
+        product.netSure += netSure;
+        product.toplamDurus += toplamDurus;
+        product.plansizDurus += plansizDurus;
+        product.planliDurus += planliDurus;
+        product.personelDurus += personelDurus;
+        product.makinaArizasi += makinaArizasi;
+        product.setupSuresi += kurulumSuresi;
+        product.makineProgramDurus += makineProgramDurus;
+    });
+    
+    let tbody = '';
+    
+    for (let ay = 1; ay <= 12; ay++) {
+        const weeks = getMonthWeeks(parseInt(secilenYil), ay);
+        const ayRengi = ayRenkleri[ay - 1];
+        
+        if (weeks.length === 0) continue;
+        
+        let ayRowspanTotal = 0;
+        let ayWeeksData = [];
+        
+        weeks.forEach(week => {
+            const weekKey = `${ay}-${week.weekNumber}`;
+            const weekData = weeklyData[weekKey];
+            
+            if (weekData && Object.keys(weekData.products).length > 0) {
+                // Sadece değeri 0'dan büyük olan ürünleri filtrele
+                const validProducts = Object.values(weekData.products).filter(product => 
+                    product.okUrun > 0 || product.nokUrun > 0
+                );
+                
+                if (validProducts.length > 0) {
+                    ayRowspanTotal += validProducts.length;
+                    ayWeeksData.push({
+                        week: week,
+                        weekData: { ...weekData, products: validProducts },
+                        productCount: validProducts.length
+                    });
+                }
+            }
+        });
+        
+        if (ayRowspanTotal === 0) continue;
+        
+        let ayFirstRow = true;
+        
+        ayWeeksData.forEach((weekInfo, weekIndex) => {
+            const { week, weekData, productCount } = weekInfo;
+            
+            if (weekData && weekData.products && weekData.products.length > 0) {
+                const products = weekData.products;
+                
+                products.forEach((product, productIndex) => {
+                    // Hafta kontrolü - tarih hafta aralığında mı?
+                    const prosesData = allSuccessRows.filter(row => {
+                        const cellDate = String(row[dateColIndex] || '').trim();
+                        const dateParts = cellDate.split('.');
+                        if (dateParts.length !== 3) return false;
+                        
+                        const tarih = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+                        const weekStart = new Date(week.startDate.split('.').reverse().join('-'));
+                        const weekEnd = new Date(week.endDate.split('.').reverse().join('-'));
+                        
+                        // Tarih hafta aralığında mı? (başlangıç ve bitiş dahil)
+                        return tarih >= weekStart && tarih <= weekEnd;
+                    });
+
+                    const isFirstProductOfWeek = productIndex === 0;
+                    const weekRowspan = productCount;
+                    
+                    tbody += `<tr style="background-color:${ayRengi};">`;
+                    
+                    if (ayFirstRow) {
+                        tbody += `<td rowspan="${ayRowspanTotal}" style="padding:4px;border:1px solid #e5e7eb;text-align:center;background:${ayRengi};font-weight:600;vertical-align:middle;border-left:4px solid ${getDarkerColor(ayRengi)};">${aylar[ay-1]}</td>`;
+                        ayFirstRow = false;
+                    }
+                    if (isFirstProductOfWeek) {
+                        tbody += `<td rowspan="${weekRowspan}" style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;white-space:nowrap;vertical-align:middle;">${week.weekNum} ${week.shortRange}</td>`;
+                    }
+                    
+                    if (tableBodyId === 'smdAnalyzBody') {
+                        // SMD Tablosu - Ürün adı ve proses adını birleştir
+                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                        const dizilenAdet = product.okUrun + product.nokUrun; // Toplam üretilen
+                        const fire = product.nokUrun; // Fire = NOK ürün
+                        const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
+                        
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${dizilenAdet}</td>`; // Dizilen Adet (OK + NOK)
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${fire}</td>`; // Fire (NOK)
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${dizilenKompanent}</td>`; // Dizilen Kompanent
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Dizilmesi Gereken Adet
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.plansizDurus} dk</td>`; // Plansız Duruş
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makineProgramDurus} dk</td>`; // Makina/Program Ayarı
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.setupSuresi} dk</td>`; // Setup
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
+                        // Kalan sütunlar için placeholder
+                        for (let i = 16; i < columnCount; i++) {
+                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;">-</td>`;
+                        }
+                    } else if (tableBodyId === 'lensAnalyzBody') {
+                        // LENS AA Tablosu - Ürün adı ve proses adını birleştir
+                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // Makinaya Giren
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Üretilmesi Gereken Adet
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.plansizDurus} dk</td>`; // Plansız Duruş
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
+                        // Kalan sütunlar
+                        for (let i = 14; i < columnCount; i++) {
+                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
+                        }
+                    } else if (tableBodyId === 'eolAnalyzBody') {
+                        // EOL Tablosu - Ürün adı ve proses adını birleştir
+                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`;
+                        const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
+                        // Kalan sütunlar
+                        for (let i = 7; i < columnCount; i++) {
+                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
+                        }
+                    } else if (tableBodyId === 'sizdirmazlikAnalyzBody') {
+                        // SIZDIRMAZLIK Tablosu - Ürün adı ve proses adını birleştir
+                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // TOPLAM
+                        const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
+                        // Kalan sütunlar
+                        for (let i = 7; i < columnCount; i++) {
+                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
+                        }
+                    } else if (tableBodyId === 'lazerAnalyzBody') {
+                        // LAZER Tablosu - Ürün adı ve proses adını birleştir
+                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // Toplam
+                        // Kalan sütunlar
+                        for (let i = 6; i < columnCount; i++) {
+                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
+                        }
+                    } else if (tableBodyId === 'sonKontrolAnalyzBody') {
+                        // SON KONTROL Tablosu - Ürün adı ve proses adını birleştir
+                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // Toplam
+                        // OK Oranı ve Hata Oranı
+                        const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                        const hataOrani = product.toplamUrun > 0 ? ((product.nokUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`; // Aylık Toplam
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${hataOrani}%</td>`;
+                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // Kalite Oranı
+                    }
+                    
+                    tbody += '</tr>';
+                });
+            }
+        });
+    }
+    
+    if (tbody === '') {
+        tbody = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Seçilen yıl için veri bulunamadı</td></tr>`;
+    }
+    
+    document.getElementById(tableBodyId).innerHTML = tbody;
+}
         function createSmdAnalysisTable() {
             createProsesAnalysisTable('smdAnalyzBody', smdYilFiltresi, 25, ['smd bot', 'smd top']);
         }
         function createLensAnalysisTable() {
-            createProsesAnalysisTable('lensAnalyzBody', lensYilFiltresi, 22, ['lens aa 2']);
+            createProsesAnalysisTable('lensAnalyzBody', lensYilFiltresi, 23, ['lens aa 2']);
         }
         function createEolAnalysisTable() {
-            createProsesAnalysisTable('eolAnalyzBody', eolYilFiltresi, 21); // EOL 21 sütun
+            createProsesAnalysisTable('eolAnalyzBody', eolYilFiltresi, 22, ['eol robot']); // EOL 21 sütun
         }
         function createSizdirmazlikAnalysisTable() {
-            createProsesAnalysisTable('sizdirmazlikAnalyzBody', sizdirmazlikYilFiltresi, 7); // SIZDIRMAZLIK 7 sütun
+            createProsesAnalysisTable('sizdirmazlikAnalyzBody', sizdirmazlikYilFiltresi, 8, ['sızdırmazlık']); // SIZDIRMAZLIK 7 sütun
         }
         function createLazerAnalysisTable() {
-            createProsesAnalysisTable('lazerAnalyzBody', lazerYilFiltresi, 6); // LAZER 6 sütun
+            createProsesAnalysisTable('lazerAnalyzBody', lazerYilFiltresi, 7, ['Lazer Markalama']); // LAZER 6 sütun
         }
         function createSonKontrolAnalysisTable() {
-            createProsesAnalysisTable('sonKontrolAnalyzBody', sonKontrolYilFiltresi, 9); // SON KONTROL 9 sütun
+            createProsesAnalysisTable('sonKontrolAnalyzBody', sonKontrolYilFiltresi, 10, ['Son Kontrol']); // SON KONTROL 9 sütun
         }
+        window.showReferansTabloPopup = showReferansTabloPopup;
+        window.closeReferansPopup = closeReferansPopup;
+        window.resetReferansToDefaults = resetReferansToDefaults;
+        window.saveReferansValues = saveReferansValues;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1917,27 +2440,34 @@
             const id = row[idxID] || '';
             const name = row[idxName] || '';
             
+            let tarih = row[idxDate] || '';
+            
             if (idxDate >= 0) {
                 const dv = row[idxDate];
-                let normalizedDate = '';
                 if (dv instanceof Date && !isNaN(dv)) {
-                    normalizedDate = dv.toLocaleDateString('tr-TR');
-                } else if (typeof dv === 'number' && isFinite(dv)) {
-                    normalizedDate = excelDateToJSDate(dv).toLocaleDateString('tr-TR');
+                    tarih = dv.toLocaleDateString('tr-TR');
+                } else if (typeof dv === 'number' && isFinite(dv) && dv > 1) {
+                    // Excel serial date (45369 gibi)
+                    const jsDate = excelDateToJSDate(dv);
+                    const day = String(jsDate.getDate()).padStart(2, '0');
+                    const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+                    const year = jsDate.getFullYear();
+                    tarih = `${day}.${month}.${year}`;
+                } else if (typeof dv === 'string' && dv.trim()) {
+                    // String tarih formatını kontrol et ve düzelt
+                    const cleanDate = dv.trim();
+                    if (/^\d+$/.test(cleanDate)) {
+                        // Sadece sayı ise Excel serial date olarak işle
+                        const jsDate = excelDateToJSDate(parseInt(cleanDate));
+                        const day = String(jsDate.getDate()).padStart(2, '0');
+                        const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+                        const year = jsDate.getFullYear();
+                        tarih = `${day}.${month}.${year}`;
+                    } else {
+                        tarih = cleanDate;
+                    }
                 } else {
-                    normalizedDate = String(dv || '');
-                }
-                
-                if (!isValidDateFormat(normalizedDate)) {
-                    errors.push({
-                        rowNumber: rowIndex + 2, // Excel satır numarası (header + 1-based)
-                        id: id,
-                        name: name,
-                        column: header[idxDate] || 'Tarih',
-                        cellValue: String(dv || ''),
-                        errorType: 'Geçersiz Tarih Formatı',
-                        errorDetail: 'Tarih formatı DD.MM.YYYY olmalıdır'
-                    });
+                    tarih = String(dv || '');
                 }
             }
             [idxStart, idxEnd].forEach(i => {
@@ -1948,6 +2478,7 @@
                         rowNumber: rowIndex + 2,
                         id: id,
                         name: name,
+                        tarih: tarih,
                         column: header[i] || 'Zaman',
                         cellValue: String(row[i] || ''),
                         errorType: 'Geçersiz Zaman Formatı',
@@ -1963,6 +2494,7 @@
                         rowNumber: rowIndex + 2,
                         id: id,
                         name: name,
+                        tarih: tarih,
                         column: header[i] || 'Saat',
                         cellValue: String(row[i] || ''),
                         errorType: 'Geçersiz Saat Formatı',
@@ -1978,6 +2510,7 @@
                         rowNumber: rowIndex + 2,
                         id: id,
                         name: name,
+                        tarih: tarih,
                         column: header[idxHata] || 'Hata Kodları',
                         cellValue: hataText,
                         errorType: 'Geçersiz Hata Kodu',
@@ -1995,6 +2528,7 @@
                         rowNumber: rowIndex + 2,
                         id: id,
                         name: name,
+                        tarih: tarih,
                         column: header[idxDurus] || 'Duruş Kodları',
                         cellValue: durusText,
                         errorType: 'Geçersiz Duruş Kodu',
@@ -2156,8 +2690,8 @@
             }
             const displayErrors = detailedErrorRows;
 
-            const headers = ['Satır', 'ID', 'İsim', 'Hatanın bulunduğu Sütun Adı', 'Hatalı Değer', 'Hata Türü', 'Açıklama'];
-            const columnWidths = ['5ch', '8ch', '20ch', '15ch', '20ch', '15ch', '30ch'];
+            const headers = ['Satır', 'ID', 'İsim', 'Tarih', 'Hatanın bulunduğu Sütun Adı', 'Hatalı Değer', 'Hata Türü', 'Açıklama'];
+            const columnWidths = ['5ch', '8ch', '20ch', '12ch', '15ch', '20ch', '15ch', '30ch'];
             const colgroup = '<colgroup>' + columnWidths.map(width => `<col style="width:${width}">`).join('') + '</colgroup>';
             const ths = headers.map(h => `<th style="padding:8px;background:#fef2f2;border:1px solid #fecaca;font-weight:600;text-align:left;font-size:12px;">${h}</th>`).join('');
             
@@ -2177,6 +2711,7 @@
                     <td style="padding:6px 8px;border:1px solid #fecaca;font-weight:600;font-size:11px;">${error.rowNumber}</td>
                     <td style="padding:6px 8px;border:1px solid #fecaca;font-size:11px;">${esc(error.id)}</td>
                     <td style="padding:6px 8px;border:1px solid #fecaca;font-size:11px;">${esc(error.name)}</td>
+                    <td style="padding:6px 8px;border:1px solid #fecaca;font-size:11px;">${esc(error.tarih)}</td>
                     <td style="padding:6px 8px;border:1px solid #fecaca;font-weight:500;font-size:11px;">${esc(error.column)}</td>
                     <td style="padding:6px 8px;border:1px solid #fecaca;font-family:monospace;background:#fef1f1;font-size:10px;word-break:break-all;max-width:150px;overflow:hidden;text-overflow:ellipsis;">${esc(String(error.cellValue).substring(0, 50))}</td>
                     <td style="padding:6px 8px;border:1px solid #fecaca;color:${errorTypeColor};font-weight:600;font-size:11px;">${esc(error.errorType)}</td>
