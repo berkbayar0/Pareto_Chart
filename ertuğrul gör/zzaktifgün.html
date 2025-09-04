@@ -22,10 +22,7 @@
     .btn-tab.active{border-color:var(--accent); background:#e0ecff}
     .panel{background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px}
     .panel-title{font-weight:700; margin:4px 0 10px; color:#0f172a}
-    .table-wrap{
-      margin-top:8px; border:1px solid var(--border); border-radius:8px;
-      overflow:auto; max-height:70vh; background:#fff;
-    }
+    .table-wrap{margin-top:8px; border:1px solid var(--border); border-radius:8px;overflow:auto; max-height:70vh; background:#fff;}
     .table-wrap table{border-collapse:collapse; font-size:13px; width:max-content; min-width:100%;table-layout: fixed;}
     .table-wrap th, .table-wrap td{border:1px solid #e5e7eb; padding:4px 8px; white-space:normal;word-wrap: break-word;overflow-wrap: break-word;width: 8ch; min-width: 8ch;max-width: 8ch;}
     .table-wrap th{background:#f3f6fb; position:sticky; top: 0px; z-index:1;padding: 4px 8px;}
@@ -234,7 +231,7 @@
                 padding: 6px 12px; background: #2563eb; color: white; border: none; 
                 border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
                 margin-left: auto; display: flex; align-items: center; gap: 6px;
-            ">Referans Tablosu
+            ">📋Referans Tablosu
             </button>
         </div>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
@@ -1510,11 +1507,11 @@
                         box-shadow: 0 8px 32px rgba(0,0,0,0.3);
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px;">
-                            <h3 style="margin: 0; color: #374151; font-size: 18px; font-weight: 600;">Referans Tablosu Ayarları</h3>
+                            <h3 style="margin: 0; color: #374151; font-size: 18px; font-weight: 600;">⚡Referans Tablosu Değerleri</h3>
                             <button onclick="closeReferansPopup()" style="
                                 background: #ef4444; color: white; border: none; border-radius: 6px; 
                                 padding: 6px 12px; cursor: pointer; font-size: 14px; font-weight: 500;
-                            ">✕ Kapat</button>
+                            ">✕</button>
                         </div>
                         <div style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
@@ -1548,11 +1545,11 @@
                             <button onclick="resetReferansToDefaults()" style="
                                 background: #6b7280; color: white; border: none; border-radius: 6px; 
                                 padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
-                            ">🔄 Varsayılana Dön</button>
+                            ">Varsayılana Dön</button>
                             <button onclick="saveReferansValues()" style="
                                 background: #059669; color: white; border: none; border-radius: 6px; 
                                 padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
-                            ">💾 Kaydet ve Uygula</button>
+                            ">Kaydet ve Uygula</button>
                         </div>
                     </div>
                 </div>
@@ -1606,9 +1603,6 @@
             
             // SMD tablosunu yeniden oluştur
             createSmdAnalysisTable();
-            
-            // Başarı mesajı
-            alert('✅ Referans değerleri kaydedildi ve tablolar güncellendi!');
         }
 
         function calculateDizilenKompanent(fullProductName, dizilenAdet, fire) {
@@ -1837,316 +1831,557 @@
             return weeks;
         }
         function createProsesAnalysisTable(tableBodyId, yilFiltresiElement, columnCount, prosesFilters = []) {
-    if (!allSuccessRows.length) {
-        document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>`;
-        return;
-    }
-    const secilenYil = yilFiltresiElement.value || new Date().getFullYear();
-    const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
-                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-    const ayRenkleri = [
-        '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
-        '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
-    ];
-    const dateColIndex = currentHeader.findIndex(h => 
-        norm(h).includes('tarih') || norm(h).includes('date')
-    );
-    const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
-    const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
-    const okIndex = findColIndex(currentHeader, ['ok']);
-    const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
-    const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
-    const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
-    const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
-    
-    if (dateColIndex < 0 || prosesAdiIndex < 0) {
-        document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Gerekli sütunlar bulunamadı</td></tr>`;
-        return;
-    }
-    
-    const filteredData = allSuccessRows.filter(row => {
-        const cellDate = String(row[dateColIndex] || '').trim();
-        const dateParts = cellDate.split('.');
-        return dateParts.length === 3 && dateParts[2] === String(secilenYil);
-    });
-    
-    // Proses filtresi uygula (sadece prosesFilters varsa)
-    const prosesData = prosesFilters.length > 0 ? 
-        filteredData.filter(row => {
-            const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
-            return prosesFilters.some(filter => prosesAdi.includes(filter.toLowerCase()));
-        }) : filteredData;
-    
-    const weeklyData = {};
-    
-    prosesData.forEach(row => {
-        const cellDate = String(row[dateColIndex] || '').trim();
-        const dateParts = cellDate.split('.');
-        if (dateParts.length !== 3) return;
-        
-        const tarih = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-        const weekNumber = getWeekNumber(tarih);
-        const ay = tarih.getMonth() + 1;
-        
-        const urunAdi = String(row[urunAdiIndex] || '');
-        const prosesAdi = String(row[prosesAdiIndex] || '');
-        const okUrun = parseInt(row[okIndex]) || 0;
-        
-        let nokUrun = 0;
-        if (nokIndex >= 0) {
-            const hataKodlariText = row[nokIndex] || '';
-            const hataMap = parseHataKodlari(hataKodlariText);
-            nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
-        }
-        
-        // Süre hesaplaması
-        const startTime = row[baslamaSaatIndex] || '';
-        const endTime = row[bitisSaatIndex] || '';
-        const workingTime = calculateWorkingTime(startTime, endTime);
-        
-        // Duruş hesaplamaları
-        const durusSureleriText = row[durusSureleriIndex] || '';
-        const durusMap = parseDurusSureleri(durusSureleriText);
-        
-        // Duruş kodlarına göre süreleri hesapla
-        const kurulumSuresi = durusMap['D4'] || 0;
-        const makinaArizasi = durusMap['D17'] || 0;
-        const personelDurus = durusMap['D19'] || 0;
-        const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
-        const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
-                            (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
-                            (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
-                            (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
-                            (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
-                            (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
-        const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
-        const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
-        const netSure = workingTime.totalMinutes - toplamDurus;
-        
-        const weekKey = `${ay}-${weekNumber}`;
-        const productKey = urunAdiIndex >= 0 ? `${urunAdi}-${prosesAdi}` : prosesAdi;
-        
-        if (!weeklyData[weekKey]) {
-            weeklyData[weekKey] = {
-                ay: ay,
-                weekNumber: weekNumber,
-                products: {}
-            };
-        }
-        
-        if (!weeklyData[weekKey].products[productKey]) {
-            weeklyData[weekKey].products[productKey] = {
-                urunAdi: urunAdi,
-                prosesAdi: prosesAdi,
-                okUrun: 0,
-                nokUrun: 0,
-                toplamUrun: 0,
-                toplamSure: 0,
-                netSure: 0,
-                toplamDurus: 0,
-                plansizDurus: 0,
-                planliDurus: 0,
-                personelDurus: 0,
-                makinaArizasi: 0,
-                setupSuresi: 0,
-                makineProgramDurus: 0
-            };
-        }
-        
-        const product = weeklyData[weekKey].products[productKey];
-        product.okUrun += okUrun;
-        product.nokUrun += nokUrun;
-        product.toplamUrun += (okUrun + nokUrun);
-        product.toplamSure += workingTime.totalMinutes;
-        product.netSure += netSure;
-        product.toplamDurus += toplamDurus;
-        product.plansizDurus += plansizDurus;
-        product.planliDurus += planliDurus;
-        product.personelDurus += personelDurus;
-        product.makinaArizasi += makinaArizasi;
-        product.setupSuresi += kurulumSuresi;
-        product.makineProgramDurus += makineProgramDurus;
-    });
-    
-    let tbody = '';
-    
-    for (let ay = 1; ay <= 12; ay++) {
-        const weeks = getMonthWeeks(parseInt(secilenYil), ay);
-        const ayRengi = ayRenkleri[ay - 1];
-        
-        if (weeks.length === 0) continue;
-        
-        let ayRowspanTotal = 0;
-        let ayWeeksData = [];
-        
-        weeks.forEach(week => {
-            const weekKey = `${ay}-${week.weekNumber}`;
-            const weekData = weeklyData[weekKey];
-            
-            if (weekData && Object.keys(weekData.products).length > 0) {
-                // Sadece değeri 0'dan büyük olan ürünleri filtrele
-                const validProducts = Object.values(weekData.products).filter(product => 
-                    product.okUrun > 0 || product.nokUrun > 0
-                );
-                
-                if (validProducts.length > 0) {
-                    ayRowspanTotal += validProducts.length;
-                    ayWeeksData.push({
-                        week: week,
-                        weekData: { ...weekData, products: validProducts },
-                        productCount: validProducts.length
-                    });
-                }
+            if (!allSuccessRows.length) {
+                document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>`;
+                return;
             }
-        });
-        
-        if (ayRowspanTotal === 0) continue;
-        
-        let ayFirstRow = true;
-        
-        ayWeeksData.forEach((weekInfo, weekIndex) => {
-            const { week, weekData, productCount } = weekInfo;
+            const secilenYil = yilFiltresiElement.value || new Date().getFullYear();
+            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            const ayRenkleri = [
+                '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
+                '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
+            ];
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
+            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
+            const okIndex = findColIndex(currentHeader, ['ok']);
+            const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
+            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
             
-            if (weekData && weekData.products && weekData.products.length > 0) {
-                const products = weekData.products;
+            if (dateColIndex < 0 || prosesAdiIndex < 0) {
+                document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Gerekli sütunlar bulunamadı</td></tr>`;
+                return;
+            }
+            
+            const filteredData = allSuccessRows.filter(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                return dateParts.length === 3 && dateParts[2] === String(secilenYil);
+            });
+            
+            // Proses filtresi uygula (sadece prosesFilters varsa)
+            const prosesData = prosesFilters.length > 0 ? 
+                filteredData.filter(row => {
+                    const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
+                    return prosesFilters.some(filter => prosesAdi.includes(filter.toLowerCase()));
+                }) : filteredData;
+            
+            const weeklyData = {};
+            
+            prosesData.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length !== 3) return;
+                    
+                const tarih = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+                const ay = tarih.getMonth() + 1;
                 
-                products.forEach((product, productIndex) => {
-                    // Hafta kontrolü - tarih hafta aralığında mı?
-                    const prosesData = allSuccessRows.filter(row => {
-                        const cellDate = String(row[dateColIndex] || '').trim();
-                        const dateParts = cellDate.split('.');
-                        if (dateParts.length !== 3) return false;
-                        
-                        const tarih = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-                        const weekStart = new Date(week.startDate.split('.').reverse().join('-'));
-                        const weekEnd = new Date(week.endDate.split('.').reverse().join('-'));
-                        
-                        // Tarih hafta aralığında mı? (başlangıç ve bitiş dahil)
-                        return tarih >= weekStart && tarih <= weekEnd;
-                    });
-
-                    const isFirstProductOfWeek = productIndex === 0;
-                    const weekRowspan = productCount;
+                // *** Hafta kontrolünü değiştir - doğrudan aralık kontrolü yap ***
+                const weeks = getMonthWeeks(parseInt(secilenYil), ay);
+                let matchedWeek = null;
+                
+                // Tarih hangi hafta aralığına giriyor?
+                for (const week of weeks) {
+                    const weekStartParts = week.startDate.split('.');
+                    const weekEndParts = week.endDate.split('.');
                     
-                    tbody += `<tr style="background-color:${ayRengi};">`;
+                    const weekStart = new Date(
+                        parseInt(weekStartParts[2]), 
+                        parseInt(weekStartParts[1]) - 1, 
+                        parseInt(weekStartParts[0])
+                    );
+                    const weekEnd = new Date(
+                        parseInt(weekEndParts[2]), 
+                        parseInt(weekEndParts[1]) - 1, 
+                        parseInt(weekEndParts[0])
+                    );
                     
-                    if (ayFirstRow) {
-                        tbody += `<td rowspan="${ayRowspanTotal}" style="padding:4px;border:1px solid #e5e7eb;text-align:center;background:${ayRengi};font-weight:600;vertical-align:middle;border-left:4px solid ${getDarkerColor(ayRengi)};">${aylar[ay-1]}</td>`;
-                        ayFirstRow = false;
+                    // Tarih hafta aralığında mı? (başlangıç ve bitiş dahil)
+                    if (tarih >= weekStart && tarih <= weekEnd) {
+                        matchedWeek = week;
+                        break;
                     }
-                    if (isFirstProductOfWeek) {
-                        tbody += `<td rowspan="${weekRowspan}" style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;white-space:nowrap;vertical-align:middle;">${week.weekNum} ${week.shortRange}</td>`;
-                    }
+                }
+                
+                if (!matchedWeek) {
+                    console.log(`Tarih ${cellDate} hiçbir hafta aralığına girmiyor (Ay: ${ay})`);
+                    return; // Bu tarih hiçbir hafta aralığına girmiyor
+                }
+                
+                console.log(`Tarih ${cellDate} → ${matchedWeek.weekNum} ${matchedWeek.shortRange} aralığına giriyor`);
                     
-                    if (tableBodyId === 'smdAnalyzBody') {
-                        // SMD Tablosu - Ürün adı ve proses adını birleştir
-                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                        const dizilenAdet = product.okUrun + product.nokUrun; // Toplam üretilen
-                        const fire = product.nokUrun; // Fire = NOK ürün
-                        const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
+                const urunAdi = String(row[urunAdiIndex] || '');
+                const prosesAdi = String(row[prosesAdiIndex] || '');
+                const okUrun = parseInt(row[okIndex]) || 0;
+                
+                // ... geri kalan kod aynı kalacak ...
+                
+                const weekKey = `${ay}-${matchedWeek.weekNumber}`;
+                const productKey = urunAdiIndex >= 0 ? `${urunAdi}-${prosesAdi}` : prosesAdi;
+                
+                if (!weeklyData[weekKey]) {
+                    weeklyData[weekKey] = {
+                        ay: ay,
+                        weekNumber: matchedWeek.weekNumber,
+                        products: {}
+                    };
+                }
+                
+                let nokUrun = 0;
+                if (nokIndex >= 0) {
+                    const hataKodlariText = row[nokIndex] || '';
+                    const hataMap = parseHataKodlari(hataKodlariText);
+                    nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
+                }
+                
+                // Süre hesaplaması
+                const startTime = row[baslamaSaatIndex] || '';
+                const endTime = row[bitisSaatIndex] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
+                
+                // Duruş hesaplamaları
+                const durusSureleriText = row[durusSureleriIndex] || '';
+                const durusMap = parseDurusSureleri(durusSureleriText);
+                
+                // Duruş kodlarına göre süreleri hesapla
+                const kurulumSuresi = durusMap['D4'] || 0;
+                const makinaArizasi = durusMap['D17'] || 0;
+                const personelDurus = durusMap['D19'] || 0;
+                const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
+                                    (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
+                                    (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
+                                    (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
+                                    (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
+                                    (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
+                const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+                const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
+                const netSure = workingTime.totalMinutes - toplamDurus;
+                
+                if (!weeklyData[weekKey]) {
+                    weeklyData[weekKey] = {
+                        ay: ay,
+                        weekNumber: weekNumber,
+                        products: {}
+                    };
+                }
+                
+                if (!weeklyData[weekKey].products[productKey]) {
+                    weeklyData[weekKey].products[productKey] = {
+                        urunAdi: urunAdi,
+                        prosesAdi: prosesAdi,
+                        okUrun: 0,
+                        nokUrun: 0,
+                        toplamUrun: 0,
+                        toplamSure: 0,
+                        netSure: 0,
+                        toplamDurus: 0,
+                        plansizDurus: 0,
+                        planliDurus: 0,
+                        personelDurus: 0,
+                        makinaArizasi: 0,
+                        setupSuresi: 0,
+                        makineProgramDurus: 0
+                    };
+                }
+                
+                const product = weeklyData[weekKey].products[productKey];
+                product.okUrun += okUrun;
+                product.nokUrun += nokUrun;
+                product.toplamUrun += (okUrun + nokUrun);
+                product.toplamSure += workingTime.totalMinutes;
+                product.netSure += netSure;
+                product.toplamDurus += toplamDurus;
+                product.plansizDurus += plansizDurus;
+                product.planliDurus += planliDurus;
+                product.personelDurus += personelDurus;
+                product.makinaArizasi += makinaArizasi;
+                product.setupSuresi += kurulumSuresi;
+                product.makineProgramDurus += makineProgramDurus;
+            });
+            
+            let tbody = '';
+            
+            for (let ay = 1; ay <= 12; ay++) {
+                const weeks = getMonthWeeks(parseInt(secilenYil), ay);
+                const ayRengi = ayRenkleri[ay - 1];
+                
+                if (weeks.length === 0) continue;
+                
+                let ayRowspanTotal = 0;
+                let ayWeeksData = [];
+                
+                weeks.forEach(week => {
+                    const weekKey = `${ay}-${week.weekNumber}`;
+                    const weekData = weeklyData[weekKey];
+                    
+                    if (weekData && Object.keys(weekData.products).length > 0) {
+                        // Sadece değeri 0'dan büyük olan ürünleri filtrele
+                        const validProducts = Object.values(weekData.products).filter(product => 
+                            product.okUrun > 0 || product.nokUrun > 0
+                        );
                         
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${dizilenAdet}</td>`; // Dizilen Adet (OK + NOK)
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${fire}</td>`; // Fire (NOK)
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${dizilenKompanent}</td>`; // Dizilen Kompanent
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Dizilmesi Gereken Adet
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.plansizDurus} dk</td>`; // Plansız Duruş
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makineProgramDurus} dk</td>`; // Makina/Program Ayarı
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.setupSuresi} dk</td>`; // Setup
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
-                        // Kalan sütunlar için placeholder
-                        for (let i = 16; i < columnCount; i++) {
-                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;">-</td>`;
+                        if (validProducts.length > 0) {
+                            ayRowspanTotal += validProducts.length;
+                            ayWeeksData.push({
+                                week: week,
+                                weekData: { ...weekData, products: validProducts },
+                                productCount: validProducts.length
+                            });
                         }
-                    } else if (tableBodyId === 'lensAnalyzBody') {
-                        // LENS AA Tablosu - Ürün adı ve proses adını birleştir
-                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // Makinaya Giren
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Üretilmesi Gereken Adet
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.plansizDurus} dk</td>`; // Plansız Duruş
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
-                        // Kalan sütunlar
-                        for (let i = 14; i < columnCount; i++) {
-                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                        }
-                    } else if (tableBodyId === 'eolAnalyzBody') {
-                        // EOL Tablosu - Ürün adı ve proses adını birleştir
-                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`;
-                        const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
-                        // Kalan sütunlar
-                        for (let i = 7; i < columnCount; i++) {
-                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                        }
-                    } else if (tableBodyId === 'sizdirmazlikAnalyzBody') {
-                        // SIZDIRMAZLIK Tablosu - Ürün adı ve proses adını birleştir
-                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // TOPLAM
-                        const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
-                        // Kalan sütunlar
-                        for (let i = 7; i < columnCount; i++) {
-                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                        }
-                    } else if (tableBodyId === 'lazerAnalyzBody') {
-                        // LAZER Tablosu - Ürün adı ve proses adını birleştir
-                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // Toplam
-                        // Kalan sütunlar
-                        for (let i = 6; i < columnCount; i++) {
-                            tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`;
-                        }
-                    } else if (tableBodyId === 'sonKontrolAnalyzBody') {
-                        // SON KONTROL Tablosu - Ürün adı ve proses adını birleştir
-                        const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamUrun}</td>`; // Toplam
-                        // OK Oranı ve Hata Oranı
-                        const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
-                        const hataOrani = product.toplamUrun > 0 ? ((product.nokUrun / product.toplamUrun) * 100).toFixed(1) : '0';
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;color:#999;background:inherit;">-</td>`; // Aylık Toplam
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${hataOrani}%</td>`;
-                        tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // Kalite Oranı
                     }
+                });
+                
+                if (ayRowspanTotal === 0) continue;
+                
+                let ayFirstRow = true;
+                
+                ayWeeksData.forEach((weekInfo, weekIndex) => {
+                    const { week, weekData, productCount } = weekInfo;
                     
-                    tbody += '</tr>';
+                    if (weekData && weekData.products && weekData.products.length > 0) {
+                        const products = weekData.products;
+                        
+                        products.forEach((product, productIndex) => {
+                            const isFirstProductOfWeek = productIndex === 0;
+                            const weekRowspan = productCount;
+                            
+                            tbody += `<tr style="background-color:${ayRengi};">`;
+                            
+                            if (ayFirstRow) {
+                                tbody += `<td rowspan="${ayRowspanTotal}" style="padding:4px;border:1px solid #e5e7eb;text-align:center;background:${ayRengi};font-weight:600;vertical-align:middle;border-left:4px solid ${getDarkerColor(ayRengi)};">${aylar[ay-1]}</td>`;
+                                ayFirstRow = false;
+                            }
+                            if (isFirstProductOfWeek) {
+                                tbody += `<td rowspan="${weekRowspan}" style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;white-space:nowrap;vertical-align:middle;">${week.weekNum} ${week.shortRange}</td>`;
+                            }
+                            
+                            if (tableBodyId === 'smdAnalyzBody') {
+                                // SMD Tablosu - Ürün adı ve proses adını birleştir
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                const dizilenAdet = product.okUrun + product.nokUrun; // Toplam üretilen
+                                const fire = product.nokUrun; // Fire = NOK ürün
+                                const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
+                                
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${dizilenAdet}</td>`; // Dizilen Adet (OK + NOK)
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${fire}</td>`; // Fire (NOK)
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${dizilenKompanent}</td>`; // Dizilen Kompanent
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Dizilmesi Gereken Adet
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.plansizDurus} dk</td>`; // Plansız Duruş
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makineProgramDurus} dk</td>`; // Makina/Program Ayarı
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.setupSuresi} dk</td>`; // Setup
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
+                                
+                                // Aylık bazda birleşen sütunlar - sadece ilk ürün ve ilk haftada göster
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    const cellStyle = `
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000;
+                                        font-size:12px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                    `;
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                }
+                            } else if (tableBodyId === 'lensAnalyzBody') {
+                                // LENS AA Tablosu - Ürün adı ve proses adını birleştir
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Makinaya Giren
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Üretilmesi Gereken Adet
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.plansizDurus} dk</td>`; // Plansız Duruş
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
+                                
+                                // Aylık bazda birleşen sütunlar - sadece ilk ürün ve ilk haftada göster
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    const cellStyle = `
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000;
+                                        font-size:12px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                    `;
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                }
+                            } else if (tableBodyId === 'eolAnalyzBody') {
+                                // EOL Tablosu - Ürün adı ve proses adını birleştir
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`;
+                                const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Çalışma Süresi
+                                
+                                // Aylık bazda birleşen sütunlar - sadece ilk ürün ve ilk haftada göster
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    const cellStyle = `
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000;
+                                        font-size:12px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                        line-height: 1.3;
+                                    `;
+                                    
+                                    // Toplam Çalışma (8. sütun) - Bu ayın tüm çalışma sürelerinin toplamı
+                                    let aylikToplamCalisma = 0;
+                                    let dmsAylikCalisma = 0;
+                                    let svcAylikCalisma = 0;
+                                    let tofasAylikCalisma = 0;
+                                    let fordAylikCalisma = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamCalisma += prod.toplamSure;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikCalisma += prod.toplamSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikCalisma += prod.toplamSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikCalisma += prod.toplamSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikCalisma += prod.toplamSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    // Alt satırda gösterilecek markaları filtrele (sadece 0'dan büyük olanlar)
+                                    const markaDetaylar = [];
+                                    if (dmsAylikCalisma > 0) markaDetaylar.push(`DMS: ${dmsAylikCalisma}`);
+                                    if (svcAylikCalisma > 0) markaDetaylar.push(`SVC: ${svcAylikCalisma}`);
+                                    if (tofasAylikCalisma > 0) markaDetaylar.push(`TOFAŞ: ${tofasAylikCalisma}`);
+                                    if (fordAylikCalisma > 0) markaDetaylar.push(`FORD: ${fordAylikCalisma}`);
+                                    
+                                    const markaDetayText = markaDetaylar.length > 0 ? markaDetaylar.join(', ') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamCalisma} dk${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">(${markaDetayText} dk)</span>` : ''}</td>`;
+                                    
+                                    // Diğer aylık sütunlar (placeholder olarak)
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Planlı Duruş
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Plansız Duruşlar
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Personel Duruşu
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Makina Arızası
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Setup Süresi
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Net Süre
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Net Çalışma Oranı
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Üretilmesi Gereken
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Üretilen Ürün
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Setup Kaynaklı Kayıp
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Çalışma Performans Oranı
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Arıza Kaynaklı
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // İstasyon Bazlı Kalite Oranı
+                                }
+                            } else if (tableBodyId === 'sizdirmazlikAnalyzBody') {
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // TOPLAM
+                                const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
+                                
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    let aylikToplamOK = 0;
+                                    let aylikToplamUrun = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                aylikToplamOK += prod.okUrun;
+                                                aylikToplamUrun += prod.toplamUrun;
+                                            });
+                                        }
+                                    });
+                                    const aylikKaliteOrani = aylikToplamUrun > 0 ? 
+                                        ((aylikToplamOK / aylikToplamUrun) * 100).toFixed(1) : '0';
+                                    
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000 ;
+                                        font-size:13px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                    ">${aylikKaliteOrani}%</td>`;
+                                }
+                            } else if (tableBodyId === 'lazerAnalyzBody') {
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Toplam
+                                
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    let aylikToplam = 0;
+                                    let dmsAylikToplam = 0;
+                                    let svcAylikToplam = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplam += prod.toplamUrun;
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikToplam += prod.toplamUrun;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikToplam += prod.toplamUrun;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000;
+                                        font-size:12px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                        line-height: 1.3;
+                                    ">${aylikToplam}<br><span style="font-size:10px;font-weight:500;color:#555;">(DMS: ${dmsAylikToplam}, SVC: ${svcAylikToplam})</span></td>`; // Aylık Toplam
+                                }
+                            } else if (tableBodyId === 'sonKontrolAnalyzBody') {
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Toplam
+                                
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    let aylikToplam = 0;
+                                    let dmsAylikToplam = 0;
+                                    let svcAylikToplam = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplam += prod.toplamUrun;
+                                                
+                                                // DMS/SVC ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikToplam += prod.toplamUrun;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikToplam += prod.toplamUrun;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    // Ayın rengine uygun stil
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000;
+                                        font-size:12px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                        line-height: 1.3;
+                                    ">${aylikToplam}<br><span style="font-size:10px;font-weight:500;color:#555;">(DMS: ${dmsAylikToplam}, SVC: ${svcAylikToplam})</span></td>`; // Aylık Toplam
+                                }
+                                // İlk ürün ve ilk hafta değilse Aylık Toplam sütunu ekleme - rowspan ile zaten kaplı
+                                
+                                // OK Oranı ve Hata Oranı
+                                const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                                const hataOrani = product.toplamUrun > 0 ? ((product.nokUrun / product.toplamUrun) * 100).toFixed(1) : '0';
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${hataOrani}%</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // Kalite Oranı (OK Oranı ile aynı)
+                            }
+                            
+                            tbody += '</tr>';
+                        });
+                    }
                 });
             }
-        });
-    }
-    
-    if (tbody === '') {
-        tbody = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Seçilen yıl için veri bulunamadı</td></tr>`;
-    }
-    
-    document.getElementById(tableBodyId).innerHTML = tbody;
-}
+            
+            if (tbody === '') {
+                tbody = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Seçilen yıl için veri bulunamadı</td></tr>`;
+            }
+            
+            document.getElementById(tableBodyId).innerHTML = tbody;
+        }
         function createSmdAnalysisTable() {
             createProsesAnalysisTable('smdAnalyzBody', smdYilFiltresi, 25, ['smd bot', 'smd top']);
         }
