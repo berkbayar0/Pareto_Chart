@@ -208,31 +208,6 @@
                     </tbody>
                 </table>
             </div>
-            <div style="margin-top:30px;">      <!-- Ek Analiz Tablosu -->
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
-                <span style="font-weight:600;color:#374151;">Yıl Seçimi:</span>
-                <select id="ekAnalizYilFiltresi" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:white;cursor:pointer;min-width:100px;">
-                    <option value="">Tüm Yıllar</option>
-                </select>
-            </div>
-            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-                <h4 style="margin:0;padding:12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;color:#374151;font-size:15px;font-weight:600;">📊 Genel OEE Analiz Tablosu</h4>
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                    <thead>
-                        <tr style="background:#f8fafc;">
-                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:left;">Ay</th>
-                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Üretilmesi Gereken (Lens AA)</th>
-                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Üretilen (Depoya Giren Ürün)</th>
-                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Çalışma Performansı</th>
-                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Net Çalışma (Lens AA)</th>
-                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Kalite (Son Kontrol)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ekAnalizBody">
-                        <!-- JavaScript ile doldurulacak -->
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 </div>
@@ -914,191 +889,6 @@
             </tr>`;
             
             document.getElementById('aylikAnalizBody').innerHTML = tbody;
-            createEkAnalizTablosu();
-        }
-        function createEkAnalizTablosu() {
-            if (!allSuccessRows.length) {
-                document.getElementById('ekAnalizBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>';
-                return;
-            }
-            
-            const secilenYil = document.getElementById('ekAnalizYilFiltresi').value || new Date().getFullYear();
-            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
-                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-            const ayRenkleri = [
-                '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
-                '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
-            ];
-            
-            const dateColIndex = currentHeader.findIndex(h => 
-                norm(h).includes('tarih') || norm(h).includes('date')
-            );
-            const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
-            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
-            const okIndex = findColIndex(currentHeader, ['ok']);
-            const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
-            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
-            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
-            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
-            
-            if (dateColIndex < 0 || prosesAdiIndex < 0) {
-                document.getElementById('ekAnalizBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;">Gerekli sütunlar bulunamadı</td></tr>';
-                return;
-            }
-            
-            // Yıl filtresine göre verileri filtrele
-            const filteredData = allSuccessRows.filter(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                return dateParts.length === 3 && dateParts[2] === String(secilenYil);
-            });
-            
-            // Aylık verileri topla
-            const aylikEkAnalizData = {};
-            
-            for (let i = 1; i <= 12; i++) {
-                aylikEkAnalizData[i] = {
-                    // Lens AA verileri
-                    lensAAToplamSure: 0,
-                    lensAANetSure: 0,
-                    lensAAToplamDurus: 0,
-                    // Son Kontrol verileri
-                    sonKontrolOkUrun: 0,
-                    sonKontrolToplamUrun: 0
-                };
-            }
-            
-            filteredData.forEach(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                if (dateParts.length !== 3) return;
-                    
-                const ay = parseInt(dateParts[1]);
-                if (ay < 1 || ay > 12) return;
-                
-                const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
-                const okUrun = parseInt(row[okIndex]) || 0;
-                
-                // NOK hesaplama
-                let nokUrun = 0;
-                if (nokIndex >= 0) {
-                    const hataKodlariText = row[nokIndex] || '';
-                    const hataMap = parseHataKodlari(hataKodlariText);
-                    nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
-                }
-                
-                // Süre hesaplaması
-                const startTime = row[baslamaSaatIndex] || '';
-                const endTime = row[bitisSaatIndex] || '';
-                const workingTime = calculateWorkingTime(startTime, endTime);
-                
-                // Duruş hesaplamaları
-                const durusSureleriText = row[durusSureleriIndex] || '';
-                const durusMap = parseDurusSureleri(durusSureleriText);
-                const kurulumSuresi = durusMap['D4'] || 0;
-                const makinaArizasi = durusMap['D17'] || 0;
-                const personelDurus = durusMap['D19'] || 0;
-                const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
-                const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
-                                    (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
-                                    (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
-                                    (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
-                                    (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
-                                    (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
-                const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
-                const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
-                const netSure = workingTime.totalMinutes - toplamDurus;
-                
-                // LENS AA verileri (proses adında 'lens aa' geçenler)
-                if (prosesAdi.includes('lens aa')) {
-                    aylikEkAnalizData[ay].lensAAToplamSure += workingTime.totalMinutes;
-                    aylikEkAnalizData[ay].lensAANetSure += netSure;
-                    aylikEkAnalizData[ay].lensAAToplamDurus += toplamDurus;
-                }
-                
-                if (prosesAdi.includes('son kontrol')) {
-                    // Sadece SVC ürünlerini filtrele
-                    const urunAdi = String(row[urunAdiIndex] || '').toLowerCase();
-                    if (urunAdi.includes('svc')) {
-                        aylikEkAnalizData[ay].sonKontrolOkUrun += okUrun;
-                        aylikEkAnalizData[ay].sonKontrolToplamUrun += (okUrun + nokUrun);
-                    }
-                }
-            });
-            
-            let tbody = '';
-            
-            for (let i = 1; i <= 12; i++) {
-                const data = aylikEkAnalizData[i];
-                const ayRengi = ayRenkleri[i - 1];
-                
-                // 1. Üretilmesi Gereken (Lens AA) = (Toplam Süre * 60) / 55
-                const uretilmesiGereken = data.lensAAToplamSure > 0 ? 
-                    Math.round((data.lensAAToplamSure * 60) / 55) : 0;
-                
-                // 2. Üretilen (Son Kontrol OK ürünler - SVC filtresi gerekirse eklenebilir)
-                const uretilen = data.sonKontrolOkUrun;
-                
-                // 3. Çalışma Performansı = Üretilen / Üretilmesi Gereken * 100
-                const calismaPerformansi = uretilmesiGereken > 0 ? 
-                    ((uretilen / uretilmesiGereken) * 100).toFixed(1) : '0.0';
-                
-                // 4. Net Çalışma (Lens AA) = Net Süre / Toplam Süre * 100
-                const netCalismaYuzdesi = data.lensAAToplamSure > 0 ? 
-                    ((data.lensAANetSure / data.lensAAToplamSure) * 100).toFixed(1) : '0.0';
-                
-                // 5. Kalite (Son Kontrol) = OK / Toplam * 100
-                const kaliteYuzdesi = data.sonKontrolToplamUrun > 0 ? 
-                    ((data.sonKontrolOkUrun / data.sonKontrolToplamUrun) * 100).toFixed(1) : '0.0';
-                
-                tbody += `
-                <tr style="background-color:${ayRengi};">
-                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:500;">${aylar[i-1]}</td>
-                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${uretilmesiGereken.toLocaleString()}</td>
-                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${uretilen.toLocaleString()}</td>
-                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#7c3aed;">${calismaPerformansi}%</td>
-                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#ea580c;">${netCalismaYuzdesi}%</td>
-                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${kaliteYuzdesi}%</td>
-                </tr>`;
-            }
-            
-            document.getElementById('ekAnalizBody').innerHTML = tbody;
-        }
-
-        function populateEkAnalizYilFiltresi() {
-            if (!allSuccessRows.length) return;
-            
-            const dateColIndex = currentHeader.findIndex(h => 
-                norm(h).includes('tarih') || norm(h).includes('date')
-            );
-            if (dateColIndex < 0) return;
-
-            const yillar = new Set();
-            allSuccessRows.forEach(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                if (dateParts.length === 3) {
-                    yillar.add(dateParts[2]);
-                }
-            });
-
-            const yilArray = Array.from(yillar).sort();
-            const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
-            ekAnalizYilFiltresi.innerHTML = '<option value="">Tüm Yıllar</option>';
-            
-            yilArray.forEach(yil => {
-                const isSelected = yil === '2025' ? ' selected' : '';
-                ekAnalizYilFiltresi.innerHTML += `<option value="${yil}"${isSelected}>${yil}</option>`;
-            });
-            
-            if (!yilArray.includes('2025')) {
-                const currentYear = new Date().getFullYear().toString();
-                if (yilArray.includes(currentYear)) {
-                    ekAnalizYilFiltresi.value = currentYear;
-                }
-            } else {
-                ekAnalizYilFiltresi.value = '2025';
-            }
         }
         function formatGunSaatDakika(dakika) {
             if (dakika === 0) return '0g 0s 0dk';
@@ -4630,7 +4420,6 @@
                 setTimeout(() => {
                     calculateGrafikStats();
                     populateYilFiltresi();
-                    populateEkAnalizYilFiltresi(); // Yeni eklenen
                     createAylikAnaliz();
                     topbar.classList.remove('hidden');
                     document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
@@ -4711,15 +4500,6 @@
         });
         // Yıl filtresi event listener
         yilFiltresi.addEventListener('change', createAylikAnaliz);
-        // Ek analiz yıl filtresi event listener
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
-                if (ekAnalizYilFiltresi) {
-                    ekAnalizYilFiltresi.addEventListener('change', createEkAnalizTablosu);
-                }
-            }, 1000);
-        });
 
         document.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'toggleErrorTable') {

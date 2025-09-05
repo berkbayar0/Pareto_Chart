@@ -140,7 +140,7 @@
         </div>
     </div>
     <div style="margin-top:15px;">       <!-- Sol Tablo - Toplam Üretim -->
-        <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-right:15px;min-width:200px;">
+        <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-right:15px;min-width:280px;">
             <h4 style="margin:0 0 12px 0;color:#374151;font-size:14px;font-weight:600;text-align:center;border-bottom:1px solid #f3f4f6;padding-bottom:8px;">Toplam Üretim</h4>
             <div style="font-size:13px;line-height:1.6;">
                 <div style="display:flex;justify-content:space-between;padding:3px 0;">
@@ -161,7 +161,7 @@
                 </div>
             </div>
         </div>
-        <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;min-width:280px;">
+        <div style="display:inline-block;vertical-align:top;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;min-width:350px;">
             <h4 style="margin:0 0 12px 0;color:#374151;font-size:14px;font-weight:600;text-align:center;border-bottom:1px solid #f3f4f6;padding-bottom:8px;">Duruş Analizi</h4>
             <div style="font-size:13px;line-height:1.6;">
                 <div style="display:flex;justify-content:space-between;padding:3px 0;">
@@ -205,6 +205,32 @@
                     </thead>
                     <tbody id="aylikAnalizBody">
                         <!-- Buraya JavaScript ile satırlar eklenecek -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div style="margin-top:30px;">      <!-- Ek Analiz Tablosu -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
+                <span style="font-weight:600;color:#374151;">Yıl Seçimi:</span>
+                <select id="ekAnalizYilFiltresi" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:white;cursor:pointer;min-width:100px;">
+                    <option value="">Tüm Yıllar</option>
+                </select>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                <h4 style="margin:0;padding:12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;color:#374151;font-size:15px;font-weight:600;">📊 Genel OEE Analiz Tablosu</h4>
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:left;">Ay</th>
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Üretilmesi Gereken (Lens AA)</th>
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Üretilen (Depoya Giren Ürün)</th>
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Çalışma Performansı</th>
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Net Çalışma (Lens AA)</th>
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Kalite (Son Kontrol)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ekAnalizBody">
+                        <!-- JavaScript ile doldurulacak -->
                     </tbody>
                 </table>
             </div>
@@ -278,8 +304,8 @@
                 <option value="">Tüm Yıllar</option>
             </select>
         </div>
-        
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
+
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:110vh;">
             <table id="lensAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
@@ -289,7 +315,7 @@
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">OK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:90px;">Makinaya Giren</th>
-                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;">Üretilmesi Gereken Adet</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:120px;white-space:normal;">Üretilmesi Gereken Adet(x/55)</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Toplam Süre</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Net Süre</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Toplam Duruş</th>
@@ -304,7 +330,6 @@
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:100px;">Net Çalışma</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:140px;">Arıza Kaynaklı Duruş Oranı</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:140px;">İstasyon Bazlı Kalite Oranı</th>
-                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:140px;">Toplam Üretilmesi Gereken</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:130px;">Çalışma Performans Oranı</th>
                     </tr>
                 </thead>
@@ -321,7 +346,7 @@
                 <option value="">Tüm Yıllar</option>
             </select>
         </div>
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:110vh;">
             <table id="eolAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
@@ -362,7 +387,7 @@
                 <option value="">Tüm Yıllar</option>
             </select>
         </div>
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:110vh;">
             <table id="sizdirmazlikAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
@@ -390,7 +415,7 @@
             </select>
         </div>
         
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:110vh;">
             <table id="lazerAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
@@ -416,7 +441,7 @@
                 <option value="">Tüm Yıllar</option>
             </select>
         </div>
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:110vh;">
             <table id="sonKontrolAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
                     <tr style="background:#f8fafc;">
@@ -427,9 +452,9 @@
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:60px;">NOK</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Toplam</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:100px;">Aylık Toplam</th>
-                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">OK Oranı</th>
                         <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Hata Oranı</th>
-                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:100px;">Kalite Oranı</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:80px;">Kalite Oranı</th>
+                        <th style="padding:8px;border:1px solid #e5e7eb;font-weight:600;text-align:center;min-width:100px;">OK Oranı</th>
                     </tr>
                 </thead>
                 <tbody id="sonKontrolAnalyzBody">
@@ -723,10 +748,12 @@
         }
         function populateYilFiltresi() {
             if (!allSuccessRows.length) return;
+            
             const dateColIndex = currentHeader.findIndex(h => 
                 norm(h).includes('tarih') || norm(h).includes('date')
             );
             if (dateColIndex < 0) return;
+
             const yillar = new Set();
             allSuccessRows.forEach(row => {
                 const cellDate = String(row[dateColIndex] || '').trim();
@@ -737,10 +764,25 @@
             });
             const yilArray = Array.from(yillar).sort();
             yilFiltresi.innerHTML = '<option value="">Tüm Yıllar</option>';
+            
             yilArray.forEach(yil => {
-                yilFiltresi.innerHTML += `<option value="${yil}">${yil}</option>`;
+                const isSelected = yil === '2025' ? ' selected' : '';
+                yilFiltresi.innerHTML += `<option value="${yil}"${isSelected}>${yil}</option>`;
             });
+            if (!yilArray.includes('2025')) {
+                const currentYear = new Date().getFullYear().toString();
+                if (yilArray.includes(currentYear)) {
+                    yilFiltresi.value = currentYear;
+                }
+            } else {
+                yilFiltresi.value = '2025';
+                setTimeout(() => {
+                    createAylikAnaliz();
+                }, 100);
+            }
         }
+        // createAylikAnaliz fonksiyonunu güncelleyin - sonuna toplam satırı ekleyin:
+
         function createAylikAnaliz() {
             if (!allSuccessRows.length) {
                 document.getElementById('aylikAnalizBody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>';
@@ -809,12 +851,37 @@
             });
             
             let tbody = '';
+            let toplamCalismaGenel = 0;
+            let toplamPlanlananGenel = 0;
+            let toplamPersonelGenel = 0;
+            let toplamMakineEkipmanGenel = 0;
+            let planlananYuzdeToplam = 0;
+            let personelYuzdeToplam = 0;
+            let makineYuzdeToplam = 0;
+            let aktifAySayisi = 0;
+            
             for (let i = 1; i <= 12; i++) {
                 const data = aylikData[i];
+                
+                // Eğer ay için veri varsa hesaplamalara dahil et
+                if (data.toplamCalisma > 0) {
+                    aktifAySayisi++;
+                    toplamCalismaGenel += data.toplamCalisma;
+                    toplamPlanlananGenel += data.planlananDurus;
+                    toplamPersonelGenel += data.personelDurus;
+                    toplamMakineEkipmanGenel += data.makineEkipmanDurus;
+                }
                 
                 const planlananYuzde = data.toplamCalisma > 0 ? ((data.planlananDurus / data.toplamCalisma) * 100).toFixed(1) : '0.0';
                 const personelYuzde = data.toplamCalisma > 0 ? ((data.personelDurus / data.toplamCalisma) * 100).toFixed(1) : '0.0';
                 const makineYuzde = data.toplamCalisma > 0 ? ((data.makineEkipmanDurus / data.toplamCalisma) * 100).toFixed(1) : '0.0';
+                
+                // Yüzde değerleri toplamı (ortalama hesabı için)
+                if (data.toplamCalisma > 0) {
+                    planlananYuzdeToplam += parseFloat(planlananYuzde);
+                    personelYuzdeToplam += parseFloat(personelYuzde);
+                    makineYuzdeToplam += parseFloat(makineYuzde);
+                }
                 
                 tbody += `
                 <tr style="border-bottom:1px solid #f3f4f6;">
@@ -829,7 +896,209 @@
                 </tr>`;
             }
             
+            // Ortalama yüzde değerlerini hesapla
+            const ortalamaPlanliYuzde = aktifAySayisi > 0 ? (planlananYuzdeToplam / aktifAySayisi).toFixed(1) : '0.0';
+            const ortalamaPersonelYuzde = aktifAySayisi > 0 ? (personelYuzdeToplam / aktifAySayisi).toFixed(1) : '0.0';
+            const ortalamaMakineYuzde = aktifAySayisi > 0 ? (makineYuzdeToplam / aktifAySayisi).toFixed(1) : '0.0';
+            
+            // Toplam satırını ekle
+            tbody += `
+            <tr style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); font-weight: bold; border-top: 2px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);font-weight:700;color:#475569;border-radius:6px 0 0 6px;">TOPLAM / ORTALAMA</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;font-weight:700;color:#1e293b;">${formatAylikSure(toplamCalismaGenel)}</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;font-weight:700;color:#1e293b;">${formatAylikSure(toplamPlanlananGenel)}</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;color:#f59e0b;font-weight:700;font-size:14px;">${ortalamaPlanliYuzde}%</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;font-weight:700;color:#1e293b;">${formatAylikSure(toplamPersonelGenel)}</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;color:#dc2626;font-weight:700;font-size:14px;">${ortalamaPersonelYuzde}%</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;font-weight:700;color:#1e293b;">${formatAylikSure(toplamMakineEkipmanGenel)}</td>
+                <td style="padding:12px;border:1px solid #cbd5e1;text-align:center;color:#dc2626;font-weight:700;font-size:14px;border-radius:0 6px 6px 0;">${ortalamaMakineYuzde}%</td>
+            </tr>`;
+            
             document.getElementById('aylikAnalizBody').innerHTML = tbody;
+        }
+        function createEkAnalizTablosu() {
+            if (!allSuccessRows.length) {
+                document.getElementById('ekAnalizBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>';
+                return;
+            }
+            
+            const secilenYil = document.getElementById('ekAnalizYilFiltresi').value || new Date().getFullYear();
+            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            const ayRenkleri = [
+                '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
+                '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
+            ];
+            
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
+            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
+            const okIndex = findColIndex(currentHeader, ['ok']);
+            const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
+            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            if (dateColIndex < 0 || prosesAdiIndex < 0) {
+                document.getElementById('ekAnalizBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;">Gerekli sütunlar bulunamadı</td></tr>';
+                return;
+            }
+            
+            // Yıl filtresine göre verileri filtrele
+            const filteredData = allSuccessRows.filter(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                return dateParts.length === 3 && dateParts[2] === String(secilenYil);
+            });
+            
+            // Aylık verileri topla
+            const aylikEkAnalizData = {};
+            
+            for (let i = 1; i <= 12; i++) {
+                aylikEkAnalizData[i] = {
+                    // Lens AA verileri
+                    lensAAToplamSure: 0,
+                    lensAANetSure: 0,
+                    lensAAToplamDurus: 0,
+                    // Son Kontrol verileri
+                    sonKontrolOkUrun: 0,
+                    sonKontrolToplamUrun: 0
+                };
+            }
+            
+            filteredData.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length !== 3) return;
+                    
+                const ay = parseInt(dateParts[1]);
+                if (ay < 1 || ay > 12) return;
+                
+                const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
+                const okUrun = parseInt(row[okIndex]) || 0;
+                
+                // NOK hesaplama
+                let nokUrun = 0;
+                if (nokIndex >= 0) {
+                    const hataKodlariText = row[nokIndex] || '';
+                    const hataMap = parseHataKodlari(hataKodlariText);
+                    nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
+                }
+                
+                // Süre hesaplaması
+                const startTime = row[baslamaSaatIndex] || '';
+                const endTime = row[bitisSaatIndex] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
+                
+                // Duruş hesaplamaları
+                const durusSureleriText = row[durusSureleriIndex] || '';
+                const durusMap = parseDurusSureleri(durusSureleriText);
+                const kurulumSuresi = durusMap['D4'] || 0;
+                const makinaArizasi = durusMap['D17'] || 0;
+                const personelDurus = durusMap['D19'] || 0;
+                const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
+                                    (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
+                                    (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
+                                    (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
+                                    (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
+                                    (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
+                const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+                const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
+                const netSure = workingTime.totalMinutes - toplamDurus;
+                
+                // LENS AA verileri (proses adında 'lens aa' geçenler)
+                if (prosesAdi.includes('lens aa')) {
+                    aylikEkAnalizData[ay].lensAAToplamSure += workingTime.totalMinutes;
+                    aylikEkAnalizData[ay].lensAANetSure += netSure;
+                    aylikEkAnalizData[ay].lensAAToplamDurus += toplamDurus;
+                }
+                
+                if (prosesAdi.includes('son kontrol')) {
+                    // Sadece SVC ürünlerini filtrele
+                    const urunAdi = String(row[urunAdiIndex] || '').toLowerCase();
+                    if (urunAdi.includes('svc')) {
+                        aylikEkAnalizData[ay].sonKontrolOkUrun += okUrun;
+                        aylikEkAnalizData[ay].sonKontrolToplamUrun += (okUrun + nokUrun);
+                    }
+                }
+            });
+            
+            let tbody = '';
+            
+            for (let i = 1; i <= 12; i++) {
+                const data = aylikEkAnalizData[i];
+                const ayRengi = ayRenkleri[i - 1];
+                
+                // 1. Üretilmesi Gereken (Lens AA) = (Toplam Süre * 60) / 55
+                const uretilmesiGereken = data.lensAAToplamSure > 0 ? 
+                    Math.round((data.lensAAToplamSure * 60) / 55) : 0;
+                
+                // 2. Üretilen (Son Kontrol OK ürünler - SVC filtresi gerekirse eklenebilir)
+                const uretilen = data.sonKontrolOkUrun;
+                
+                // 3. Çalışma Performansı = Üretilen / Üretilmesi Gereken * 100
+                const calismaPerformansi = uretilmesiGereken > 0 ? 
+                    ((uretilen / uretilmesiGereken) * 100).toFixed(1) : '0.0';
+                
+                // 4. Net Çalışma (Lens AA) = Net Süre / Toplam Süre * 100
+                const netCalismaYuzdesi = data.lensAAToplamSure > 0 ? 
+                    ((data.lensAANetSure / data.lensAAToplamSure) * 100).toFixed(1) : '0.0';
+                
+                // 5. Kalite (Son Kontrol) = OK / Toplam * 100
+                const kaliteYuzdesi = data.sonKontrolToplamUrun > 0 ? 
+                    ((data.sonKontrolOkUrun / data.sonKontrolToplamUrun) * 100).toFixed(1) : '0.0';
+                
+                tbody += `
+                <tr style="background-color:${ayRengi};">
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:500;">${aylar[i-1]}</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${uretilmesiGereken.toLocaleString()}</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${uretilen.toLocaleString()}</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#7c3aed;">${calismaPerformansi}%</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#ea580c;">${netCalismaYuzdesi}%</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${kaliteYuzdesi}%</td>
+                </tr>`;
+            }
+            
+            document.getElementById('ekAnalizBody').innerHTML = tbody;
+        }
+
+        function populateEkAnalizYilFiltresi() {
+            if (!allSuccessRows.length) return;
+            
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            if (dateColIndex < 0) return;
+
+            const yillar = new Set();
+            allSuccessRows.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length === 3) {
+                    yillar.add(dateParts[2]);
+                }
+            });
+
+            const yilArray = Array.from(yillar).sort();
+            const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
+            ekAnalizYilFiltresi.innerHTML = '<option value="">Tüm Yıllar</option>';
+            
+            yilArray.forEach(yil => {
+                const isSelected = yil === '2025' ? ' selected' : '';
+                ekAnalizYilFiltresi.innerHTML += `<option value="${yil}"${isSelected}>${yil}</option>`;
+            });
+            
+            if (!yilArray.includes('2025')) {
+                const currentYear = new Date().getFullYear().toString();
+                if (yilArray.includes(currentYear)) {
+                    ekAnalizYilFiltresi.value = currentYear;
+                }
+            } else {
+                ekAnalizYilFiltresi.value = '2025';
+            }
         }
         function formatGunSaatDakika(dakika) {
             if (dakika === 0) return '0g 0s 0dk';
@@ -1830,6 +2099,102 @@
             }
             return weeks;
         }
+        function calculateDizilmesiGerekenAdet(fullProductName, netSure) {
+            // Ürün adından referans tablosundaki key'i bul
+            let referansKey = null;
+            let referansSure = 0;
+            let referansDizilenAdet = 0;
+            
+            console.log('Dizilmesi Gereken - Aranan ürün:', fullProductName); // Debug için
+            
+            // Önce tam eşleşme ara
+            if (referansTablosu[fullProductName]) {
+                referansKey = fullProductName;
+                referansSure = referansTablosu[referansKey].sure;
+                referansDizilenAdet = referansTablosu[referansKey].dizilenAdet;
+            } else {
+                // Eğer tam eşleşme yoksa, benzer eşleşme ara
+                const productUpper = fullProductName.toUpperCase();
+                
+                for (const key of Object.keys(referansTablosu)) {
+                    const keyUpper = key.toUpperCase();
+                    
+                    // Daha esnek eşleşme - parçalı eşleşme
+                    if (productUpper.includes('SVC') && keyUpper.includes('SVC')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    } else if (productUpper.includes('DMS') && keyUpper.includes('DMS')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    } else if (productUpper.includes('TOFAŞ') && keyUpper.includes('TOFAŞ')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    } else if (productUpper.includes('FORD') && keyUpper.includes('FORD')) {
+                        if (productUpper.includes('BOT') && keyUpper.includes('BOT')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        } else if (productUpper.includes('TOP') && keyUpper.includes('TOP')) {
+                            referansKey = key;
+                            referansSure = referansTablosu[key].sure;
+                            referansDizilenAdet = referansTablosu[key].dizilenAdet;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!referansKey || referansSure === 0 || referansDizilenAdet === 0) {
+                console.log('Dizilmesi Gereken - Referans bulunamadı'); // Debug için
+                return '-'; // Referans bulunamadı
+            }
+            const productUpper = fullProductName.toUpperCase();
+            let carpan = 1;
+            if (productUpper.includes('SVC')) {
+                carpan = 21;
+            } else if (productUpper.includes('DMS')) {
+                carpan = 12;
+            } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                carpan = 25;
+            } else if (productUpper.includes('FORD')) {
+                carpan = 25; // FORD için varsayılan değer
+            }
+            // Formül: ((net süre*60)/ürüne ait referans süre)*ürüne ait referans dizilen adet*(21/12/25)
+            const netSureSaniye = netSure * 60; // Dakikadan saniyeye çevir
+            const dizilmesiGereken = Math.round((netSureSaniye / referansSure) * referansDizilenAdet * carpan);
+            
+            console.log(`Dizilmesi Gereken Hesaplama: ((${netSure}*60)/${referansSure})*${referansDizilenAdet}*${carpan} = ${dizilmesiGereken}`); // Debug için
+            
+            return dizilmesiGereken;
+        }
         function createProsesAnalysisTable(tableBodyId, yilFiltresiElement, columnCount, prosesFilters = []) {
             if (!allSuccessRows.length) {
                 document.getElementById(tableBodyId).innerHTML = `<tr><td colspan="${columnCount}" style="text-align:center;padding:20px;color:#666;">Veri yüklenmedi</td></tr>`;
@@ -2068,11 +2433,14 @@
                                 const fire = product.nokUrun; // Fire = NOK ürün
                                 const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
                                 
+                                // Dizilmesi Gereken Adet hesaplaması
+                                const dizilmesiGerekenAdet = calculateDizilmesiGerekenAdet(fullProductName, product.netSure);
+                                
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${dizilenAdet}</td>`; // Dizilen Adet (OK + NOK)
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${fire}</td>`; // Fire (NOK)
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${dizilenKompanent}</td>`; // Dizilen Kompanent
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Dizilmesi Gereken Adet
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#7c3aed;">${dizilmesiGerekenAdet}</td>`; // Dizilmesi Gereken Adet ✅
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
@@ -2083,7 +2451,6 @@
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.setupSuresi} dk</td>`; // Setup
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
                                 
-                                // Aylık bazda birleşen sütunlar - sadece ilk ürün ve ilk haftada göster
                                 if (productIndex === 0 && weekIndex === 0) {
                                     const darkerColor = getDarkerColor(ayRengi);
                                     const cellStyle = `
@@ -2097,17 +2464,413 @@
                                         vertical-align:middle;
                                         border-left:3px solid ${darkerColor};
                                         box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                        line-height: 1.3;
                                     `;
                                     
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
+                                    // Aylık Dizilen (17. sütun) - Bu ayın tüm Dizilen Kompanent + Fire toplamı
+                                    let aylikToplamDizilen = 0;
+                                    let dmsAylikDizilen = 0;
+                                    let svcAylikDizilen = 0;
+                                    let tofasAylikDizilen = 0;
+                                    let fordAylikDizilen = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                const dizilenAdet = prod.okUrun + prod.nokUrun; // Toplam üretilen
+                                                const fire = prod.nokUrun; // Fire = NOK ürün
+                                                const dizilenKompanent = calculateDizilenKompanent(productName, dizilenAdet, fire);
+                                                
+                                                // Dizilen Kompanent sayısal değer ise hesapla, değilse 0
+                                                const dizilenKompanentSayi = (typeof dizilenKompanent === 'number') ? dizilenKompanent : 0;
+                                                const toplamDizilen = dizilenKompanentSayi + fire; // Dizilen Kompanent + Fire
+                                                
+                                                aylikToplamDizilen += toplamDizilen;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikDizilen += toplamDizilen;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikDizilen += toplamDizilen;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikDizilen += toplamDizilen;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikDizilen += toplamDizilen;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    // Alt satırda gösterilecek markaları filtrele (sadece 0'dan büyük olanlar)
+                                    const markaDetaylar = [];
+                                    if (dmsAylikDizilen > 0) markaDetaylar.push(`DMS: ${dmsAylikDizilen}`);
+                                    if (svcAylikDizilen > 0) markaDetaylar.push(`SVC: ${svcAylikDizilen}`);
+                                    if (tofasAylikDizilen > 0) markaDetaylar.push(`TOFAŞ: ${tofasAylikDizilen}`);
+                                    if (fordAylikDizilen > 0) markaDetaylar.push(`FORD: ${fordAylikDizilen}`);
+                                    
+                                    const markaDetayText = markaDetaylar.length > 0 ?
+                                        markaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamDizilen}${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText}</span>` : ''}</td>`;
+                                    
+                                    let aylikToplamDizilmesiGereken = 0;
+                                    let dmsAylikDizilmesiGereken = 0;
+                                    let svcAylikDizilmesiGereken = 0;
+                                    let tofasAylikDizilmesiGereken = 0;
+                                    let fordAylikDizilmesiGereken = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // Dizilmesi Gereken hesaplama
+                                                const dizilmesiGereken = calculateDizilmesiGerekenAdet(productName, prod.netSure);
+                                                const dizilmesiGerekenSayi = (typeof dizilmesiGereken === 'number') ? dizilmesiGereken : 0;
+                                                
+                                                aylikToplamDizilmesiGereken += dizilmesiGerekenSayi;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikDizilmesiGereken += dizilmesiGerekenSayi;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikDizilmesiGereken += dizilmesiGerekenSayi;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikDizilmesiGereken += dizilmesiGerekenSayi;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikDizilmesiGereken += dizilmesiGerekenSayi;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    // Dizilmesi gereken için markaları filtrele (sadece 0'dan büyük olanlar)
+                                    const dizilmesiGerekenMarkaDetaylar = [];
+                                    if (dmsAylikDizilmesiGereken > 0) dizilmesiGerekenMarkaDetaylar.push(`DMS: ${dmsAylikDizilmesiGereken}`);
+                                    if (svcAylikDizilmesiGereken > 0) dizilmesiGerekenMarkaDetaylar.push(`SVC: ${svcAylikDizilmesiGereken}`);
+                                    if (tofasAylikDizilmesiGereken > 0) dizilmesiGerekenMarkaDetaylar.push(`TOFAŞ: ${tofasAylikDizilmesiGereken}`);
+                                    if (fordAylikDizilmesiGereken > 0) dizilmesiGerekenMarkaDetaylar.push(`FORD: ${fordAylikDizilmesiGereken}`);
+                                    
+                                    const dizilmesiGerekenMarkaDetayText = dizilmesiGerekenMarkaDetaylar.length > 0 ? 
+                                        dizilmesiGerekenMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamDizilmesiGereken}${dizilmesiGerekenMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${dizilmesiGerekenMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // Aylık Fire (19. sütun) - Bu ayın tüm Fire değerlerinin toplamı
+                                    let aylikToplamFire = 0;
+                                    let dmsAylikFire = 0;
+                                    let svcAylikFire = 0;
+                                    let tofasAylikFire = 0;
+                                    let fordAylikFire = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // Fire = NOK ürün sayısı
+                                                const fire = prod.nokUrun;
+                                                aylikToplamFire += fire;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikFire += fire;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikFire += fire;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikFire += fire;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikFire += fire;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    const fireMarkaDetaylar = [];
+                                    if (dmsAylikFire > 0) fireMarkaDetaylar.push(`DMS: ${dmsAylikFire}`);
+                                    if (svcAylikFire > 0) fireMarkaDetaylar.push(`SVC: ${svcAylikFire}`);
+                                    if (tofasAylikFire > 0) fireMarkaDetaylar.push(`TOFAŞ: ${tofasAylikFire}`);
+                                    if (fordAylikFire > 0) fireMarkaDetaylar.push(`FORD: ${fordAylikFire}`);
+                                    
+                                    const fireMarkaDetayText = fireMarkaDetaylar.length > 0 ? 
+                                        fireMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamFire}${fireMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${fireMarkaDetayText}</span>` : ''}</td>`;
+                    
+                                    let aylikToplamNetSure = 0;
+                                    let aylikToplamSure = 0;
+                                    let dmsNetCalisma = 0;
+                                    let svcNetCalisma = 0;
+                                    let tofasNetCalisma = 0;
+                                    let fordNetCalisma = 0;
+                                    let dmsToplamSure = 0;
+                                    let svcToplamSure = 0;
+                                    let tofasToplamSure = 0;
+                                    let fordToplamSure = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamNetSure += prod.netSure;
+                                                aylikToplamSure += prod.toplamSure;
+                                                
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsNetCalisma += prod.netSure;
+                                                    dmsToplamSure += prod.toplamSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcNetCalisma += prod.netSure;
+                                                    svcToplamSure += prod.toplamSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasNetCalisma += prod.netSure;
+                                                    tofasToplamSure += prod.toplamSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordNetCalisma += prod.netSure;
+                                                    fordToplamSure += prod.toplamSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    const netCalismaYuzdesi = aylikToplamSure > 0 ? 
+                                        ((aylikToplamNetSure / aylikToplamSure) * 100).toFixed(1) : '0.0';
+                                    
+                                    const netCalismaMarkaDetaylar = [];
+                                    if (dmsToplamSure > 0) {
+                                        const dmsYuzde = ((dmsNetCalisma / dmsToplamSure) * 100).toFixed(1);
+                                        netCalismaMarkaDetaylar.push(`DMS: ${dmsYuzde}%`);
+                                    }
+                                    if (svcToplamSure > 0) {
+                                        const svcYuzde = ((svcNetCalisma / svcToplamSure) * 100).toFixed(1);
+                                        netCalismaMarkaDetaylar.push(`SVC: ${svcYuzde}%`);
+                                    }
+                                    if (tofasToplamSure > 0) {
+                                        const tofasYuzde = ((tofasNetCalisma / tofasToplamSure) * 100).toFixed(1);
+                                        netCalismaMarkaDetaylar.push(`TOFAŞ: ${tofasYuzde}%`);
+                                    }
+                                    if (fordToplamSure > 0) {
+                                        const fordYuzde = ((fordNetCalisma / fordToplamSure) * 100).toFixed(1);
+                                        netCalismaMarkaDetaylar.push(`FORD: ${fordYuzde}%`);
+                                    }
+                                    const netCalismaMarkaDetayText = netCalismaMarkaDetaylar.length > 0 ? 
+                                        netCalismaMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${netCalismaYuzdesi}%${netCalismaMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${netCalismaMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    const aylikCalismaPerformans = aylikToplamDizilmesiGereken > 0 ? 
+                                        ((aylikToplamDizilen / aylikToplamDizilmesiGereken) * 100).toFixed(1) : '0.0';
+                                    
+                                    // Marka bazında çalışma performans hesaplama
+                                    const calismaPerformansMarkaDetaylar = [];
+                                    if (dmsAylikDizilmesiGereken > 0) {
+                                        const dmsPerformans = ((dmsAylikDizilen / dmsAylikDizilmesiGereken) * 100).toFixed(1);
+                                        calismaPerformansMarkaDetaylar.push(`DMS: ${dmsPerformans}%`);
+                                    }
+                                    if (svcAylikDizilmesiGereken > 0) {
+                                        const svcPerformans = ((svcAylikDizilen / svcAylikDizilmesiGereken) * 100).toFixed(1);
+                                        calismaPerformansMarkaDetaylar.push(`SVC: ${svcPerformans}%`);
+                                    }
+                                    if (tofasAylikDizilmesiGereken > 0) {
+                                        const tofasPerformans = ((tofasAylikDizilen / tofasAylikDizilmesiGereken) * 100).toFixed(1);
+                                        calismaPerformansMarkaDetaylar.push(`TOFAŞ: ${tofasPerformans}%`);
+                                    }
+                                    if (fordAylikDizilmesiGereken > 0) {
+                                        const fordPerformans = ((fordAylikDizilen / fordAylikDizilmesiGereken) * 100).toFixed(1);
+                                        calismaPerformansMarkaDetaylar.push(`FORD: ${fordPerformans}%`);
+                                    }
+                                    const calismaPerformansMarkaDetayText = calismaPerformansMarkaDetaylar.length > 0 ? 
+                                        calismaPerformansMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikCalismaPerformans}%${calismaPerformansMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${calismaPerformansMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    const aylikFireOraniDecimal = aylikToplamDizilen > 0 ? 
+                                        (aylikToplamFire / aylikToplamDizilen) : 0;
+                                    const istasyonKaliteOrani = ((1 - aylikFireOraniDecimal) * 100).toFixed(2);
+                                    
+                                    // Marka bazında istasyon kalite oranları - alt alta gösterim
+                                    const istasyonKaliteMarkaDetaylar = [];
+                                    if (dmsAylikDizilen > 0) {
+                                        const dmsFireOraniDecimal = dmsAylikFire / dmsAylikDizilen;
+                                        const dmsIstasyonKalite = ((1 - dmsFireOraniDecimal) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`DMS: ${dmsIstasyonKalite}%`);
+                                    }
+                                    if (svcAylikDizilen > 0) {
+                                        const svcFireOraniDecimal = svcAylikFire / svcAylikDizilen;
+                                        const svcIstasyonKalite = ((1 - svcFireOraniDecimal) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`SVC: ${svcIstasyonKalite}%`);
+                                    }
+                                    if (tofasAylikDizilen > 0) {
+                                        const tofasFireOraniDecimal = tofasAylikFire / tofasAylikDizilen;
+                                        const tofasIstasyonKalite = ((1 - tofasFireOraniDecimal) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`TOFAŞ: ${tofasIstasyonKalite}%`);
+                                    }
+                                    if (fordAylikDizilen > 0) {
+                                        const fordFireOraniDecimal = fordAylikFire / fordAylikDizilen;
+                                        const fordIstasyonKalite = ((1 - fordFireOraniDecimal) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`FORD: ${fordIstasyonKalite}%`);
+                                    }
+                                    
+                                    // Alt alta gösterim için <br> ile ayır
+                                    const istasyonKaliteMarkaDetayText = istasyonKaliteMarkaDetaylar.length > 0 ? 
+                                        istasyonKaliteMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${istasyonKaliteOrani}%${istasyonKaliteMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${istasyonKaliteMarkaDetayText}</span>` : ''}</td>`;
+
+                                    let aylikToplamSetupSuresi = 0;
+                                    let aylikToplamNetSureSetup = 0;
+                                    let dmsSetupSuresi = 0;
+                                    let svcSetupSuresi = 0;
+                                    let tofasSetupSuresi = 0;
+                                    let fordSetupSuresi = 0;
+                                    let dmsNetSureSetup = 0;
+                                    let svcNetSureSetup = 0;
+                                    let tofasNetSureSetup = 0;
+                                    let fordNetSureSetup = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamSetupSuresi += prod.setupSuresi;
+                                                aylikToplamNetSureSetup += prod.netSure;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsSetupSuresi += prod.setupSuresi;
+                                                    dmsNetSureSetup += prod.netSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcSetupSuresi += prod.setupSuresi;
+                                                    svcNetSureSetup += prod.netSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasSetupSuresi += prod.setupSuresi;
+                                                    tofasNetSureSetup += prod.netSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordSetupSuresi += prod.setupSuresi;
+                                                    fordNetSureSetup += prod.netSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    // Setup oranı hesaplama
+                                    const setupOraniYuzdesi = aylikToplamNetSureSetup > 0 ? 
+                                        ((aylikToplamSetupSuresi / aylikToplamNetSureSetup) * 100).toFixed(1) : '0.0';
+                                    
+                                    // Marka bazında setup oranları - alt alta gösterim
+                                    const setupMarkaDetaylar = [];
+                                    if (dmsNetSureSetup > 0) {
+                                        const dmsSetupYuzde = ((dmsSetupSuresi / dmsNetSureSetup) * 100).toFixed(1);
+                                        setupMarkaDetaylar.push(`DMS: ${dmsSetupYuzde}%`);
+                                    }
+                                    if (svcNetSureSetup > 0) {
+                                        const svcSetupYuzde = ((svcSetupSuresi / svcNetSureSetup) * 100).toFixed(1);
+                                        setupMarkaDetaylar.push(`SVC: ${svcSetupYuzde}%`);
+                                    }
+                                    if (tofasNetSureSetup > 0) {
+                                        const tofasSetupYuzde = ((tofasSetupSuresi / tofasNetSureSetup) * 100).toFixed(1);
+                                        setupMarkaDetaylar.push(`TOFAŞ: ${tofasSetupYuzde}%`);
+                                    }
+                                    if (fordNetSureSetup > 0) {
+                                        const fordSetupYuzde = ((fordSetupSuresi / fordNetSureSetup) * 100).toFixed(1);
+                                        setupMarkaDetaylar.push(`FORD: ${fordSetupYuzde}%`);
+                                    }
+                                    
+                                    // Alt alta gösterim için <br> ile ayır
+                                    const setupMarkaDetayText = setupMarkaDetaylar.length > 0 ? 
+                                        setupMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${setupOraniYuzdesi}%${setupMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${setupMarkaDetayText}</span>` : ''}</td>`;
+                                    let aylikToplamArizaSuresi = 0;
+                                    let aylikToplamSureAriza = 0;
+                                    let dmsArizaSuresi = 0;
+                                    let svcArizaSuresi = 0;
+                                    let tofasArizaSuresi = 0;
+                                    let fordArizaSuresi = 0;
+                                    let dmsToplamSureAriza = 0;
+                                    let svcToplamSureAriza = 0;
+                                    let tofasToplamSureAriza = 0;
+                                    let fordToplamSureAriza = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamArizaSuresi += prod.makinaArizasi;
+                                                aylikToplamSureAriza += prod.toplamSure;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsArizaSuresi += prod.makinaArizasi;
+                                                    dmsToplamSureAriza += prod.toplamSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcArizaSuresi += prod.makinaArizasi;
+                                                    svcToplamSureAriza += prod.toplamSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasArizaSuresi += prod.makinaArizasi;
+                                                    tofasToplamSureAriza += prod.toplamSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordArizaSuresi += prod.makinaArizasi;
+                                                    fordToplamSureAriza += prod.toplamSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    // Arıza duruşu oranı hesaplama
+                                    const arizaOraniYuzdesi = aylikToplamSureAriza > 0 ? 
+                                        ((aylikToplamArizaSuresi / aylikToplamSureAriza) * 100).toFixed(3) : '0.0';
+                                    
+                                    // Marka bazında arıza duruşu oranları - alt alta gösterim
+                                    const arizaMarkaDetaylar = [];
+                                    if (dmsToplamSureAriza > 0) {
+                                        const dmsArizaYuzde = ((dmsArizaSuresi / dmsToplamSureAriza) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`DMS: ${dmsArizaYuzde}%`);
+                                    }
+                                    if (svcToplamSureAriza > 0) {
+                                        const svcArizaYuzde = ((svcArizaSuresi / svcToplamSureAriza) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`SVC: ${svcArizaYuzde}%`);
+                                    }
+                                    if (tofasToplamSureAriza > 0) {
+                                        const tofasArizaYuzde = ((tofasArizaSuresi / tofasToplamSureAriza) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`TOFAŞ: ${tofasArizaYuzde}%`);
+                                    }
+                                    if (fordToplamSureAriza > 0) {
+                                        const fordArizaYuzde = ((fordArizaSuresi / fordToplamSureAriza) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`FORD: ${fordArizaYuzde}%`);
+                                    }
+                                    const arizaMarkaDetayText = arizaMarkaDetaylar.length > 0 ? 
+                                        arizaMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${arizaOraniYuzdesi}%${arizaMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${arizaMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    const aylikFireOrani = aylikToplamDizilen > 0 ? 
+                                        ((aylikToplamFire / aylikToplamDizilen) * 100).toFixed(3) : '0.0';
+                                    const fireOraniMarkaDetaylar = [];
+                                    if (dmsAylikDizilen > 0) {
+                                        const dmsFireOrani = ((dmsAylikFire / dmsAylikDizilen) * 100).toFixed(3);
+                                        fireOraniMarkaDetaylar.push(`DMS: ${dmsFireOrani}%`);
+                                    }
+                                    if (svcAylikDizilen > 0) {
+                                        const svcFireOrani = ((svcAylikFire / svcAylikDizilen) * 100).toFixed(3);
+                                        fireOraniMarkaDetaylar.push(`SVC: ${svcFireOrani}%`);
+                                    }
+                                    if (tofasAylikDizilen > 0) {
+                                        const tofasFireOrani = ((tofasAylikFire / tofasAylikDizilen) * 100).toFixed(3);
+                                        fireOraniMarkaDetaylar.push(`TOFAŞ: ${tofasFireOrani}%`);
+                                    }
+                                    if (fordAylikDizilen > 0) {
+                                        const fordFireOrani = ((fordAylikFire / fordAylikDizilen) * 100).toFixed(3);
+                                        fireOraniMarkaDetaylar.push(`FORD: ${fordFireOrani}%`);
+                                    }
+                                    const fireOraniMarkaDetayText = fireOraniMarkaDetaylar.length > 0 ? 
+                                        fireOraniMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikFireOrani}%${fireOraniMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${fireOraniMarkaDetayText}</span>` : ''}</td>`;
                                 }
                             } else if (tableBodyId === 'lensAnalyzBody') {
                                 // LENS AA Tablosu - Ürün adı ve proses adını birleştir
@@ -2116,7 +2879,8 @@
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Makinaya Giren
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">-</td>`; // Üretilmesi Gereken Adet
+                                const uretilmesiGerekenAdet = Math.round((product.toplamSure * 60) / 55);
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#7c3aed;">${uretilmesiGerekenAdet}</td>`;
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Toplam Süre
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.netSure} dk</td>`; // Net Süre
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamDurus} dk</td>`; // Toplam Duruş
@@ -2124,43 +2888,6 @@
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.planliDurus} dk</td>`; // Planlı Duruş
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.personelDurus} dk</td>`; // Personel Duruşu
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.makinaArizasi} dk</td>`; // Makina Arızası
-                                
-                                // Aylık bazda birleşen sütunlar - sadece ilk ürün ve ilk haftada göster
-                                if (productIndex === 0 && weekIndex === 0) {
-                                    const darkerColor = getDarkerColor(ayRengi);
-                                    const cellStyle = `
-                                        padding:4px;
-                                        border:1px solid #e5e7eb;
-                                        text-align:center;
-                                        font-weight:700;
-                                        color:#000000;
-                                        font-size:12px;
-                                        background:${ayRengi};
-                                        vertical-align:middle;
-                                        border-left:3px solid ${darkerColor};
-                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
-                                    `;
-                                    
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`;
-                                }
-                            } else if (tableBodyId === 'eolAnalyzBody') {
-                                // EOL Tablosu - Ürün adı ve proses adını birleştir
-                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`;
-                                const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Çalışma Süresi
                                 
                                 // Aylık bazda birleşen sütunlar - sadece ilk ürün ve ilk haftada göster
                                 if (productIndex === 0 && weekIndex === 0) {
@@ -2179,7 +2906,367 @@
                                         line-height: 1.3;
                                     `;
                                     
-                                    // Toplam Çalışma (8. sütun) - Bu ayın tüm çalışma sürelerinin toplamı
+                                    // Aylık Toplam Üretilmesi Gereken (15. sütun)
+                                    let aylikToplamUretilmesiGereken = 0;
+                                    let dmsAylikUretilmesiGereken = 0;
+                                    let svcAylikUretilmesiGereken = 0;
+                                    let tofasAylikUretilmesiGereken = 0;
+                                    let fordAylikUretilmesiGereken = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // Üretilmesi Gereken hesaplama: (Toplam Süre * 60) / 55
+                                                const uretilmesiGereken = Math.round((prod.toplamSure * 60) / 55);
+                                                aylikToplamUretilmesiGereken += uretilmesiGereken;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikUretilmesiGereken += uretilmesiGereken;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikUretilmesiGereken += uretilmesiGereken;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikUretilmesiGereken += uretilmesiGereken;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikUretilmesiGereken += uretilmesiGereken;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const uretilmesiGerekenMarkaDetaylar = [];
+                                    if (dmsAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`DMS: ${dmsAylikUretilmesiGereken}`);
+                                    if (svcAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`SVC: ${svcAylikUretilmesiGereken}`);
+                                    if (tofasAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`TOFAŞ: ${tofasAylikUretilmesiGereken}`);
+                                    if (fordAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`FORD: ${fordAylikUretilmesiGereken}`);
+                                    
+                                    const uretilmesiGerekenMarkaDetayText = uretilmesiGerekenMarkaDetaylar.length > 0 ? 
+                                        uretilmesiGerekenMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamUretilmesiGereken}${uretilmesiGerekenMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${uretilmesiGerekenMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // Aylık Toplam Duruş (16. sütun)
+                                    let aylikToplamDurus = 0;
+                                    let dmsAylikToplamDurus = 0;
+                                    let svcAylikToplamDurus = 0;
+                                    let tofasAylikToplamDurus = 0;
+                                    let fordAylikToplamDurus = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamDurus += prod.toplamDurus;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikToplamDurus += prod.toplamDurus;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikToplamDurus += prod.toplamDurus;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikToplamDurus += prod.toplamDurus;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikToplamDurus += prod.toplamDurus;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const toplamDurusMarkaDetaylar = [];
+                                    if (dmsAylikToplamDurus > 0) toplamDurusMarkaDetaylar.push(`DMS: ${dmsAylikToplamDurus}`);
+                                    if (svcAylikToplamDurus > 0) toplamDurusMarkaDetaylar.push(`SVC: ${svcAylikToplamDurus}`);
+                                    if (tofasAylikToplamDurus > 0) toplamDurusMarkaDetaylar.push(`TOFAŞ: ${tofasAylikToplamDurus}`);
+                                    if (fordAylikToplamDurus > 0) toplamDurusMarkaDetaylar.push(`FORD: ${fordAylikToplamDurus}`);
+                                    
+                                    const toplamDurusMarkaDetayText = toplamDurusMarkaDetaylar.length > 0 ? 
+                                        toplamDurusMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamDurus} dk${toplamDurusMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${toplamDurusMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Aylık Toplam Süre (17. sütun)
+                                    let aylikToplamSure = 0;
+                                    let dmsAylikToplamSure = 0;
+                                    let svcAylikToplamSure = 0;
+                                    let tofasAylikToplamSure = 0;
+                                    let fordAylikToplamSure = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamSure += prod.toplamSure;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikToplamSure += prod.toplamSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikToplamSure += prod.toplamSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikToplamSure += prod.toplamSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikToplamSure += prod.toplamSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const toplamSureMarkaDetaylar = [];
+                                    if (dmsAylikToplamSure > 0) toplamSureMarkaDetaylar.push(`DMS: ${dmsAylikToplamSure}`);
+                                    if (svcAylikToplamSure > 0) toplamSureMarkaDetaylar.push(`SVC: ${svcAylikToplamSure}`);
+                                    if (tofasAylikToplamSure > 0) toplamSureMarkaDetaylar.push(`TOFAŞ: ${tofasAylikToplamSure}`);
+                                    if (fordAylikToplamSure > 0) toplamSureMarkaDetaylar.push(`FORD: ${fordAylikToplamSure}`);
+                                    
+                                    const toplamSureMarkaDetayText = toplamSureMarkaDetaylar.length > 0 ? 
+                                        toplamSureMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamSure} dk${toplamSureMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${toplamSureMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Aylık Net Süre (18. sütun)
+                                    let aylikNetSure = 0;
+                                    let dmsAylikNetSure = 0;
+                                    let svcAylikNetSure = 0;
+                                    let tofasAylikNetSure = 0;
+                                    let fordAylikNetSure = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikNetSure += prod.netSure;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikNetSure += prod.netSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikNetSure += prod.netSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikNetSure += prod.netSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikNetSure += prod.netSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const netSureMarkaDetaylar = [];
+                                    if (dmsAylikNetSure > 0) netSureMarkaDetaylar.push(`DMS: ${dmsAylikNetSure}`);
+                                    if (svcAylikNetSure > 0) netSureMarkaDetaylar.push(`SVC: ${svcAylikNetSure}`);
+                                    if (tofasAylikNetSure > 0) netSureMarkaDetaylar.push(`TOFAŞ: ${tofasAylikNetSure}`);
+                                    if (fordAylikNetSure > 0) netSureMarkaDetaylar.push(`FORD: ${fordAylikNetSure}`);
+                                    
+                                    const netSureMarkaDetayText = netSureMarkaDetaylar.length > 0 ? 
+                                        netSureMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikNetSure} dk${netSureMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${netSureMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Net Çalışma Oranı (19. sütun)
+                                    const netCalismaOrani = aylikToplamSure > 0 ? 
+                                        ((aylikNetSure / aylikToplamSure) * 100).toFixed(2) : '0.00';
+                                    
+                                    const netCalismaOraniMarkaDetaylar = [];
+                                    if (dmsAylikToplamSure > 0) {
+                                        const dmsNetCalismaOrani = ((dmsAylikNetSure / dmsAylikToplamSure) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`DMS: ${dmsNetCalismaOrani}%`);
+                                    }
+                                    if (svcAylikToplamSure > 0) {
+                                        const svcNetCalismaOrani = ((svcAylikNetSure / svcAylikToplamSure) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`SVC: ${svcNetCalismaOrani}%`);
+                                    }
+                                    if (tofasAylikToplamSure > 0) {
+                                        const tofasNetCalismaOrani = ((tofasAylikNetSure / tofasAylikToplamSure) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`TOFAŞ: ${tofasNetCalismaOrani}%`);
+                                    }
+                                    if (fordAylikToplamSure > 0) {
+                                        const fordNetCalismaOrani = ((fordAylikNetSure / fordAylikToplamSure) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`FORD: ${fordNetCalismaOrani}%`);
+                                    }
+                                    
+                                    const netCalismaOraniMarkaDetayText = netCalismaOraniMarkaDetaylar.length > 0 ? 
+                                        netCalismaOraniMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${netCalismaOrani}%${netCalismaOraniMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${netCalismaOraniMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // Arıza Kaynaklı Duruş Oranı (20. sütun)
+                                    let aylikMakinaArizasi = 0;
+                                    let dmsAylikMakinaArizasi = 0;
+                                    let svcAylikMakinaArizasi = 0;
+                                    let tofasAylikMakinaArizasi = 0;
+                                    let fordAylikMakinaArizasi = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikMakinaArizasi += prod.makinaArizasi;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikMakinaArizasi += prod.makinaArizasi;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikMakinaArizasi += prod.makinaArizasi;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikMakinaArizasi += prod.makinaArizasi;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikMakinaArizasi += prod.makinaArizasi;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const arizaOraniYuzdesi = aylikToplamSure > 0 ? 
+                                        ((aylikMakinaArizasi / aylikToplamSure) * 100).toFixed(3) : '0.000';
+                                    
+                                    const arizaMarkaDetaylar = [];
+                                    if (dmsAylikToplamSure > 0) {
+                                        const dmsArizaOrani = ((dmsAylikMakinaArizasi / dmsAylikToplamSure) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`DMS: ${dmsArizaOrani}%`);
+                                    }
+                                    if (svcAylikToplamSure > 0) {
+                                        const svcArizaOrani = ((svcAylikMakinaArizasi / svcAylikToplamSure) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`SVC: ${svcArizaOrani}%`);
+                                    }
+                                    if (tofasAylikToplamSure > 0) {
+                                        const tofasArizaOrani = ((tofasAylikMakinaArizasi / tofasAylikToplamSure) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`TOFAŞ: ${tofasArizaOrani}%`);
+                                    }
+                                    if (fordAylikToplamSure > 0) {
+                                        const fordArizaOrani = ((fordAylikMakinaArizasi / fordAylikToplamSure) * 100).toFixed(3);
+                                        arizaMarkaDetaylar.push(`FORD: ${fordArizaOrani}%`);
+                                    }
+                                    
+                                    const arizaMarkaDetayText = arizaMarkaDetaylar.length > 0 ? 
+                                        arizaMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${arizaOraniYuzdesi}%${arizaMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${arizaMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // İstasyon Bazlı Kalite Oranı (21. sütun)
+                                    let aylikToplamOK = 0;
+                                    let aylikToplamUrun = 0;
+                                    let dmsAylikOK = 0;
+                                    let svcAylikOK = 0;
+                                    let tofasAylikOK = 0;
+                                    let fordAylikOK = 0;
+                                    let dmsAylikUrun = 0;
+                                    let svcAylikUrun = 0;
+                                    let tofasAylikUrun = 0;
+                                    let fordAylikUrun = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikToplamOK += prod.okUrun;
+                                                aylikToplamUrun += prod.toplamUrun;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikOK += prod.okUrun;
+                                                    dmsAylikUrun += prod.toplamUrun;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikOK += prod.okUrun;
+                                                    svcAylikUrun += prod.toplamUrun;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikOK += prod.okUrun;
+                                                    tofasAylikUrun += prod.toplamUrun;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikOK += prod.okUrun;
+                                                    fordAylikUrun += prod.toplamUrun;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const istasyonKaliteOrani = aylikToplamUrun > 0 ? 
+                                        ((aylikToplamOK / aylikToplamUrun) * 100).toFixed(2) : '0.00';
+                                    
+                                    const istasyonKaliteMarkaDetaylar = [];
+                                    if (dmsAylikUrun > 0) {
+                                        const dmsIstasyonKalite = ((dmsAylikOK / dmsAylikUrun) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`DMS: ${dmsIstasyonKalite}%`);
+                                    }
+                                    if (svcAylikUrun > 0) {
+                                        const svcIstasyonKalite = ((svcAylikOK / svcAylikUrun) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`SVC: ${svcIstasyonKalite}%`);
+                                    }
+                                    if (tofasAylikUrun > 0) {
+                                        const tofasIstasyonKalite = ((tofasAylikOK / tofasAylikUrun) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`TOFAŞ: ${tofasIstasyonKalite}%`);
+                                    }
+                                    if (fordAylikUrun > 0) {
+                                        const fordIstasyonKalite = ((fordAylikOK / fordAylikUrun) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`FORD: ${fordIstasyonKalite}%`);
+                                    }
+                                    
+                                    const istasyonKaliteMarkaDetayText = istasyonKaliteMarkaDetaylar.length > 0 ? 
+                                        istasyonKaliteMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${istasyonKaliteOrani}%${istasyonKaliteMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${istasyonKaliteMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // Çalışma Performans Oranı (22. sütun)
+                                    const calismaPerformansOrani = aylikToplamUretilmesiGereken > 0 ? 
+                                        ((aylikToplamUrun / aylikToplamUretilmesiGereken) * 100).toFixed(2) : '0.00';
+                                    
+                                    const calismaPerformansMarkaDetaylar = [];
+                                    if (dmsAylikUretilmesiGereken > 0) {
+                                        const dmsCalismaPerformans = ((dmsAylikUrun / dmsAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`DMS: ${dmsCalismaPerformans}%`);
+                                    }
+                                    if (svcAylikUretilmesiGereken > 0) {
+                                        const svcCalismaPerformans = ((svcAylikUrun / svcAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`SVC: ${svcCalismaPerformans}%`);
+                                    }
+                                    if (tofasAylikUretilmesiGereken > 0) {
+                                        const tofasCalismaPerformans = ((tofasAylikUrun / tofasAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`TOFAŞ: ${tofasCalismaPerformans}%`);
+                                    }
+                                    if (fordAylikUretilmesiGereken > 0) {
+                                        const fordCalismaPerformans = ((fordAylikUrun / fordAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`FORD: ${fordCalismaPerformans}%`);
+                                    }
+                                    
+                                    const calismaPerformansMarkaDetayText = calismaPerformansMarkaDetaylar.length > 0 ? 
+                                        calismaPerformansMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${calismaPerformansOrani}%${calismaPerformansMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${calismaPerformansMarkaDetayText}</span>` : ''}</td>`;
+                                }
+                            } else if (tableBodyId === 'eolAnalyzBody') {
+                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`;
+                                const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(2) : '0';
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
+                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${product.toplamSure} dk</td>`; // Çalışma Süresi
+                                
+                                if (productIndex === 0 && weekIndex === 0) {
+                                    const darkerColor = getDarkerColor(ayRengi);
+                                    const cellStyle = `
+                                        padding:4px;
+                                        border:1px solid #e5e7eb;
+                                        text-align:center;
+                                        font-weight:700;
+                                        color:#000000;
+                                        font-size:12px;
+                                        background:${ayRengi};
+                                        vertical-align:middle;
+                                        border-left:3px solid ${darkerColor};
+                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+                                        line-height: 1.3;
+                                    `;
                                     let aylikToplamCalisma = 0;
                                     let dmsAylikCalisma = 0;
                                     let svcAylikCalisma = 0;
@@ -2207,32 +3294,487 @@
                                             });
                                         }
                                     });
-                                    
-                                    // Alt satırda gösterilecek markaları filtrele (sadece 0'dan büyük olanlar)
                                     const markaDetaylar = [];
                                     if (dmsAylikCalisma > 0) markaDetaylar.push(`DMS: ${dmsAylikCalisma}`);
                                     if (svcAylikCalisma > 0) markaDetaylar.push(`SVC: ${svcAylikCalisma}`);
                                     if (tofasAylikCalisma > 0) markaDetaylar.push(`TOFAŞ: ${tofasAylikCalisma}`);
                                     if (fordAylikCalisma > 0) markaDetaylar.push(`FORD: ${fordAylikCalisma}`);
                                     
-                                    const markaDetayText = markaDetaylar.length > 0 ? markaDetaylar.join(', ') : '';
+                                    const markaDetayText = markaDetaylar.length > 0 ? markaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamCalisma} dk${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText} dk</span>` : ''}</td>`;
                                     
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamCalisma} dk${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">(${markaDetayText} dk)</span>` : ''}</td>`;
+                                    let aylikPlanliDurus = 0;
+                                    let dmsAylikPlanliDurus = 0;
+                                    let svcAylikPlanliDurus = 0;
+                                    let tofasAylikPlanliDurus = 0;
+                                    let fordAylikPlanliDurus = 0;
                                     
-                                    // Diğer aylık sütunlar (placeholder olarak)
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Planlı Duruş
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Plansız Duruşlar
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Personel Duruşu
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Makina Arızası
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Setup Süresi
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Net Süre
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Net Çalışma Oranı
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Üretilmesi Gereken
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Üretilen Ürün
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Setup Kaynaklı Kayıp
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Çalışma Performans Oranı
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // Arıza Kaynaklı
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">-</td>`; // İstasyon Bazlı Kalite Oranı
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // Planlı duruş: planliDurus + setupSuresi
+                                                const toplamPlanliDurus = prod.planliDurus + prod.setupSuresi;
+                                                aylikPlanliDurus += toplamPlanliDurus;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikPlanliDurus += toplamPlanliDurus;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikPlanliDurus += toplamPlanliDurus;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikPlanliDurus += toplamPlanliDurus;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikPlanliDurus += toplamPlanliDurus;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const planliMarkaDetaylar = [];
+                                    if (dmsAylikPlanliDurus > 0) planliMarkaDetaylar.push(`DMS: ${dmsAylikPlanliDurus}`);
+                                    if (svcAylikPlanliDurus > 0) planliMarkaDetaylar.push(`SVC: ${svcAylikPlanliDurus}`);
+                                    if (tofasAylikPlanliDurus > 0) planliMarkaDetaylar.push(`TOFAŞ: ${tofasAylikPlanliDurus}`);
+                                    if (fordAylikPlanliDurus > 0) planliMarkaDetaylar.push(`FORD: ${fordAylikPlanliDurus}`);
+                                    
+                                    const planliMarkaDetayText = planliMarkaDetaylar.length > 0 ? planliMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikPlanliDurus} dk${planliMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${planliMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Plansız Duruşlar (10. sütun)
+                                    let aylikPlansizDurus = 0;
+                                    let dmsAylikPlansizDurus = 0;
+                                    let svcAylikPlansizDurus = 0;
+                                    let tofasAylikPlansizDurus = 0;
+                                    let fordAylikPlansizDurus = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikPlansizDurus += prod.plansizDurus;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikPlansizDurus += prod.plansizDurus;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikPlansizDurus += prod.plansizDurus;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikPlansizDurus += prod.plansizDurus;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikPlansizDurus += prod.plansizDurus;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const plansizMarkaDetaylar = [];
+                                    if (dmsAylikPlansizDurus > 0) plansizMarkaDetaylar.push(`DMS: ${dmsAylikPlansizDurus}`);
+                                    if (svcAylikPlansizDurus > 0) plansizMarkaDetaylar.push(`SVC: ${svcAylikPlansizDurus}`);
+                                    if (tofasAylikPlansizDurus > 0) plansizMarkaDetaylar.push(`TOFAŞ: ${tofasAylikPlansizDurus}`);
+                                    if (fordAylikPlansizDurus > 0) plansizMarkaDetaylar.push(`FORD: ${fordAylikPlansizDurus}`);
+                                    
+                                    const plansizMarkaDetayText = plansizMarkaDetaylar.length > 0 ? plansizMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikPlansizDurus} dk${plansizMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${plansizMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Personel Duruşu (11. sütun)
+                                    let aylikPersonelDurus = 0;
+                                    let dmsAylikPersonelDurus = 0;
+                                    let svcAylikPersonelDurus = 0;
+                                    let tofasAylikPersonelDurus = 0;
+                                    let fordAylikPersonelDurus = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikPersonelDurus += prod.personelDurus;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikPersonelDurus += prod.personelDurus;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikPersonelDurus += prod.personelDurus;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikPersonelDurus += prod.personelDurus;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikPersonelDurus += prod.personelDurus;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const personelMarkaDetaylar = [];
+                                    if (dmsAylikPersonelDurus > 0) personelMarkaDetaylar.push(`DMS: ${dmsAylikPersonelDurus}`);
+                                    if (svcAylikPersonelDurus > 0) personelMarkaDetaylar.push(`SVC: ${svcAylikPersonelDurus}`);
+                                    if (tofasAylikPersonelDurus > 0) personelMarkaDetaylar.push(`TOFAŞ: ${tofasAylikPersonelDurus}`);
+                                    if (fordAylikPersonelDurus > 0) personelMarkaDetaylar.push(`FORD: ${fordAylikPersonelDurus}`);
+                                    
+                                    const personelMarkaDetayText = personelMarkaDetaylar.length > 0 ? personelMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikPersonelDurus} dk${personelMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${personelMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Makina Arızası (12. sütun)
+                                    let aylikMakinaArizasi = 0;
+                                    let dmsAylikMakinaArizasi = 0;
+                                    let svcAylikMakinaArizasi = 0;
+                                    let tofasAylikMakinaArizasi = 0;
+                                    let fordAylikMakinaArizasi = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikMakinaArizasi += prod.makinaArizasi;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikMakinaArizasi += prod.makinaArizasi;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikMakinaArizasi += prod.makinaArizasi;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikMakinaArizasi += prod.makinaArizasi;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikMakinaArizasi += prod.makinaArizasi;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const makinaMarkaDetaylar = [];
+                                    if (dmsAylikMakinaArizasi > 0) makinaMarkaDetaylar.push(`DMS: ${dmsAylikMakinaArizasi}`);
+                                    if (svcAylikMakinaArizasi > 0) makinaMarkaDetaylar.push(`SVC: ${svcAylikMakinaArizasi}`);
+                                    if (tofasAylikMakinaArizasi > 0) makinaMarkaDetaylar.push(`TOFAŞ: ${tofasAylikMakinaArizasi}`);
+                                    if (fordAylikMakinaArizasi > 0) makinaMarkaDetaylar.push(`FORD: ${fordAylikMakinaArizasi}`);
+                                    
+                                    const makinaMarkaDetayText = makinaMarkaDetaylar.length > 0 ? makinaMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikMakinaArizasi} dk${makinaMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${makinaMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    // Setup Süresi (13. sütun)
+                                    let aylikSetupSuresi = 0;
+                                    let dmsAylikSetupSuresi = 0;
+                                    let svcAylikSetupSuresi = 0;
+                                    let tofasAylikSetupSuresi = 0;
+                                    let fordAylikSetupSuresi = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                aylikSetupSuresi += prod.setupSuresi;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikSetupSuresi += prod.setupSuresi;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikSetupSuresi += prod.setupSuresi;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikSetupSuresi += prod.setupSuresi;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikSetupSuresi += prod.setupSuresi;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const setupMarkaDetaylar = [];
+                                    if (dmsAylikSetupSuresi > 0) setupMarkaDetaylar.push(`DMS: ${dmsAylikSetupSuresi}`);
+                                    if (svcAylikSetupSuresi > 0) setupMarkaDetaylar.push(`SVC: ${svcAylikSetupSuresi}`);
+                                    if (tofasAylikSetupSuresi > 0) setupMarkaDetaylar.push(`TOFAŞ: ${tofasAylikSetupSuresi}`);
+                                    if (fordAylikSetupSuresi > 0) setupMarkaDetaylar.push(`FORD: ${fordAylikSetupSuresi}`);
+                                    
+                                    const setupMarkaDetayText = setupMarkaDetaylar.length > 0 ? setupMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikSetupSuresi} dk${setupMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${setupMarkaDetayText} dk</span>` : ''}</td>`;
+                                    let aylikNetSure = 0;
+                                    let dmsAylikNetSure = 0;
+                                    let svcAylikNetSure = 0;
+                                    let tofasAylikNetSure = 0;
+                                    let fordAylikNetSure = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // Net Süre hesaplama: Toplam Çalışma - (Tüm Duruşlar)
+                                                const toplamDuruslar = (prod.planliDurus + prod.setupSuresi) + prod.plansizDurus + prod.personelDurus + prod.makinaArizasi;
+                                                const netSure = prod.toplamSure - toplamDuruslar;
+                                                
+                                                aylikNetSure += netSure;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikNetSure += netSure;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikNetSure += netSure;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikNetSure += netSure;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikNetSure += netSure;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const netSureMarkaDetaylar = [];
+                                    if (dmsAylikNetSure > 0) netSureMarkaDetaylar.push(`DMS: ${dmsAylikNetSure}`);
+                                    if (svcAylikNetSure > 0) netSureMarkaDetaylar.push(`SVC: ${svcAylikNetSure}`);
+                                    if (tofasAylikNetSure > 0) netSureMarkaDetaylar.push(`TOFAŞ: ${tofasAylikNetSure}`);
+                                    if (fordAylikNetSure > 0) netSureMarkaDetaylar.push(`FORD: ${fordAylikNetSure}`);
+                                    
+                                    const netSureMarkaDetayText = netSureMarkaDetaylar.length > 0 ? netSureMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikNetSure} dk${netSureMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${netSureMarkaDetayText} dk</span>` : ''}</td>`;
+                                    
+                                    const netCalismaOrani = aylikToplamCalisma > 0 ? 
+                                        ((aylikNetSure / aylikToplamCalisma) * 100).toFixed(2) : '0.00';
+                                    
+                                    const netCalismaOraniMarkaDetaylar = [];
+                                    if (dmsAylikCalisma > 0) {
+                                        const dmsNetCalismaOrani = ((dmsAylikNetSure / dmsAylikCalisma) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`DMS: ${dmsNetCalismaOrani}%`);
+                                    }
+                                    if (svcAylikCalisma > 0) {
+                                        const svcNetCalismaOrani = ((svcAylikNetSure / svcAylikCalisma) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`SVC: ${svcNetCalismaOrani}%`);
+                                    }
+                                    if (tofasAylikCalisma > 0) {
+                                        const tofasNetCalismaOrani = ((tofasAylikNetSure / tofasAylikCalisma) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`TOFAŞ: ${tofasNetCalismaOrani}%`);
+                                    }
+                                    if (fordAylikCalisma > 0) {
+                                        const fordNetCalismaOrani = ((fordAylikNetSure / fordAylikCalisma) * 100).toFixed(2);
+                                        netCalismaOraniMarkaDetaylar.push(`FORD: ${fordNetCalismaOrani}%`);
+                                    }
+                                    const netCalismaOraniMarkaDetayText = netCalismaOraniMarkaDetaylar.length > 0 ? 
+                                        netCalismaOraniMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${netCalismaOrani}%${netCalismaOraniMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${netCalismaOraniMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    let aylikToplamUretilmesiGereken = 0;
+                                    let dmsAylikUretilmesiGereken = 0;
+                                    let svcAylikUretilmesiGereken = 0;
+                                    let tofasAylikUretilmesiGereken = 0;
+                                    let fordAylikUretilmesiGereken = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                ///30
+                                                const uretilmesiGereken = Math.round((prod.toplamSure * 60) / 30);
+                                                aylikToplamUretilmesiGereken += uretilmesiGereken;
+                                                
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikUretilmesiGereken += uretilmesiGereken;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikUretilmesiGereken += uretilmesiGereken;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikUretilmesiGereken += uretilmesiGereken;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikUretilmesiGereken += uretilmesiGereken;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const uretilmesiGerekenMarkaDetaylar = [];
+                                    if (dmsAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`DMS: ${dmsAylikUretilmesiGereken}`);
+                                    if (svcAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`SVC: ${svcAylikUretilmesiGereken}`);
+                                    if (tofasAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`TOFAŞ: ${tofasAylikUretilmesiGereken}`);
+                                    if (fordAylikUretilmesiGereken > 0) uretilmesiGerekenMarkaDetaylar.push(`FORD: ${fordAylikUretilmesiGereken}`);
+                                    
+                                    const uretilmesiGerekenMarkaDetayText = uretilmesiGerekenMarkaDetaylar.length > 0 ? 
+                                        uretilmesiGerekenMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamUretilmesiGereken}${uretilmesiGerekenMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${uretilmesiGerekenMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    let aylikToplamUretilenUrun = 0;
+                                    let dmsAylikUretilenUrun = 0;
+                                    let svcAylikUretilenUrun = 0;
+                                    let tofasAylikUretilenUrun = 0;
+                                    let fordAylikUretilenUrun = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // Üretilen Ürün = OK + NOK (Toplam Üretim)
+                                                const uretilenUrun = prod.okUrun + prod.nokUrun;
+                                                aylikToplamUretilenUrun += uretilenUrun;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikUretilenUrun += uretilenUrun;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikUretilenUrun += uretilenUrun;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikUretilenUrun += uretilenUrun;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikUretilenUrun += uretilenUrun;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    
+                                    const uretilenUrunMarkaDetaylar = [];
+                                    if (dmsAylikUretilenUrun > 0) uretilenUrunMarkaDetaylar.push(`DMS: ${dmsAylikUretilenUrun}`);
+                                    if (svcAylikUretilenUrun > 0) uretilenUrunMarkaDetaylar.push(`SVC: ${svcAylikUretilenUrun}`);
+                                    if (tofasAylikUretilenUrun > 0) uretilenUrunMarkaDetaylar.push(`TOFAŞ: ${tofasAylikUretilenUrun}`);
+                                    if (fordAylikUretilenUrun > 0) uretilenUrunMarkaDetaylar.push(`FORD: ${fordAylikUretilenUrun}`);
+                                    
+                                    const uretilenUrunMarkaDetayText = uretilenUrunMarkaDetaylar.length > 0 ? 
+                                        uretilenUrunMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplamUretilenUrun}${uretilenUrunMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${uretilenUrunMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    const setupKaynakliKayipOrani = aylikToplamCalisma > 0 ? 
+                                        ((aylikSetupSuresi / aylikToplamCalisma) * 100).toFixed(2) : '0.00';
+                                    
+                                    // Marka bazında setup kaynaklı kayıp oranları - alt alta gösterim
+                                    const setupKaynakliKayipMarkaDetaylar = [];
+                                    if (dmsAylikCalisma > 0) {
+                                        const dmsSetupKayip = ((dmsAylikSetupSuresi / dmsAylikCalisma) * 100).toFixed(2);
+                                        setupKaynakliKayipMarkaDetaylar.push(`DMS: ${dmsSetupKayip}%`);
+                                    }
+                                    if (svcAylikCalisma > 0) {
+                                        const svcSetupKayip = ((svcAylikSetupSuresi / svcAylikCalisma) * 100).toFixed(2);
+                                        setupKaynakliKayipMarkaDetaylar.push(`SVC: ${svcSetupKayip}%`);
+                                    }
+                                    if (tofasAylikCalisma > 0) {
+                                        const tofasSetupKayip = ((tofasAylikSetupSuresi / tofasAylikCalisma) * 100).toFixed(2);
+                                        setupKaynakliKayipMarkaDetaylar.push(`TOFAŞ: ${tofasSetupKayip}%`);
+                                    }
+                                    if (fordAylikCalisma > 0) {
+                                        const fordSetupKayip = ((fordAylikSetupSuresi / fordAylikCalisma) * 100).toFixed(2);
+                                        setupKaynakliKayipMarkaDetaylar.push(`FORD: ${fordSetupKayip}%`);
+                                    }
+                                    const setupKaynakliKayipMarkaDetayText = setupKaynakliKayipMarkaDetaylar.length > 0 ? 
+                                        setupKaynakliKayipMarkaDetaylar.join('<br>') : '';
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${setupKaynakliKayipOrani}%${setupKaynakliKayipMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${setupKaynakliKayipMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    const calismaPerformansOrani = aylikToplamUretilmesiGereken > 0 ? 
+                                        ((aylikToplamUretilenUrun / aylikToplamUretilmesiGereken) * 100).toFixed(2) : '0.00';
+                                    const calismaPerformansMarkaDetaylar = [];
+                                    if (dmsAylikUretilmesiGereken > 0) {
+                                        const dmsCalismaPerformans = ((dmsAylikUretilenUrun / dmsAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`DMS: ${dmsCalismaPerformans}%`);
+                                    }
+                                    if (svcAylikUretilmesiGereken > 0) {
+                                        const svcCalismaPerformans = ((svcAylikUretilenUrun / svcAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`SVC: ${svcCalismaPerformans}%`);
+                                    }
+                                    if (tofasAylikUretilmesiGereken > 0) {
+                                        const tofasCalismaPerformans = ((tofasAylikUretilenUrun / tofasAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`TOFAŞ: ${tofasCalismaPerformans}%`);
+                                    }
+                                    if (fordAylikUretilmesiGereken > 0) {
+                                        const fordCalismaPerformans = ((fordAylikUretilenUrun / fordAylikUretilmesiGereken) * 100).toFixed(2);
+                                        calismaPerformansMarkaDetaylar.push(`FORD: ${fordCalismaPerformans}%`);
+                                    }
+                                    const calismaPerformansMarkaDetayText = calismaPerformansMarkaDetaylar.length > 0 ? 
+                                        calismaPerformansMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${calismaPerformansOrani}%${calismaPerformansMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${calismaPerformansMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    const arizaKaynakliOrani = aylikToplamCalisma > 0 ? 
+                                        ((aylikMakinaArizasi / aylikToplamCalisma) * 100).toFixed(2) : '0.00';
+                                    
+                                    const arizaKaynakliMarkaDetaylar = [];
+                                    if (dmsAylikCalisma > 0) {
+                                        const dmsArizaKaynakli = ((dmsAylikMakinaArizasi / dmsAylikCalisma) * 100).toFixed(2);
+                                        arizaKaynakliMarkaDetaylar.push(`DMS: ${dmsArizaKaynakli}%`);
+                                    }
+                                    if (svcAylikCalisma > 0) {
+                                        const svcArizaKaynakli = ((svcAylikMakinaArizasi / svcAylikCalisma) * 100).toFixed(2);
+                                        arizaKaynakliMarkaDetaylar.push(`SVC: ${svcArizaKaynakli}%`);
+                                    }
+                                    if (tofasAylikCalisma > 0) {
+                                        const tofasArizaKaynakli = ((tofasAylikMakinaArizasi / tofasAylikCalisma) * 100).toFixed(2);
+                                        arizaKaynakliMarkaDetaylar.push(`TOFAŞ: ${tofasArizaKaynakli}%`);
+                                    }
+                                    if (fordAylikCalisma > 0) {
+                                        const fordArizaKaynakli = ((fordAylikMakinaArizasi / fordAylikCalisma) * 100).toFixed(2);
+                                        arizaKaynakliMarkaDetaylar.push(`FORD: ${fordArizaKaynakli}%`);
+                                    }
+                                    const arizaKaynakliMarkaDetayText = arizaKaynakliMarkaDetaylar.length > 0 ? 
+                                        arizaKaynakliMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${arizaKaynakliOrani}%${arizaKaynakliMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${arizaKaynakliMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    let aylikToplamOK = 0;
+                                    let aylikToplamToplam = 0;
+                                    let dmsAylikOK = 0;
+                                    let svcAylikOK = 0;
+                                    let tofasAylikOK = 0;
+                                    let fordAylikOK = 0;
+                                    let dmsAylikToplam = 0;
+                                    let svcAylikToplam = 0;
+                                    let tofasAylikToplam = 0;
+                                    let fordAylikToplam = 0;
+                                    
+                                    ayWeeksData.forEach(weekInfo => {
+                                        if (weekInfo.weekData && weekInfo.weekData.products) {
+                                            weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const productUpper = productName.toUpperCase();
+                                                
+                                                // OK ve Toplam ürün sayılarını topla
+                                                aylikToplamOK += prod.okUrun;
+                                                aylikToplamToplam += prod.toplamUrun;
+                                                
+                                                // Marka ayrımı
+                                                if (productUpper.includes('DMS')) {
+                                                    dmsAylikOK += prod.okUrun;
+                                                    dmsAylikToplam += prod.toplamUrun;
+                                                } else if (productUpper.includes('SVC')) {
+                                                    svcAylikOK += prod.okUrun;
+                                                    svcAylikToplam += prod.toplamUrun;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikOK += prod.okUrun;
+                                                    tofasAylikToplam += prod.toplamUrun;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikOK += prod.okUrun;
+                                                    fordAylikToplam += prod.toplamUrun;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    const istasyonKaliteOrani = aylikToplamToplam > 0 ? 
+                                        ((aylikToplamOK / aylikToplamToplam) * 100).toFixed(2) : '0.00';
+                                    
+                                    const istasyonKaliteMarkaDetaylar = [];
+                                    if (dmsAylikToplam > 0) {
+                                        const dmsIstasyonKalite = ((dmsAylikOK / dmsAylikToplam) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`DMS: ${dmsIstasyonKalite}%`);
+                                    }
+                                    if (svcAylikToplam > 0) {
+                                        const svcIstasyonKalite = ((svcAylikOK / svcAylikToplam) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`SVC: ${svcIstasyonKalite}%`);
+                                    }
+                                    if (tofasAylikToplam > 0) {
+                                        const tofasIstasyonKalite = ((tofasAylikOK / tofasAylikToplam) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`TOFAŞ: ${tofasIstasyonKalite}%`);
+                                    }
+                                    if (fordAylikToplam > 0) {
+                                        const fordIstasyonKalite = ((fordAylikOK / fordAylikToplam) * 100).toFixed(2);
+                                        istasyonKaliteMarkaDetaylar.push(`FORD: ${fordIstasyonKalite}%`);
+                                    }
+                                    const istasyonKaliteMarkaDetayText = istasyonKaliteMarkaDetaylar.length > 0 ? 
+                                        istasyonKaliteMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${istasyonKaliteOrani}%${istasyonKaliteMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${istasyonKaliteMarkaDetayText}</span>` : ''}</td>`;
                                 }
                             } else if (tableBodyId === 'sizdirmazlikAnalyzBody') {
                                 const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
@@ -2325,6 +3867,18 @@
                                     let aylikToplam = 0;
                                     let dmsAylikToplam = 0;
                                     let svcAylikToplam = 0;
+                                    let tofasAylikToplam = 0;
+                                    let fordAylikToplam = 0;
+                                    let aylikToplamOK = 0;
+                                    let aylikToplamNOK = 0;
+                                    let dmsAylikOK = 0;
+                                    let svcAylikOK = 0;
+                                    let tofasAylikOK = 0;
+                                    let fordAylikOK = 0;
+                                    let dmsAylikNOK = 0;
+                                    let svcAylikNOK = 0;
+                                    let tofasAylikNOK = 0;
+                                    let fordAylikNOK = 0;
                                     
                                     ayWeeksData.forEach(weekInfo => {
                                         if (weekInfo.weekData && weekInfo.weekData.products) {
@@ -2333,12 +3887,26 @@
                                                 const productUpper = productName.toUpperCase();
                                                 
                                                 aylikToplam += prod.toplamUrun;
+                                                aylikToplamOK += prod.okUrun;
+                                                aylikToplamNOK += prod.nokUrun;
                                                 
-                                                // DMS/SVC ayrımı
+                                                // DMS/SVC/TOFAŞ/FORD ayrımı
                                                 if (productUpper.includes('DMS')) {
                                                     dmsAylikToplam += prod.toplamUrun;
+                                                    dmsAylikOK += prod.okUrun;
+                                                    dmsAylikNOK += prod.nokUrun;
                                                 } else if (productUpper.includes('SVC')) {
                                                     svcAylikToplam += prod.toplamUrun;
+                                                    svcAylikOK += prod.okUrun;
+                                                    svcAylikNOK += prod.nokUrun;
+                                                } else if (productUpper.includes('TOFAŞ') || productUpper.includes('TOFAS')) {
+                                                    tofasAylikToplam += prod.toplamUrun;
+                                                    tofasAylikOK += prod.okUrun;
+                                                    tofasAylikNOK += prod.nokUrun;
+                                                } else if (productUpper.includes('FORD')) {
+                                                    fordAylikToplam += prod.toplamUrun;
+                                                    fordAylikOK += prod.okUrun;
+                                                    fordAylikNOK += prod.nokUrun;
                                                 }
                                             });
                                         }
@@ -2346,7 +3914,7 @@
                                     
                                     // Ayın rengine uygun stil
                                     const darkerColor = getDarkerColor(ayRengi);
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="
+                                    const cellStyle = `
                                         padding:4px;
                                         border:1px solid #e5e7eb;
                                         text-align:center;
@@ -2358,18 +3926,77 @@
                                         border-left:3px solid ${darkerColor};
                                         box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
                                         line-height: 1.3;
-                                    ">${aylikToplam}<br><span style="font-size:10px;font-weight:500;color:#555;">(DMS: ${dmsAylikToplam}, SVC: ${svcAylikToplam})</span></td>`; // Aylık Toplam
+                                    `;
+                                    
+                                    // 7. Sütun: Aylık Toplam (MEVCUT HALİ KORUNUYOR)
+                                    const markaDetaylar = [];
+                                    if (dmsAylikToplam > 0) markaDetaylar.push(`DMS: ${dmsAylikToplam}`);
+                                    if (svcAylikToplam > 0) markaDetaylar.push(`SVC: ${svcAylikToplam}`);
+                                    if (tofasAylikToplam > 0) markaDetaylar.push(`TOFAŞ: ${tofasAylikToplam}`);
+                                    if (fordAylikToplam > 0) markaDetaylar.push(`FORD: ${fordAylikToplam}`);
+                                    
+                                    const markaDetayText = markaDetaylar.length > 0 ? 
+                                        markaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikToplam}${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // 9. Sütun: Aylık Hata Oranı - Tek birleşik hücre (NOK/Toplam)
+                                    const aylikHataOrani = aylikToplam > 0 ? ((aylikToplamNOK / aylikToplam) * 100).toFixed(1) : '0.0';
+                                    
+                                    const hataOraniMarkaDetaylar = [];
+                                    if (dmsAylikToplam > 0) {
+                                        const dmsHataOrani = ((dmsAylikNOK / dmsAylikToplam) * 100).toFixed(1);
+                                        hataOraniMarkaDetaylar.push(`DMS: ${dmsHataOrani}%`);
+                                    }
+                                    if (svcAylikToplam > 0) {
+                                        const svcHataOrani = ((svcAylikNOK / svcAylikToplam) * 100).toFixed(1);
+                                        hataOraniMarkaDetaylar.push(`SVC: ${svcHataOrani}%`);
+                                    }
+                                    if (tofasAylikToplam > 0) {
+                                        const tofasHataOrani = ((tofasAylikNOK / tofasAylikToplam) * 100).toFixed(1);
+                                        hataOraniMarkaDetaylar.push(`TOFAŞ: ${tofasHataOrani}%`);
+                                    }
+                                    if (fordAylikToplam > 0) {
+                                        const fordHataOrani = ((fordAylikNOK / fordAylikToplam) * 100).toFixed(1);
+                                        hataOraniMarkaDetaylar.push(`FORD: ${fordHataOrani}%`);
+                                    }
+                                    
+                                    const hataOraniMarkaDetayText = hataOraniMarkaDetaylar.length > 0 ? 
+                                        hataOraniMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikHataOrani}%${hataOraniMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${hataOraniMarkaDetayText}</span>` : ''}</td>`;
+                                    
+                                    // 10. Sütun: Aylık Kalite Oranı - Tek birleşik hücre (OK/Toplam)
+                                    const aylikKaliteOrani = aylikToplam > 0 ? ((aylikToplamOK / aylikToplam) * 100).toFixed(1) : '0.0';
+                                    
+                                    const kaliteOraniMarkaDetaylar = [];
+                                    if (dmsAylikToplam > 0) {
+                                        const dmsKaliteOrani = ((dmsAylikOK / dmsAylikToplam) * 100).toFixed(1);
+                                        kaliteOraniMarkaDetaylar.push(`DMS: ${dmsKaliteOrani}%`);
+                                    }
+                                    if (svcAylikToplam > 0) {
+                                        const svcKaliteOrani = ((svcAylikOK / svcAylikToplam) * 100).toFixed(1);
+                                        kaliteOraniMarkaDetaylar.push(`SVC: ${svcKaliteOrani}%`);
+                                    }
+                                    if (tofasAylikToplam > 0) {
+                                        const tofasKaliteOrani = ((tofasAylikOK / tofasAylikToplam) * 100).toFixed(1);
+                                        kaliteOraniMarkaDetaylar.push(`TOFAŞ: ${tofasKaliteOrani}%`);
+                                    }
+                                    if (fordAylikToplam > 0) {
+                                        const fordKaliteOrani = ((fordAylikOK / fordAylikToplam) * 100).toFixed(1);
+                                        kaliteOraniMarkaDetaylar.push(`FORD: ${fordKaliteOrani}%`);
+                                    }
+                                    
+                                    const kaliteOraniMarkaDetayText = kaliteOraniMarkaDetaylar.length > 0 ? 
+                                        kaliteOraniMarkaDetaylar.join('<br>') : '';
+                                    
+                                    tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">${aylikKaliteOrani}%${kaliteOraniMarkaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${kaliteOraniMarkaDetayText}</span>` : ''}</td>`;
                                 }
-                                // İlk ürün ve ilk hafta değilse Aylık Toplam sütunu ekleme - rowspan ile zaten kaplı
                                 
-                                // OK Oranı ve Hata Oranı
+                                // 8. Sütun: OK Oranı - Haftalık (MEVCUT HALİ KORUNUYOR)
                                 const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
-                                const hataOrani = product.toplamUrun > 0 ? ((product.nokUrun / product.toplamUrun) * 100).toFixed(1) : '0';
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${hataOrani}%</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // Kalite Oranı (OK Oranı ile aynı)
                             }
-                            
                             tbody += '</tr>';
                         });
                     }
@@ -2386,7 +4013,7 @@
             createProsesAnalysisTable('smdAnalyzBody', smdYilFiltresi, 25, ['smd bot', 'smd top']);
         }
         function createLensAnalysisTable() {
-            createProsesAnalysisTable('lensAnalyzBody', lensYilFiltresi, 23, ['lens aa 2']);
+            createProsesAnalysisTable('lensAnalyzBody', lensYilFiltresi, 22, ['lens aa 2']);
         }
         function createEolAnalysisTable() {
             createProsesAnalysisTable('eolAnalyzBody', eolYilFiltresi, 22, ['eol robot']); // EOL 21 sütun
@@ -3003,6 +4630,7 @@
                 setTimeout(() => {
                     calculateGrafikStats();
                     populateYilFiltresi();
+                    populateEkAnalizYilFiltresi();
                     createAylikAnaliz();
                     topbar.classList.remove('hidden');
                     document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
@@ -3120,6 +4748,28 @@
                 }
             }
         });
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
+                if (ekAnalizYilFiltresi) {
+                    ekAnalizYilFiltresi.addEventListener('change', () => {
+                        showLoading('Ek Analiz Güncelleniyor...');
+                        setTimeout(() => {
+                            createEkAnalizTablosu();
+                            hideLoading();
+                        }, 50);
+                    });
+                }
+            }, 1000);
+        });
+        document.getElementById('aylikAnalizBody').innerHTML = tbody;
+
+        // Loading ile ek analiz tablosunu oluştur  
+        showLoading('Ek Analiz Tablosu Hazırlanıyor...');
+        setTimeout(() => {
+            createEkAnalizTablosu();
+            hideLoading();
+        }, 100);
         smdYilFiltresi.addEventListener('change', createSmdAnalysisTable);
         lensYilFiltresi.addEventListener('change', createLensAnalysisTable);
         eolYilFiltresi.addEventListener('change', createEolAnalysisTable);
