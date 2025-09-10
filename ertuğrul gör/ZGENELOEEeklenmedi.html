@@ -58,6 +58,19 @@
     .multi-select-checkbox { margin-right: 8px; cursor: pointer; }
     .dropdown-arrow { margin-left: 8px; transition: transform 0.2s; }
     .dropdown-arrow.open { transform: rotate(180deg); }
+    /*kpı tablosu yapıyorum*/
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .tbl{width:100%;border-collapse:collapse;font-size:14px} /* Font boyutunu küçülttüm */
+    .thead tr{background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%)}
+    .th,.td{padding:4px 5px;border:1px solid #cbd5e1;text-align:center} /* Padding'i küçülttüm */
+    .th{font-weight:600;background:#f1f5f9;color:#334155;font-size:13px} /* Font boyutunu küçülttüm */
+    .th.kpi{padding:5px 8px;font-weight:700;background:linear-gradient(135deg,#e2e8f0 0%,#cbd5e1 100%);color:#475569;font-size:14px;text-align:center} /* Padding'i küçülttüm */
+    .row{background:linear-gradient(135deg,#fefefe 0%,#f8fafc 100%)}
+    .kpi-box{padding:5px 10px;text-align:left;vertical-align:top;background:linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%);border:1px solid #cbd5e1;width: fit-content;min-width:100px;max-width: 200px;white-space: nowrap;} /* Padding'i küçülttüm */
+    .kpi-title{font-weight:600;color:#1e293b;font-size:15px;margin-bottom:3px} /* Font boyutu ve margin küçülttüm */
+    .kpi-sub{font-weight:500;color:#64748b;font-size:14px} /* Font boyutunu küçülttüm */
+    .tgt{font-weight:600;color:#059669;font-size:13px} /* Font boyutunu küçülttüm */
+    .val{font-weight:600;color:#2563eb;font-size:12px}
   </style>
 </head>
 <body>
@@ -78,7 +91,7 @@
     <button class="btn-tab"        id="tab-2"      data-target="panel-2">Duruş Süreleri Analizi</button>
     <button class="btn-tab"        id="tab-3"      data-target="panel-3">OEE Analizi</button>
     <button class="btn-tab"        id="tab-4"      data-target="panel-4">Proses Analizi</button>
-    <button class="btn-tab"        id="tab-5"      data-target="panel-5">Buton 5</button>
+    <button class="btn-tab"        id="tab-5"      data-target="panel-5">KPI Tablo</button>
     <button class="btn-tab"        id="tab-6"      data-target="panel-6">Buton 6</button>
     <button class="btn-tab"        id="tab-7"      data-target="panel-7">Buton 7</button>
     <button class="btn-tab"        id="tab-8"      data-target="panel-8">Buton 8</button>
@@ -227,6 +240,7 @@
                             <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Çalışma Performansı</th>
                             <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Net Çalışma (Lens AA)</th>
                             <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Kalite (Son Kontrol)</th>
+                            <th style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600;text-align:center;">Genel OEE</th>
                         </tr>
                     </thead>
                     <tbody id="ekAnalizBody">
@@ -464,8 +478,48 @@
         </div>
     </div>
 </div>
-  <div id="panel-5"  class="panel hidden"><div class="panel-title">Buton 5</div>
-  <div>Buraya özelliğin gelecektir.</div></div>
+  <div id="panel-5" class="panel hidden">
+    <div class="panel-title">KPI Tablo</div>
+    <div style="margin-top:20px">
+        <div class="card">
+        <table class="tbl">
+            <thead class="thead">
+            <tr>
+                <th class="th kpi" rowspan="2">KPI</th>
+                <th class="th">Target</th>
+                <th class="th">Unit</th>
+                <th class="th">Ocak</th>
+                <th class="th">Şubat</th>
+                <th class="th">Mart</th>
+                <th class="th">Nisan</th>
+                <th class="th">Mayıs</th>
+                <th class="th">Haziran</th>
+                <th class="th">Temmuz</th>
+                <th class="th">Ağustos</th>
+                <th class="th">Eylül</th>
+                <th class="th">Ekim</th>
+                <th class="th">Kasım</th>
+                <th class="th">Aralık</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="row">
+                <td class="kpi-box">
+                <div class="kpi-title">Effective Capacity Utilization Rate (SMD)</div>
+                <div class="kpi-sub">Net Kapasite Kullanım Oranı (SMD)</div>
+                </td>
+                <td class="td tgt">65%</td>
+                <td class="td">%</td>
+                <td class="td val">-</td><td class="td val">-</td><td class="td val">-</td>
+                <td class="td val">-</td><td class="td val">-</td><td class="td val">-</td>
+                <td class="td val">-</td><td class="td val">-</td><td class="td val">-</td>
+                <td class="td val">-</td><td class="td val">-</td><td class="td val">-</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    </div>
   <div id="panel-6"  class="panel hidden"><div class="panel-title">Buton 6</div>
   <div>Buraya özelliğin gelecektir.</div></div>
   <div id="panel-7"  class="panel hidden"><div class="panel-title">Buton 7</div>
@@ -621,6 +675,356 @@
             }
             return hataMap;
         }
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        //KPI Tablosunu oluşturoyurm.////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+
+        const kpiDefinitions = [
+            {
+                id: 'net_kapasite_kullanim',
+                nameEn: 'Effective Capacity Utilization Rate (SMD)',
+                nameTr: 'Net Kapasite Kullanım Oranı (SMD)',
+                target: '65%',
+                unit: '%',
+                calculateFunction: 'calculateSmdNetKapasite',
+                targetValue: 65
+            },
+            {
+                id: 'calisma_performansi',
+                nameEn: 'Work Performance Rate (SMD)',
+                nameTr: 'Çalışma Performansı Oranı (SMD)',
+                target: '75%',
+                unit: '%',
+                calculateFunction: 'getSmdCalismaPerformansFromTable', // ← Bu fonksiyon ismi doğru olmalı
+                targetValue: 75
+            },
+            {
+                id: 'setup_kaynakli_kayip',
+                nameEn: 'Set-up Related Lost Capacity Rate (SMD)',
+                nameTr: 'Set-up Kaynaklı Kayıp Kapasite Oranı (SMD)',
+                target: '9%',
+                unit: '%',
+                calculateFunction: 'getSmdSetupOraniFromTable',
+                targetValue: 9
+            }
+        ];
+        function calculateSmdNetKapasite() {
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
+            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            if (dateColIndex < 0 || prosesAdiIndex < 0) {
+                return {};
+            }
+            const yillar = new Set();
+            allSuccessRows.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length === 3) {
+                    yillar.add(dateParts[2]);
+                }
+            });
+            
+            const yilData = {};
+            Array.from(yillar).forEach(yil => {
+                const filteredData = allSuccessRows.filter(row => {
+                    const cellDate = String(row[dateColIndex] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    if (dateParts.length !== 3 || dateParts[2] !== String(yil)) return false;
+                    
+                    const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
+                    return prosesAdi.includes('smd bot') || prosesAdi.includes('smd top');
+                });
+                
+                const aylikData = {};
+                for (let i = 1; i <= 12; i++) {
+                    aylikData[i] = {
+                        toplamSure: 0,
+                        netSure: 0
+                    };
+                }
+                
+                filteredData.forEach(row => {
+                    const cellDate = String(row[dateColIndex] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    if (dateParts.length !== 3) return;
+                        
+                    const ay = parseInt(dateParts[1]);
+                    if (ay < 1 || ay > 12) return;
+                    
+                    const startTime = row[baslamaSaatIndex] || '';
+                    const endTime = row[bitisSaatIndex] || '';
+                    const workingTime = calculateWorkingTime(startTime, endTime);
+                    
+                    const durusSureleriText = row[durusSureleriIndex] || '';
+                    const durusMap = parseDurusSureleri(durusSureleriText);
+                    
+                    const kurulumSuresi = durusMap['D4'] || 0;
+                    const makinaArizasi = durusMap['D17'] || 0;
+                    const personelDurus = durusMap['D19'] || 0;
+                    const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                    const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
+                                        (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
+                                        (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
+                                        (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
+                                        (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
+                                        (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
+                    const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+                    
+                    const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
+                    const netSure = workingTime.totalMinutes - toplamDurus;
+                    
+                    aylikData[ay].toplamSure += workingTime.totalMinutes;
+                    aylikData[ay].netSure += netSure;
+                });
+                for (let i = 1; i <= 12; i++) {
+                    const data = aylikData[i];
+                    if (data.toplamSure > 0) {
+                        data.netCalismaYuzdesi = ((data.netSure / data.toplamSure) * 100).toFixed(1);
+                    } else {
+                        data.netCalismaYuzdesi = '-';
+                    }
+                }
+                
+                yilData[yil] = aylikData;
+            });
+            
+            return yilData;
+        }
+        function getSmdCalismaPerformansFromTable() {
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
+            const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
+            const okIndex = findColIndex(currentHeader, ['ok']);
+            const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
+            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            if (dateColIndex < 0 || prosesAdiIndex < 0) {
+                return {};
+            }
+            const yillar = new Set();
+            allSuccessRows.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length === 3) {
+                    yillar.add(dateParts[2]);
+                }
+            });
+            
+            const yilData = {};
+            Array.from(yillar).forEach(yil => {
+                const filteredData = allSuccessRows.filter(row => {
+                    const cellDate = String(row[dateColIndex] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    if (dateParts.length !== 3 || dateParts[2] !== String(yil)) return false;
+                    
+                    const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
+                    return prosesAdi.includes('smd bot') || prosesAdi.includes('smd top');
+                });
+                const aylikData = {};
+                for (let i = 1; i <= 12; i++) {
+                    aylikData[i] = {
+                        toplamDizilen: 0,
+                        toplamDizilmesiGereken: 0
+                    };
+                }
+                filteredData.forEach(row => {
+                    const cellDate = String(row[dateColIndex] || '').trim();
+                    const dateParts = cellDate.split('.');
+                    if (dateParts.length !== 3) return;
+                        
+                    const ay = parseInt(dateParts[1]);
+                    if (ay < 1 || ay > 12) return;
+                    
+                    const urunAdi = String(row[urunAdiIndex] || '');
+                    const prosesAdi = String(row[prosesAdiIndex] || '');
+                    const fullProductName = prosesAdi ? `${urunAdi} - ${prosesAdi}` : urunAdi;
+                    
+                    const okUrun = parseInt(row[okIndex]) || 0;
+                    let nokUrun = 0;
+                    if (nokIndex >= 0) {
+                        const hataKodlariText = row[nokIndex] || '';
+                        const hataMap = parseHataKodlari(hataKodlariText);
+                        nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
+                    }
+                    const startTime = row[baslamaSaatIndex] || '';
+                    const endTime = row[bitisSaatIndex] || '';
+                    const workingTime = calculateWorkingTime(startTime, endTime);
+                    
+                    const durusSureleriText = row[durusSureleriIndex] || '';
+                    const durusMap = parseDurusSureleri(durusSureleriText);
+                    
+                    const kurulumSuresi = durusMap['D4'] || 0;
+                    const makinaArizasi = durusMap['D17'] || 0;
+                    const personelDurus = durusMap['D19'] || 0;
+                    const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
+                    const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
+                                        (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
+                                        (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
+                                        (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
+                                        (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
+                                        (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
+                    const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+                    
+                    const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
+                    const netSure = workingTime.totalMinutes - toplamDurus;
+                    
+                    const dizilenAdet = okUrun; // Sadece OK ürün
+                    const fire = nokUrun; // Fire = NOK ürün
+                    const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
+                    const dizilmesiGerekenAdet = calculateDizilmesiGerekenAdet(fullProductName, netSure);
+                    
+                    if (typeof dizilenKompanent === 'number') {
+                        aylikData[ay].toplamDizilen += (dizilenKompanent + fire);
+                    }
+                    if (typeof dizilmesiGerekenAdet === 'number') {
+                        aylikData[ay].toplamDizilmesiGereken += dizilmesiGerekenAdet;
+                    }
+                });
+                for (let i = 1; i <= 12; i++) {
+                    const data = aylikData[i];
+                    if (data.toplamDizilmesiGereken > 0) {
+                        data.calismaPerformansiYuzdesi = ((data.toplamDizilen / data.toplamDizilmesiGereken) * 100).toFixed(1);
+                    } else {
+                        data.calismaPerformansiYuzdesi = '-';
+                    }
+                }
+                
+                yilData[yil] = aylikData;
+            });
+            
+            return yilData;
+        }
+        function createKpiTable() {
+            if (!allSuccessRows.length) {
+                return;
+            }
+            
+            const kpiTableBody = document.querySelector('#panel-5 tbody');
+            if (!kpiTableBody) return;
+            
+            let tableBodyHtml = '';
+            
+            // Her KPI tanımı için satır oluştur
+            kpiDefinitions.forEach((kpiIndex, kpiDefIndex) => {
+                // KPI'nin hesaplama fonksiyonunu çağır
+                const calculateFunc = window[kpiIndex.calculateFunction];
+                if (!calculateFunc) {
+                    console.warn(`KPI hesaplama fonksiyonu bulunamadı: ${kpiIndex.calculateFunction}`);
+                    return;
+                }
+                
+                const allYearData = calculateFunc(); // Tüm yılların verisi
+                const yillar = Object.keys(allYearData).sort(); // Yılları sırala
+                
+                if (yillar.length === 0) {
+                    tableBodyHtml += `
+                        <tr class="row">
+                            <td class="kpi-box">
+                                <div class="kpi-title">${kpiIndex.nameEn}</div>
+                                <div class="kpi-sub">${kpiIndex.nameTr}</div>
+                            </td>
+                            <td class="td tgt">${kpiIndex.target}</td>
+                            <td class="td">${kpiIndex.unit}</td>
+                            <td class="td val" colspan="12" style="text-align:center;color:#666;">Veri bulunamadı</td>
+                        </tr>`;
+                    return;
+                }
+                
+                // Her yıl için ayrı satır oluştur
+                yillar.forEach((yil, yilIndex) => {
+                    const kpiData = allYearData[yil];
+                    
+                    let kpiRowHtml = '';
+                    
+                    // İlk yıl için KPI başlığını göster (rowspan ile)
+                    if (yilIndex === 0) {
+                        const toplamSatirSayisi = yillar.length;
+                        kpiRowHtml += `
+                            <td class="kpi-box" rowspan="${toplamSatirSayisi}" style="
+                                padding:15px 20px;
+                                text-align:left;
+                                vertical-align:middle;
+                                background:linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%);
+                                border:1px solid #cbd5e1;
+                            ">
+                                <div class="kpi-title">${kpiIndex.nameEn}</div>
+                                <div class="kpi-sub">${kpiIndex.nameTr}</div>
+                            </td>`;
+                        
+                        // Target ve Unit - sadece ilk satırda göster
+                        kpiRowHtml += `
+                            <td class="td tgt" rowspan="${toplamSatirSayisi}" style="vertical-align:middle;">${kpiIndex.target}</td>
+                            <td class="td" rowspan="${toplamSatirSayisi}" style="vertical-align:middle;">${kpiIndex.unit}</td>`;
+                    }
+                    for (let i = 1; i <= 12; i++) {
+                        let cellValue = '-';
+                        let colorStyle = '';
+                        
+                        if (kpiData[i]) {
+                            if (kpiIndex.id === 'net_kapasite_kullanim') {
+                                cellValue = kpiData[i].netCalismaYuzdesi;
+                            } else if (kpiIndex.id === 'calisma_performansi') {
+                                cellValue = kpiData[i].calismaPerformansiYuzdesi; // 👈 BU SATIR EKLENDİ
+                            }
+                            
+                            if (cellValue !== '-') {
+                                const numericValue = parseFloat(cellValue);
+                                colorStyle = `color: ${numericValue >= kpiIndex.targetValue ? '#059669' : '#dc2626'};`;
+                                cellValue = `${cellValue}%`;
+                            }
+                        }
+                        const yilBilgisi = `<br><span style="font-size:9px;color:#64748b;font-weight:400;">${yil}</span>`;
+                        kpiRowHtml += `<td class="td val" style="${colorStyle}">${cellValue}${yilBilgisi}</td>`;
+                    }
+                    
+                    const satirRengi = yilIndex % 2 === 0 ? 
+                        'background:linear-gradient(135deg, #fefefe 0%, #f8fafc 100%);' : 
+                        'background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);';
+                    
+                    tableBodyHtml += `<tr class="row" style="${satirRengi}">${kpiRowHtml}</tr>`;
+                });
+            });
+            
+            if (tableBodyHtml === '') {
+                tableBodyHtml = `
+                    <tr class="row">
+                        <td class="kpi-box">
+                            <div class="kpi-title">KPI Tanımlanmadı</div>
+                            <div class="kpi-sub">Henüz KPI eklenmedi</div>
+                        </td>
+                        <td class="td tgt">-</td>
+                        <td class="td">-</td>
+                        <td class="td val" colspan="12" style="text-align:center;color:#666;">KPI tanımları eklenmeyi bekliyor</td>
+                    </tr>`;
+            }
+            
+            kpiTableBody.innerHTML = tableBodyHtml;
+        }
+        function addNewKpi(kpiConfig) {
+            kpiDefinitions.push(kpiConfig);
+            createKpiTable(); // Tabloyu yeniden oluştur
+        }
+        function removeKpi(kpiId) {
+            const index = kpiDefinitions.findIndex(kpi => kpi.id === kpiId);
+            if (index > -1) {
+                kpiDefinitions.splice(index, 1);
+                createKpiTable(); // Tabloyu yeniden oluştur
+            }
+        }
+        window.addNewKpi = addNewKpi;
+        window.removeKpi = removeKpi;
+        
         /////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////////
         //OEE sekmesini oluşturuyorum gün 1//////////////////////////////////////////////////////////
@@ -922,12 +1326,29 @@
                 return;
             }
             
-            const secilenYil = document.getElementById('ekAnalizYilFiltresi').value || new Date().getFullYear();
+            let secilenYil = document.getElementById('ekAnalizYilFiltresi').value;
+                if (!secilenYil) {
+                    // Eğer yıl seçilmemişse, verideki ilk yılı kullan
+                    const dateColIndex = currentHeader.findIndex(h => 
+                        norm(h).includes('tarih') || norm(h).includes('date')
+                    );
+                    if (dateColIndex >= 0 && allSuccessRows.length > 0) {
+                        const firstRowDate = String(allSuccessRows[0][dateColIndex] || '').trim();
+                        const dateParts = firstRowDate.split('.');
+                        if (dateParts.length === 3) {
+                            secilenYil = dateParts[2];
+                        }
+                    }
+                    // Hala yıl yoksa 2024 kullan
+                    if (!secilenYil) {
+                        secilenYil = '2024';
+                    }
+            }
             const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
             const ayRenkleri = [
-                '#fef3f3', '#f0f9ff', '#f0fdf4', '#fffbeb', '#fdf4ff', '#fff1f2',
-                '#f0fdfa', '#fefce8', '#f8fafc', '#fdf2f8', '#ecfeff', '#faf5ff'
+                '#fef3f3', '#f0fdfa', '#fef3f3', '#f0fdfa', '#fef3f3', '#f0fdfa',
+                '#fef3f3', '#f0fdfa', '#fef3f3', '#f0fdfa', '#fef3f3', '#f0fdfa'
             ];
             
             const dateColIndex = currentHeader.findIndex(h => 
@@ -1050,6 +1471,13 @@
                 // 5. Kalite (Son Kontrol) = OK / Toplam * 100
                 const kaliteYuzdesi = data.sonKontrolToplamUrun > 0 ? 
                     ((data.sonKontrolOkUrun / data.sonKontrolToplamUrun) * 100).toFixed(1) : '0.0';
+
+                const calismaPerformansDecimal = parseFloat(calismaPerformansi) / 100;
+                const netCalismaDecimal = parseFloat(netCalismaYuzdesi) / 100;  
+                const kaliteDecimal = parseFloat(kaliteYuzdesi) / 100;
+                
+                const genelOEE = (calismaPerformansDecimal * netCalismaDecimal * kaliteDecimal * 100).toFixed(1);
+
                 
                 tbody += `
                 <tr style="background-color:${ayRengi};">
@@ -1059,6 +1487,7 @@
                     <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#7c3aed;">${calismaPerformansi}%</td>
                     <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#ea580c;">${netCalismaYuzdesi}%</td>
                     <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${kaliteYuzdesi}%</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;text-align:center;font-weight:700;color:#16a34a;background:#dcfce7;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">${genelOEE}%</td>
                 </tr>`;
             }
             
@@ -1087,17 +1516,16 @@
             ekAnalizYilFiltresi.innerHTML = '<option value="">Tüm Yıllar</option>';
             
             yilArray.forEach(yil => {
-                const isSelected = yil === '2025' ? ' selected' : '';
-                ekAnalizYilFiltresi.innerHTML += `<option value="${yil}"${isSelected}>${yil}</option>`;
+                ekAnalizYilFiltresi.innerHTML += `<option value="${yil}">${yil}</option>`;
             });
-            
-            if (!yilArray.includes('2025')) {
-                const currentYear = new Date().getFullYear().toString();
-                if (yilArray.includes(currentYear)) {
-                    ekAnalizYilFiltresi.value = currentYear;
-                }
-            } else {
-                ekAnalizYilFiltresi.value = '2025';
+            if (yilArray.length > 0) {
+                // 2025'ü arayalım, yoksa ilk yılı seçelim
+                const defaultYear = yilArray.includes('2025') ? '2025' : yilArray[yilArray.length - 1];
+                ekAnalizYilFiltresi.value = defaultYear;
+                
+                setTimeout(() => {
+                    createEkAnalizTablosu();
+                }, 50);
             }
         }
         function formatGunSaatDakika(dakika) {
@@ -1878,9 +2306,9 @@
             // Ürün adından referans tablosundaki key'i bul
             let referansKey = null;
             let referansDeger = 0;
-            
             console.log('Aranan ürün:', fullProductName); // Debug için
-            console.log('Referans tablosu:', referansTablosu); // Debug için
+            console.log('Dizilen Adet (OK):', dizilenAdet); // Debug için
+            console.log('Fire (NOK):', fire); // Debug için
             
             // Önce tam eşleşme ara
             if (referansTablosu[fullProductName]) {
@@ -2429,7 +2857,7 @@
                             if (tableBodyId === 'smdAnalyzBody') {
                                 // SMD Tablosu - Ürün adı ve proses adını birleştir
                                 const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                                const dizilenAdet = product.okUrun + product.nokUrun; // Toplam üretilen
+                                const dizilenAdet = product.okUrun; // Toplam üretilen
                                 const fire = product.nokUrun; // Fire = NOK ürün
                                 const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
                                 
@@ -2480,7 +2908,7 @@
                                                 const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
                                                 const productUpper = productName.toUpperCase();
                                                 
-                                                const dizilenAdet = prod.okUrun + prod.nokUrun; // Toplam üretilen
+                                                const dizilenAdet = prod.okUrun; // Toplam üretilen
                                                 const fire = prod.nokUrun; // Fire = NOK ürün
                                                 const dizilenKompanent = calculateDizilenKompanent(productName, dizilenAdet, fire);
                                                 
@@ -4651,6 +5079,17 @@
                     document.getElementById(tabId).classList.add('active');
                     hideLoading();
                 }, 100);
+                } else if (panelId === 'panel-5') {
+                showLoading('KPI Tablosu Hazırlanıyor...');
+                setTimeout(() => {
+                    createKpiTable(); // ← BU SATIRI EKLEYİN
+                    topbar.classList.remove('hidden');
+                    document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+                    document.getElementById(panelId).classList.remove('hidden');
+                    document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                    hideLoading();
+                }, 100);
             } else {    // Diğer paneller için normal geçiş
                 topbar.classList.remove('hidden');
                 document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
@@ -4748,6 +5187,13 @@
                 }
             }
         });
+        smdYilFiltresi.addEventListener('change', createSmdAnalysisTable);
+        lensYilFiltresi.addEventListener('change', createLensAnalysisTable);
+        eolYilFiltresi.addEventListener('change', createEolAnalysisTable);
+        sizdirmazlikYilFiltresi.addEventListener('change', createSizdirmazlikAnalysisTable);
+        lazerYilFiltresi.addEventListener('change', createLazerAnalysisTable);
+        sonKontrolYilFiltresi.addEventListener('change', createSonKontrolAnalysisTable);
+
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
@@ -4764,18 +5210,9 @@
         });
         document.getElementById('aylikAnalizBody').innerHTML = tbody;
 
-        // Loading ile ek analiz tablosunu oluştur  
-        showLoading('Ek Analiz Tablosu Hazırlanıyor...');
-        setTimeout(() => {
-            createEkAnalizTablosu();
-            hideLoading();
-        }, 100);
-        smdYilFiltresi.addEventListener('change', createSmdAnalysisTable);
-        lensYilFiltresi.addEventListener('change', createLensAnalysisTable);
-        eolYilFiltresi.addEventListener('change', createEolAnalysisTable);
-        sizdirmazlikYilFiltresi.addEventListener('change', createSizdirmazlikAnalysisTable);
-        lazerYilFiltresi.addEventListener('change', createLazerAnalysisTable);
-        sonKontrolYilFiltresi.addEventListener('change', createSonKontrolAnalysisTable);
+                // Bu satırları script'in sonuna ekleyin:
+        window.calculateSmdNetKapasite = calculateSmdNetKapasite;
+        window.getSmdCalismaPerformansFromTable = getSmdCalismaPerformansFromTable;
     </script>
 </body>
 </html>
