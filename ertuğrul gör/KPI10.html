@@ -60,17 +60,18 @@
     .dropdown-arrow.open { transform: rotate(180deg); }
     /*kpı tablosu yapıyorum*/
     .card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-    .tbl{width:100%;border-collapse:collapse;font-size:14px} /* Font boyutunu küçülttüm */
+    .tbl{width:100%;border-collapse:collapse;font-size:13px;line-height:1.2}
     .thead tr{background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%)}
-    .th,.td{padding:4px 5px;border:1px solid #cbd5e1;text-align:center} /* Padding'i küçülttüm */
-    .th{font-weight:600;background:#f1f5f9;color:#334155;font-size:13px} /* Font boyutunu küçülttüm */
-    .th.kpi{padding:5px 8px;font-weight:700;background:linear-gradient(135deg,#e2e8f0 0%,#cbd5e1 100%);color:#475569;font-size:14px;text-align:center} /* Padding'i küçülttüm */
+    .th,.td{padding:4px 5px;border:1px solid #cbd5e1;text-align:center;line-height:1.2}
+    .th{font-weight:600;background:#f1f5f9;color:#334155;font-size:12px;line-height:1.2}
+    .th.kpi{font-weight:700;background:linear-gradient(135deg,#e2e8f0 0%,#cbd5e1 100%);color:#475569;font-size:13px;text-align:center;line-height:1.2}
     .row{background:linear-gradient(135deg,#fefefe 0%,#f8fafc 100%)}
-    .kpi-box{padding:5px 10px;text-align:left;vertical-align:top;background:linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%);border:1px solid #cbd5e1;width: fit-content;min-width:100px;max-width: 200px;white-space: nowrap;} /* Padding'i küçülttüm */
-    .kpi-title{font-weight:600;color:#1e293b;font-size:15px;margin-bottom:3px} /* Font boyutu ve margin küçülttüm */
-    .kpi-sub{font-weight:500;color:#64748b;font-size:14px} /* Font boyutunu küçülttüm */
-    .tgt{font-weight:600;color:#059669;font-size:13px} /* Font boyutunu küçülttüm */
-    .val{font-weight:600;color:#2563eb;font-size:12px}
+    .kpi-box{text-align:left;vertical-align:top;background:linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%);border:1px solid #cbd5e1;width:fit-content;min-width:100px;max-width:200px;white-space:nowrap;line-height:1.2}
+    .kpi-title{font-weight:600;color:#1e293b;font-size:14px;margin-bottom:2px;line-height:1.2}
+    .kpi-sub{font-weight:500;color:#64748b;font-size:13px;line-height:1.2}
+    .tgt{font-weight:600;color:#059669;font-size:12px;line-height:1.2}
+    .val{font-weight:600;color:#2563eb;font-size:12px;line-height:1.2}
+
   </style>
 </head>
 <body>
@@ -479,13 +480,13 @@
     </div>
 </div>
   <div id="panel-5" class="panel hidden">
-    <div class="panel-title">KPI Tablo</div>
+    <div class="panel-title">KPI Tablo 2025</div>
     <div style="margin-top:20px">
         <div class="card">
         <table class="tbl">
             <thead class="thead">
             <tr>
-                <th class="th kpi" rowspan="2">KPI</th>
+                <th class="th kpi" rowspan="2">KPI 2025</th>
                 <th class="th">Target</th>
                 <th class="th">Unit</th>
                 <th class="th">Ocak</th>
@@ -682,348 +683,884 @@
         /////////////////////////////////////////////////////////////////////////////////////////////
 
         const kpiDefinitions = [
-            {
-                id: 'net_kapasite_kullanim',
-                nameEn: 'Effective Capacity Utilization Rate (SMD)',
-                nameTr: 'Net Kapasite Kullanım Oranı (SMD)',
-                target: '65%',
-                unit: '%',
-                calculateFunction: 'calculateSmdNetKapasite',
-                targetValue: 65
-            },
-            {
-                id: 'calisma_performansi',
-                nameEn: 'Work Performance Rate (SMD)',
-                nameTr: 'Çalışma Performansı Oranı (SMD)',
-                target: '75%',
-                unit: '%',
-                calculateFunction: 'getSmdCalismaPerformansFromTable', // ← Bu fonksiyon ismi doğru olmalı
-                targetValue: 75
-            },
-            {
-                id: 'setup_kaynakli_kayip',
-                nameEn: 'Set-up Related Lost Capacity Rate (SMD)',
-                nameTr: 'Set-up Kaynaklı Kayıp Kapasite Oranı (SMD)',
-                target: '9%',
-                unit: '%',
-                calculateFunction: 'getSmdSetupOraniFromTable',
-                targetValue: 9
-            }
+        {id:'net_kapasite_kullanim',nameEn:'Effective Capacity Utilization Rate (SMD)',nameTr:'Net Kapasite Kullanım Oranı (SMD)',target:'65% Min.',unit:'%',calculateFunction:'getSmdDataForKpi',targetValue:65,dataKey:'netCalismaYuzdesi'},
+        {id:'calisma_performansi',nameEn:'Work Performance Rate (SMD)',nameTr:'Çalışma Performansı Oranı (SMD)',target:'75% Min.',unit:'%',calculateFunction:'getSmdDataForKpi',targetValue:75,dataKey:'calismaPerformansiYuzdesi'},
+        {id:'setup_kaynakli_kayip',nameEn:'Set-up Related Lost Capacity Rate (SMD)',nameTr:'Set-up Kaynaklı Kayıp Kapasite Oranı (SMD)',target:'9% Max.',unit:'%',calculateFunction:'getSmdDataForKpi',targetValue:9,dataKey:'setupOraniYuzdesi',isReverse:true},
+        {id:'ariza_kaynakli_kayip',nameEn:'Failure-related Lost Capacity Rate (SMD)',nameTr:'Arıza Kaynaklı Kayıp Kapasite Oranı (SMD)',target:'0.5% Max.',unit:'%',calculateFunction:'getSmdDataForKpi',targetValue:0.5,dataKey:'arizaOraniYuzdesi',isReverse:true},
+        {id:'smd_istasyon_kalite',nameEn:'Station-based Quality Rate (SMD)',nameTr:'İstasyon Bazlı Kalite Oranı (SMD)',target:'95% Min.',unit:'%',calculateFunction:'getSmdDataForKpi',targetValue:95,dataKey:'istasyonKaliteOraniYuzdesi'},
+        {id:'lens_aa_net_kapasite',nameEn:'Effective Capacity Utilization Rate (Lens AA 2)',nameTr:'Net Kapasite Kullanım Oranı (LENS AA 2)',target:'65% Min.',unit:'%',calculateFunction:'getLensAADataForKpi',targetValue:65,dataKey:'netCalismaYuzdesi'},
+        {id:'lens_aa_calisma_performansi',nameEn:'Work Performance Rate (Lens AA 2)',nameTr:'Çalışma Performansı Oranı (LENS AA 2)',target:'65% Min.',unit:'%',calculateFunction:'getLensAADataForKpi',targetValue:65,dataKey:'calismaPerformansiYuzdesi'},
+        {id:'lens_aa_ariza_kaynakli',nameEn:'Failure-related Lost Capacity Rate (Lens AA 2)',nameTr:'Arıza Kaynaklı Kayıp Kapasite Oranı (LENS AA 2)',target:'10% Max.',unit:'%',calculateFunction:'getLensAADataForKpi',targetValue:10,dataKey:'arizaKaynakliDurusOraniYuzdesi',isReverse:true},
+        {id:'lens_aa_istasyon_kalite',nameEn:'Station-based Quality Rate (Lens AA2)',nameTr:'İstasyon Bazlı Kalite Oranı (LENS AA 2)',target:'80% Min.',unit:'%',calculateFunction:'getLensAADataForKpi',targetValue:80,dataKey:'istasyonKaliteOraniYuzdesi'},
+        {id:'eol_net_kapasite',nameEn:'Effective Capacity Utilization Rate (EOL 2)',nameTr:'Net Kapasite Kullanım Oranı (EOL 2)',target:'75% Min',unit:'%',calculateFunction:'getEOLDataForKpi',targetValue:75,dataKey:'netCalismaOraniYuzdesi'},
+        {id:'eol_calisma_performansi',nameEn:'Work Performance Rate (EOL 2)',nameTr:'Çalışma Performansı Oranı (EOL 2)',target:'65% Min',unit:'%',calculateFunction:'getEOLDataForKpi',targetValue:65,dataKey:'calismaPerformansOraniYuzdesi'},
+        {id:'eol_setup_kaynakli_kayip',nameEn:'Set-up Related Lost Capacity Rate (EOL 2)',nameTr:'Set-up Kaynaklı Kayıp Kapasite Oranı (EOL 2)',target:'5% Max.',unit:'%',calculateFunction:'getEOLDataForKpi',targetValue:5,dataKey:'setupKaynakliKayipOraniYuzdesi',isReverse:true},
+        {id:'eol_ariza_kaynakli_kayip',nameEn:'Failure-related Lost Capacity Rate (EOL 2)',nameTr:'Arıza Kaynaklı Kayıp Kapasite Oranı (EOL 2)',target:'6% Max.',unit:'%',calculateFunction:'getEOLDataForKpi',targetValue:6,dataKey:'arizaKaynakliKayipOraniYuzdesi',isReverse:true},
+        {id:'eol_istasyon_kalite',nameEn:'Station-based Quality Rate (EOL2)',nameTr:'İstasyon Bazlı Kalite Oranı (EOL 2)',target:'75% Min.',unit:'%',calculateFunction:'getEOLDataForKpi',targetValue:75,dataKey:'istasyonKaliteOraniYuzdesi'},
+        {id:'sizdirmazlik_istasyon_kalite',nameEn:'Station-based Quality Rate (Sealing)',nameTr:'İstasyon Bazlı Kalite Oranı (SIZDIRMAZLIK)',target:'80% Min.',unit:'%',calculateFunction:'getSizdirmazlikDataForKpi',targetValue:80,dataKey:'kaliteOraniYuzdesi'},
+        {id: 'personel_plansiz_durus',nameEn: 'Unplanned Downtime Rate - Staff',nameTr: 'Plansız Duruş Oranı - Personel',target: '3% Max.',unit: '%',calculateFunction: 'getPersonelDurusDataForKpi',targetValue: 3,dataKey: 'personelDurusYuzdesi',isReverse: true},
+        {id: 'makine_ekipman_plansiz_durus',nameEn: 'Unplanned Downtime Rate - Machine',nameTr: 'Plansız Duruş Oranı - Makine - Ekipman',target: '2% Max.',unit: '%',calculateFunction: 'getMakineEkipmanDurusDataForKpi',targetValue: 2,dataKey: 'makineEkipmanDurusYuzdesi',isReverse: true},
+        {id: 'genel_oee',nameEn: 'Overall Equipment Effectiveness (OEE)',nameTr: 'Genel Ekipman Etkinliği (OEE)',target: '45% Min.',unit: '%',calculateFunction: 'getGenelOEEDataForKpi',targetValue: 45,dataKey: 'genelOEEYuzdesi',isReverse: false}
         ];
-        function calculateSmdNetKapasite() {
-            const dateColIndex = currentHeader.findIndex(h => 
-                norm(h).includes('tarih') || norm(h).includes('date')
-            );
-            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
-            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
-            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
-            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
-            
-            if (dateColIndex < 0 || prosesAdiIndex < 0) {
-                return {};
-            }
-            const yillar = new Set();
-            allSuccessRows.forEach(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                if (dateParts.length === 3) {
-                    yillar.add(dateParts[2]);
-                }
-            });
-            
-            const yilData = {};
-            Array.from(yillar).forEach(yil => {
-                const filteredData = allSuccessRows.filter(row => {
-                    const cellDate = String(row[dateColIndex] || '').trim();
-                    const dateParts = cellDate.split('.');
-                    if (dateParts.length !== 3 || dateParts[2] !== String(yil)) return false;
-                    
-                    const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
-                    return prosesAdi.includes('smd bot') || prosesAdi.includes('smd top');
-                });
-                
-                const aylikData = {};
-                for (let i = 1; i <= 12; i++) {
-                    aylikData[i] = {
-                        toplamSure: 0,
-                        netSure: 0
-                    };
-                }
-                
-                filteredData.forEach(row => {
-                    const cellDate = String(row[dateColIndex] || '').trim();
-                    const dateParts = cellDate.split('.');
-                    if (dateParts.length !== 3) return;
-                        
-                    const ay = parseInt(dateParts[1]);
-                    if (ay < 1 || ay > 12) return;
-                    
-                    const startTime = row[baslamaSaatIndex] || '';
-                    const endTime = row[bitisSaatIndex] || '';
-                    const workingTime = calculateWorkingTime(startTime, endTime);
-                    
-                    const durusSureleriText = row[durusSureleriIndex] || '';
-                    const durusMap = parseDurusSureleri(durusSureleriText);
-                    
-                    const kurulumSuresi = durusMap['D4'] || 0;
-                    const makinaArizasi = durusMap['D17'] || 0;
-                    const personelDurus = durusMap['D19'] || 0;
-                    const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
-                    const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
-                                        (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
-                                        (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
-                                        (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
-                                        (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
-                                        (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
-                    const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
-                    
-                    const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
-                    const netSure = workingTime.totalMinutes - toplamDurus;
-                    
-                    aylikData[ay].toplamSure += workingTime.totalMinutes;
-                    aylikData[ay].netSure += netSure;
-                });
-                for (let i = 1; i <= 12; i++) {
-                    const data = aylikData[i];
-                    if (data.toplamSure > 0) {
-                        data.netCalismaYuzdesi = ((data.netSure / data.toplamSure) * 100).toFixed(1);
-                    } else {
-                        data.netCalismaYuzdesi = '-';
-                    }
-                }
-                
-                yilData[yil] = aylikData;
-            });
-            
-            return yilData;
+        
+        function calculateGenelOEEAnalysisForYear(secilenYil) {
+    console.log(`calculateGenelOEEAnalysisForYear çağrıldı: ${secilenYil}`);
+    
+    // ✅ YIL FİLTRESİNİ ZORLA 2025 YAP
+    if (!secilenYil || secilenYil === '2024') {
+        secilenYil = '2025';
+        console.log(`Yıl 2025'e çevrildi: ${secilenYil}`);
+    }
+    
+    // ✅ Önce Ek Analiz tablosunu oluştur
+    console.log('Ek Analiz tablosu oluşturuluyor...');
+    
+    // Ek Analiz yıl filtresini ayarla
+    const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
+    if (ekAnalizYilFiltresi) {
+        ekAnalizYilFiltresi.value = secilenYil;
+        console.log(`Ek Analiz yıl filtresi ${secilenYil}'e ayarlandı`);
+    }
+    
+    // Ek Analiz tablosunu oluştur
+    createEkAnalizTablosu();
+    
+    // Kısa bir bekleme süresi ekle (tablo oluşturulması için)
+    setTimeout(() => {
+        console.log('Ek Analiz tablosundan veri okunuyor...');
+        
+        // Şimdi tablodaki Genel OEE değerlerini oku
+        const ekAnalizTableBody = document.getElementById('ekAnalizBody');
+        const aylikKpiData = {};
+        
+        // Boş veri ile başlat
+        for (let ay = 1; ay <= 12; ay++) {
+            aylikKpiData[ay] = {
+                genelOEEYuzdesi: '-'
+            };
         }
-        function getSmdCalismaPerformansFromTable() {
-            const dateColIndex = currentHeader.findIndex(h => 
-                norm(h).includes('tarih') || norm(h).includes('date')
-            );
-            const prosesAdiIndex = findColIndex(currentHeader, ['proses', 'adi']);
-            const urunAdiIndex = findColIndex(currentHeader, ['urun', 'adi']);
-            const okIndex = findColIndex(currentHeader, ['ok']);
-            const nokIndex = findColIndex(currentHeader, ['hata', 'kod']);
-            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
-            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
-            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
-            
-            if (dateColIndex < 0 || prosesAdiIndex < 0) {
-                return {};
-            }
-            const yillar = new Set();
-            allSuccessRows.forEach(row => {
-                const cellDate = String(row[dateColIndex] || '').trim();
-                const dateParts = cellDate.split('.');
-                if (dateParts.length === 3) {
-                    yillar.add(dateParts[2]);
-                }
-            });
-            
-            const yilData = {};
-            Array.from(yillar).forEach(yil => {
-                const filteredData = allSuccessRows.filter(row => {
-                    const cellDate = String(row[dateColIndex] || '').trim();
-                    const dateParts = cellDate.split('.');
-                    if (dateParts.length !== 3 || dateParts[2] !== String(yil)) return false;
-                    
-                    const prosesAdi = String(row[prosesAdiIndex] || '').toLowerCase();
-                    return prosesAdi.includes('smd bot') || prosesAdi.includes('smd top');
-                });
-                const aylikData = {};
-                for (let i = 1; i <= 12; i++) {
-                    aylikData[i] = {
-                        toplamDizilen: 0,
-                        toplamDizilmesiGereken: 0
-                    };
-                }
-                filteredData.forEach(row => {
-                    const cellDate = String(row[dateColIndex] || '').trim();
-                    const dateParts = cellDate.split('.');
-                    if (dateParts.length !== 3) return;
-                        
-                    const ay = parseInt(dateParts[1]);
-                    if (ay < 1 || ay > 12) return;
-                    
-                    const urunAdi = String(row[urunAdiIndex] || '');
-                    const prosesAdi = String(row[prosesAdiIndex] || '');
-                    const fullProductName = prosesAdi ? `${urunAdi} - ${prosesAdi}` : urunAdi;
-                    
-                    const okUrun = parseInt(row[okIndex]) || 0;
-                    let nokUrun = 0;
-                    if (nokIndex >= 0) {
-                        const hataKodlariText = row[nokIndex] || '';
-                        const hataMap = parseHataKodlari(hataKodlariText);
-                        nokUrun = Object.values(hataMap).reduce((toplam, adet) => toplam + adet, 0);
-                    }
-                    const startTime = row[baslamaSaatIndex] || '';
-                    const endTime = row[bitisSaatIndex] || '';
-                    const workingTime = calculateWorkingTime(startTime, endTime);
-                    
-                    const durusSureleriText = row[durusSureleriIndex] || '';
-                    const durusMap = parseDurusSureleri(durusSureleriText);
-                    
-                    const kurulumSuresi = durusMap['D4'] || 0;
-                    const makinaArizasi = durusMap['D17'] || 0;
-                    const personelDurus = durusMap['D19'] || 0;
-                    const planliDurus = (durusMap['D12'] || 0) + (durusMap['D13'] || 0) + (durusMap['D18'] || 0) + (durusMap['D21'] || 0);
-                    const plansizDurus = (durusMap['D0'] || 0) + (durusMap['D1'] || 0) + (durusMap['D2'] || 0) + 
-                                        (durusMap['D3'] || 0) + (durusMap['D5'] || 0) + (durusMap['D6'] || 0) + 
-                                        (durusMap['D7'] || 0) + (durusMap['D8'] || 0) + (durusMap['D10'] || 0) + 
-                                        (durusMap['D14'] || 0) + (durusMap['D15'] || 0) + (durusMap['D16'] || 0) + 
-                                        (durusMap['D19'] || 0) + (durusMap['D20'] || 0) + (durusMap['D22'] || 0) + 
-                                        (durusMap['D23'] || 0) + (durusMap['D24'] || 0);
-                    const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
-                    
-                    const toplamDurus = kurulumSuresi + makinaArizasi + planliDurus + plansizDurus + makineProgramDurus;
-                    const netSure = workingTime.totalMinutes - toplamDurus;
-                    
-                    const dizilenAdet = okUrun; // Sadece OK ürün
-                    const fire = nokUrun; // Fire = NOK ürün
-                    const dizilenKompanent = calculateDizilenKompanent(fullProductName, dizilenAdet, fire);
-                    const dizilmesiGerekenAdet = calculateDizilmesiGerekenAdet(fullProductName, netSure);
-                    
-                    if (typeof dizilenKompanent === 'number') {
-                        aylikData[ay].toplamDizilen += (dizilenKompanent + fire);
-                    }
-                    if (typeof dizilmesiGerekenAdet === 'number') {
-                        aylikData[ay].toplamDizilmesiGereken += dizilmesiGerekenAdet;
-                    }
-                });
-                for (let i = 1; i <= 12; i++) {
-                    const data = aylikData[i];
-                    if (data.toplamDizilmesiGereken > 0) {
-                        data.calismaPerformansiYuzdesi = ((data.toplamDizilen / data.toplamDizilmesiGereken) * 100).toFixed(1);
-                    } else {
-                        data.calismaPerformansiYuzdesi = '-';
-                    }
-                }
-                
-                yilData[yil] = aylikData;
-            });
-            
-            return yilData;
+        
+        if (!ekAnalizTableBody) {
+            console.error('Ek Analiz tablo gövdesi bulunamadı!');
+            return aylikKpiData;
         }
-        function createKpiTable() {
-            if (!allSuccessRows.length) {
+        
+        // Tablodan aylık verileri oku
+        const tableRows = ekAnalizTableBody.querySelectorAll('tr');
+        console.log(`Ek Analiz tablosunda ${tableRows.length} satır bulundu`);
+        
+        tableRows.forEach((row, index) => {
+            const cells = row.cells;
+            if (cells.length < 7) {
+                console.log(`Satır ${index}: Yetersiz sütun (${cells.length})`);
                 return;
             }
             
-            const kpiTableBody = document.querySelector('#panel-5 tbody');
-            if (!kpiTableBody) return;
+            // İlk sütun ay bilgisi
+            const ayText = cells[0].textContent.trim();
+            const ayIndex = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'].indexOf(ayText);
             
-            let tableBodyHtml = '';
-            
-            // Her KPI tanımı için satır oluştur
-            kpiDefinitions.forEach((kpiIndex, kpiDefIndex) => {
-                // KPI'nin hesaplama fonksiyonunu çağır
-                const calculateFunc = window[kpiIndex.calculateFunction];
-                if (!calculateFunc) {
-                    console.warn(`KPI hesaplama fonksiyonu bulunamadı: ${kpiIndex.calculateFunction}`);
-                    return;
-                }
+            if (ayIndex >= 0) {
+                const ay = ayIndex + 1;
+                console.log(`${ay}. ay (${ayText}) işleniyor...`);
                 
-                const allYearData = calculateFunc(); // Tüm yılların verisi
-                const yillar = Object.keys(allYearData).sort(); // Yılları sırala
-                
-                if (yillar.length === 0) {
-                    tableBodyHtml += `
-                        <tr class="row">
-                            <td class="kpi-box">
-                                <div class="kpi-title">${kpiIndex.nameEn}</div>
-                                <div class="kpi-sub">${kpiIndex.nameTr}</div>
-                            </td>
-                            <td class="td tgt">${kpiIndex.target}</td>
-                            <td class="td">${kpiIndex.unit}</td>
-                            <td class="td val" colspan="12" style="text-align:center;color:#666;">Veri bulunamadı</td>
-                        </tr>`;
-                    return;
-                }
-                
-                // Her yıl için ayrı satır oluştur
-                yillar.forEach((yil, yilIndex) => {
-                    const kpiData = allYearData[yil];
+                // Genel OEE - 7. sütun (index 6) - Son sütun
+                const genelOEECell = cells[6];
+                if (genelOEECell) {
+                    const genelOEEText = genelOEECell.textContent.trim();
+                    console.log(`${ay}. ay Genel OEE hücre içeriği: "${genelOEEText}"`);
                     
-                    let kpiRowHtml = '';
-                    
-                    // İlk yıl için KPI başlığını göster (rowspan ile)
-                    if (yilIndex === 0) {
-                        const toplamSatirSayisi = yillar.length;
-                        kpiRowHtml += `
-                            <td class="kpi-box" rowspan="${toplamSatirSayisi}" style="
-                                padding:15px 20px;
-                                text-align:left;
-                                vertical-align:middle;
-                                background:linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%);
-                                border:1px solid #cbd5e1;
-                            ">
-                                <div class="kpi-title">${kpiIndex.nameEn}</div>
-                                <div class="kpi-sub">${kpiIndex.nameTr}</div>
-                            </td>`;
-                        
-                        // Target ve Unit - sadece ilk satırda göster
-                        kpiRowHtml += `
-                            <td class="td tgt" rowspan="${toplamSatirSayisi}" style="vertical-align:middle;">${kpiIndex.target}</td>
-                            <td class="td" rowspan="${toplamSatirSayisi}" style="vertical-align:middle;">${kpiIndex.unit}</td>`;
-                    }
-                    for (let i = 1; i <= 12; i++) {
-                        let cellValue = '-';
-                        let colorStyle = '';
-                        
-                        if (kpiData[i]) {
-                            if (kpiIndex.id === 'net_kapasite_kullanim') {
-                                cellValue = kpiData[i].netCalismaYuzdesi;
-                            } else if (kpiIndex.id === 'calisma_performansi') {
-                                cellValue = kpiData[i].calismaPerformansiYuzdesi; // 👈 BU SATIR EKLENDİ
-                            }
-                            
-                            if (cellValue !== '-') {
-                                const numericValue = parseFloat(cellValue);
-                                colorStyle = `color: ${numericValue >= kpiIndex.targetValue ? '#059669' : '#dc2626'};`;
-                                cellValue = `${cellValue}%`;
-                            }
+                    if (genelOEEText.includes('%')) {
+                        const genelOEEMatch = genelOEEText.match(/(\d+\.?\d*)%/);
+                        if (genelOEEMatch) {
+                            aylikKpiData[ay].genelOEEYuzdesi = genelOEEMatch[1];
+                            console.log(`✅ Genel OEE ${ay}. ay: ${genelOEEMatch[1]}%`);
+                        } else {
+                            console.log(`❌ ${ay}. ay: Yüzde değeri bulunamadı`);
                         }
-                        const yilBilgisi = `<br><span style="font-size:9px;color:#64748b;font-weight:400;">${yil}</span>`;
-                        kpiRowHtml += `<td class="td val" style="${colorStyle}">${cellValue}${yilBilgisi}</td>`;
+                    } else {
+                        console.log(`❌ ${ay}. ay: % işareti bulunamadı`);
                     }
-                    
-                    const satirRengi = yilIndex % 2 === 0 ? 
-                        'background:linear-gradient(135deg, #fefefe 0%, #f8fafc 100%);' : 
-                        'background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);';
-                    
-                    tableBodyHtml += `<tr class="row" style="${satirRengi}">${kpiRowHtml}</tr>`;
-                });
+                } else {
+                    console.log(`❌ ${ay}. ay: Genel OEE hücresi bulunamadı`);
+                }
+            } else {
+                console.log(`Bilinmeyen ay: "${ayText}"`);
+            }
+        });
+        
+        console.log(`✅ Genel OEE ${secilenYil} yılı KPI verileri:`, aylikKpiData);
+        return aylikKpiData;
+        
+    }, 100); // 100ms bekle
+    
+    // Geçici olarak boş veri döndür
+    const tempData = {};
+    for (let ay = 1; ay <= 12; ay++) {
+        tempData[ay] = { genelOEEYuzdesi: '-' };
+    }
+    return tempData;
+}
+function getGenelOEEDataForKpi() {
+    if (!allSuccessRows.length) {
+        console.log('Genel OEE KPI: allSuccessRows boş');
+        return {};
+    }
+    
+    const secilenYillar = getAllYears(); // Tüm yılları al
+    const yilData = {};
+    
+    // 2025 yılını öncelikle işle
+    const yil = '2025';
+    console.log(`Genel OEE KPI için ${yil} yılı işleniyor...`);
+    
+    // Önce Ek Analiz tablosunu oluştur
+    createEkAnalizTablosu();
+    
+    // Sonra veriyi al
+    setTimeout(() => {
+        const genelOEEData = calculateGenelOEEAnalysisForYear(yil);
+        yilData[yil] = genelOEEData;
+        
+        console.log('Genel OEE KPI toplam veri:', yilData);
+        
+        // KPI tablosunu yeniden oluştur
+        createKpiTable();
+    }, 200);
+    
+    // Geçici boş veri döndür
+    const tempYilData = {};
+    secilenYillar.forEach(yil => {
+        tempYilData[yil] = {};
+        for (let ay = 1; ay <= 12; ay++) {
+            tempYilData[yil][ay] = { genelOEEYuzdesi: '-' };
+        }
+    });
+    
+    return tempYilData;
+}
+
+                function getMakineEkipmanDurusDataForKpi() {
+            if (!allSuccessRows.length) {
+                console.log('Makine Ekipman Duruş KPI: allSuccessRows boş');
+                return {};
+            }
+            
+            const secilenYillar = getAllYears(); // Tüm yılları al
+            const yilData = {};
+            
+            secilenYillar.forEach(yil => {
+                console.log(`Makine Ekipman Duruş KPI için ${yil} yılı işleniyor...`);
+                const makineEkipmanDurusData = calculateMakineEkipmanDurusAnalysisForYear(yil);
+                yilData[yil] = makineEkipmanDurusData;
             });
             
-            if (tableBodyHtml === '') {
-                tableBodyHtml = `
-                    <tr class="row">
-                        <td class="kpi-box">
-                            <div class="kpi-title">KPI Tanımlanmadı</div>
-                            <div class="kpi-sub">Henüz KPI eklenmedi</div>
-                        </td>
-                        <td class="td tgt">-</td>
-                        <td class="td">-</td>
-                        <td class="td val" colspan="12" style="text-align:center;color:#666;">KPI tanımları eklenmeyi bekliyor</td>
-                    </tr>`;
+            console.log('Makine Ekipman Duruş KPI toplam veri:', yilData);
+            return yilData;
+        }
+        function calculateMakineEkipmanDurusAnalysisForYear(secilenYil) {
+            console.log(`calculateMakineEkipmanDurusAnalysisForYear çağrıldı: ${secilenYil}`);
+            
+            // ✅ YIL FİLTRESİNİ ZORLA 2025 YAP
+            if (!secilenYil || secilenYil === '2024') {
+                secilenYil = '2025';
+                console.log(`Makine Ekipman Duruş yılı 2025'e çevrildi: ${secilenYil}`);
             }
             
-            kpiTableBody.innerHTML = tableBodyHtml;
-        }
-        function addNewKpi(kpiConfig) {
-            kpiDefinitions.push(kpiConfig);
-            createKpiTable(); // Tabloyu yeniden oluştur
-        }
-        function removeKpi(kpiId) {
-            const index = kpiDefinitions.findIndex(kpi => kpi.id === kpiId);
-            if (index > -1) {
-                kpiDefinitions.splice(index, 1);
-                createKpiTable(); // Tabloyu yeniden oluştur
+            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            
+            
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            if (dateColIndex < 0 || baslamaSaatIndex < 0 || bitisSaatIndex < 0 || durusSureleriIndex < 0) {
+                console.error('Makine Ekipman duruş analizi için gerekli sütunlar bulunamadı!');
+                return {};
             }
+            
+            // Yıl filtresine göre verileri filtrele
+            const filteredData = allSuccessRows.filter(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                return dateParts.length === 3 && dateParts[2] === String(secilenYil);
+            });
+            
+            // Aylık verileri topla (OEE Analizi sayfasındakiyle aynı mantık)
+            const aylikMakineEkipmanDurusData = {};
+            
+            for (let i = 1; i <= 12; i++) {
+                aylikMakineEkipmanDurusData[i] = {
+                    toplamCalisma: 0,
+                    makineEkipmanDurus: 0,
+                    makineEkipmanDurusYuzdesi: '-'
+                };
+            }
+            
+            filteredData.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length !== 3) return;
+                    
+                const ay = parseInt(dateParts[1]);
+                if (ay < 1 || ay > 12) return;
+                
+                const startTime = row[baslamaSaatIndex] || '';
+                const endTime = row[bitisSaatIndex] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
+                
+                const durusSureleriText = row[durusSureleriIndex] || '';
+                const durusMap = parseDurusSureleri(durusSureleriText);
+                
+                // Makine+Ekipman kaynaklı duruşlar (D17: Makina Arızası + D9,D11: Makine/Program Duruşları)
+                const makinaArizasi = durusMap['D17'] || 0;
+                const makineProgramDurus = (durusMap['D9'] || 0) + (durusMap['D11'] || 0);
+                const makineEkipmanKaynakliDuruslar = makinaArizasi + makineProgramDurus;
+                
+                aylikMakineEkipmanDurusData[ay].toplamCalisma += workingTime.totalMinutes;
+                aylikMakineEkipmanDurusData[ay].makineEkipmanDurus += makineEkipmanKaynakliDuruslar;
+            });
+            
+            // Makine Ekipman duruş yüzdelerini hesapla (OEE Analizi sayfasındakiyle aynı formül)
+            for (let ay = 1; ay <= 12; ay++) {
+                const data = aylikMakineEkipmanDurusData[ay];
+                
+                if (data.toplamCalisma > 0) {
+                    const makineEkipmanYuzde = ((data.makineEkipmanDurus / data.toplamCalisma) * 100).toFixed(1);
+                    data.makineEkipmanDurusYuzdesi = makineEkipmanYuzde;
+                    
+                    console.log(`Makine Ekipman Duruş ${ay}. ay: ${data.makineEkipmanDurus} dk / ${data.toplamCalisma} dk = ${makineEkipmanYuzde}%`);
+                } else {
+                    data.makineEkipmanDurusYuzdesi = '0.0';
+                }
+            }
+            
+            console.log(`Makine Ekipman Duruş ${secilenYil} yılı KPI verileri:`, aylikMakineEkipmanDurusData);
+            return aylikMakineEkipmanDurusData;
         }
-        window.addNewKpi = addNewKpi;
-        window.removeKpi = removeKpi;
+        function getPersonelDurusDataForKpi() {
+            if (!allSuccessRows.length) {
+                console.log('Personel Duruş KPI: allSuccessRows boş');
+                return {};
+            }
+            const secilenYillar = getAllYears();
+            const yilData = {};
+            secilenYillar.forEach(yil => {
+                console.log(`Personel Duruş KPI için ${yil} yılı işleniyor...`);
+                const personelDurusData = calculatePersonelDurusAnalysisForYear(yil);
+                yilData[yil] = personelDurusData;
+            });
+            console.log('Personel Duruş KPI toplam veri:', yilData);
+            return yilData;
+        }
+        function calculatePersonelDurusAnalysisForYear(secilenYil) {
+            console.log(`calculatePersonelDurusAnalysisForYear çağrıldı: ${secilenYil}`);
+            
+            // ✅ YIL FİLTRESİNİ ZORLA 2025 YAP
+            if (!secilenYil || secilenYil === '2024') {
+                secilenYil = '2025';
+                console.log(`Personel Duruş yılı 2025'e çevrildi: ${secilenYil}`);
+            }
+            
+            const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            
+            const dateColIndex = currentHeader.findIndex(h => 
+                norm(h).includes('tarih') || norm(h).includes('date')
+            );
+            const baslamaSaatIndex = findColIndex(currentHeader, ['baslama', 'saat']);
+            const bitisSaatIndex = findColIndex(currentHeader, ['bitis', 'saat']);
+            const durusSureleriIndex = findColIndex(currentHeader, ['durus', 'sureleri']);
+            
+            if (dateColIndex < 0 || baslamaSaatIndex < 0 || bitisSaatIndex < 0 || durusSureleriIndex < 0) {
+                console.error('Personel duruş analizi için gerekli sütunlar bulunamadı!');
+                return {};
+            }
+            const filteredData = allSuccessRows.filter(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                return dateParts.length === 3 && dateParts[2] === String(secilenYil);
+            });
+            const aylikPersonelDurusData = {};
+            
+            for (let i = 1; i <= 12; i++) {
+                aylikPersonelDurusData[i] = {
+                    toplamCalisma: 0,
+                    personelDurus: 0,
+                    personelDurusYuzdesi: '-'
+                };
+            }
+            
+            filteredData.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length !== 3) return;
+                    
+                const ay = parseInt(dateParts[1]);
+                if (ay < 1 || ay > 12) return;
+                
+                const startTime = row[baslamaSaatIndex] || '';
+                const endTime = row[bitisSaatIndex] || '';
+                const workingTime = calculateWorkingTime(startTime, endTime);
+                const durusSureleriText = row[durusSureleriIndex] || '';
+                const durusMap = parseDurusSureleri(durusSureleriText);
+                const personelKaynakliDuruslar = durusMap['D19'] || 0;
+                
+                aylikPersonelDurusData[ay].toplamCalisma += workingTime.totalMinutes;
+                aylikPersonelDurusData[ay].personelDurus += personelKaynakliDuruslar;
+            });
+            for (let ay = 1; ay <= 12; ay++) {
+                const data = aylikPersonelDurusData[ay];
+                if (data.toplamCalisma > 0) {
+                    const personelYuzde = ((data.personelDurus / data.toplamCalisma) * 100).toFixed(1);
+                    data.personelDurusYuzdesi = personelYuzde;
+                    console.log(`Personel Duruş ${ay}. ay: ${data.personelDurus} dk / ${data.toplamCalisma} dk = ${personelYuzde}%`);
+                } else {
+                    data.personelDurusYuzdesi = '0.0';
+                }
+            }
+            console.log(`Personel Duruş ${secilenYil} yılı KPI verileri:`, aylikPersonelDurusData);
+            return aylikPersonelDurusData;
+        }
+        function getEOLDataForKpi() {
+            if (!allSuccessRows.length) {
+                console.log('EOL KPI: allSuccessRows boş');
+                return {};
+            }
+            createEolAnalysisTable();
+            
+            const secilenYillar = getAllYears();
+            const yilData = {};
+            
+            secilenYillar.forEach(yil => {
+                console.log(`EOL KPI için ${yil} yılı işleniyor...`);
+                
+                const eolYilElement = document.getElementById('eolYilFiltresi');
+                if (eolYilElement) {
+                    eolYilElement.value = yil;
+                }
+                createEolAnalysisTable();
+                
+                const eolData = calculateEOLAnalysisForYear(yil);
+                yilData[yil] = eolData;
+            });
+            
+            console.log('EOL KPI toplam veri:', yilData);
+            return yilData;
+        }
+        function calculateEOLAnalysisForYear(secilenYil) {
+            console.log(`calculateEOLAnalysisForYear çağrıldı: ${secilenYil}`);
+            
+            // EOL tablosunun oluşturulduğundan emin ol
+            const eolTableBody = document.getElementById('eolAnalyzBody');
+            if (!eolTableBody) {
+                console.error('EOL tablosu bulunamadı!');
+                return {};
+            }
+            
+            const aylikKpiData = {};
+            
+            // Boş veri ile başlat
+            for (let ay = 1; ay <= 12; ay++) {
+                aylikKpiData[ay] = {
+                    netCalismaOraniYuzdesi: '-',
+                    calismaPerformansOraniYuzdesi: '-',
+                    setupKaynakliKayipOraniYuzdesi: '-',
+                    arizaKaynakliKayipOraniYuzdesi: '-',
+                    istasyonKaliteOraniYuzdesi: '-'
+                };
+            }
+            
+            // Tablodan verileri oku
+            const tableRows = eolTableBody.querySelectorAll('tr');
+            console.log(`EOL tablosunda ${tableRows.length} satır bulundu`);
+            
+            tableRows.forEach((row, index) => {
+                const cells = row.cells;
+                if (cells.length < 22) {
+                    console.log(`Satır ${index}: Yetersiz sütun (${cells.length})`);
+                    return;
+                }
+                
+                // İlk hücre ay bilgisi
+                const ayText = cells[0].textContent.trim();
+                const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                const ayIndex = aylar.indexOf(ayText);
+                
+                if (ayIndex >= 0) {
+                    const ay = ayIndex + 1;
+                    console.log(`EOL ${ay}. ay işleniyor: ${ayText}`);
+                    
+                    // Net Çalışma Oranı - 16. sütun (index 15)
+                    const netCalismaCell = cells[15];
+                    if (netCalismaCell && netCalismaCell.textContent.includes('%')) {
+                        const netCalismaText = netCalismaCell.textContent.trim();
+                        const netCalismaMatch = netCalismaText.match(/(\d+\.?\d*)%/);
+                        if (netCalismaMatch) {
+                            aylikKpiData[ay].netCalismaOraniYuzdesi = netCalismaMatch[1];
+                            console.log(`Net Çalışma ${ay}. ay: ${netCalismaMatch[1]}%`);
+                        }
+                    }
+                    
+                    // Setup Kaynaklı Kayıp - 19. sütun (index 18)
+                    const setupKayipCell = cells[18];
+                    if (setupKayipCell && setupKayipCell.textContent.includes('%')) {
+                        const setupKayipText = setupKayipCell.textContent.trim();
+                        const setupKayipMatch = setupKayipText.match(/(\d+\.?\d*)%/);
+                        if (setupKayipMatch) {
+                            aylikKpiData[ay].setupKaynakliKayipOraniYuzdesi = setupKayipMatch[1];
+                            console.log(`Setup Kayıp ${ay}. ay: ${setupKayipMatch[1]}%`);
+                        }
+                    }
+                    
+                    // Çalışma Performans Oranı - 20. sütun (index 19)
+                    const calismaPerformansCell = cells[19];
+                    if (calismaPerformansCell && calismaPerformansCell.textContent.includes('%')) {
+                        const calismaPerformansText = calismaPerformansCell.textContent.trim();
+                        const calismaPerformansMatch = calismaPerformansText.match(/(\d+\.?\d*)%/);
+                        if (calismaPerformansMatch) {
+                            aylikKpiData[ay].calismaPerformansOraniYuzdesi = calismaPerformansMatch[1];
+                            console.log(`Çalışma Performans ${ay}. ay: ${calismaPerformansMatch[1]}%`);
+                        }
+                    }
+                    
+                    // Arıza Kaynaklı - 21. sütun (index 20)
+                    const arizaKaynakliCell = cells[20];
+                    if (arizaKaynakliCell && arizaKaynakliCell.textContent.includes('%')) {
+                        const arizaKaynakliText = arizaKaynakliCell.textContent.trim();
+                        const arizaKaynakliMatch = arizaKaynakliText.match(/(\d+\.?\d*)%/);
+                        if (arizaKaynakliMatch) {
+                            aylikKpiData[ay].arizaKaynakliKayipOraniYuzdesi = arizaKaynakliMatch[1];
+                            console.log(`Arıza Kaynaklı ${ay}. ay: ${arizaKaynakliMatch[1]}%`);
+                        }
+                    }
+                    
+                    // İstasyon Bazlı Kalite Oranı - 22. sütun (index 21) - SON SÜTUN
+                    const istasyonKaliteCell = cells[21];
+                    if (istasyonKaliteCell && istasyonKaliteCell.textContent.includes('%')) {
+                        const istasyonKaliteText = istasyonKaliteCell.textContent.trim();
+                        const istasyonKaliteMatch = istasyonKaliteText.match(/(\d+\.?\d*)%/);
+                        if (istasyonKaliteMatch) {
+                            aylikKpiData[ay].istasyonKaliteOraniYuzdesi = istasyonKaliteMatch[1];
+                            console.log(`İstasyon Kalite ${ay}. ay: ${istasyonKaliteMatch[1]}%`);
+                        }
+                    }
+                    
+                    console.log(`EOL ${ay}. ay tamamlandı:`, aylikKpiData[ay]);
+                }
+            });
+            
+            console.log(`EOL ${secilenYil} yılı KPI verileri:`, aylikKpiData);
+            return aylikKpiData;
+        }
+        function getSizdirmazlikDataForKpi() {
+            if (!allSuccessRows.length) {
+                console.log('SIZDIRMAZLIK KPI: allSuccessRows boş');
+                return {};
+            }
+            
+            const secilenYillar = getAllYears(); // Tüm yılları al
+            const yilData = {};
+            
+            secilenYillar.forEach(yil => {
+                console.log(`SIZDIRMAZLIK KPI için ${yil} yılı işleniyor...`);
+                const sizdirmazlikData = calculateSizdirmazlikAnalysisForYear(yil);
+                yilData[yil] = sizdirmazlikData;
+            });
+            
+            console.log('SIZDIRMAZLIK KPI toplam veri:', yilData);
+            return yilData;
+        }
+        function calculateSizdirmazlikAnalysisForYear(secilenYil) {
+            // Önce SIZDIRMAZLIK tablosunu oluştur (eğer yoksa)
+            createSizdirmazlikAnalysisTable();
+            
+            // Şimdi tablodaki değerleri oku
+            const sizdirmazlikTableBody = document.getElementById('sizdirmazlikAnalyzBody');
+            const aylikKpiData = {};
+            
+            // Tablodan aylık verileri oku
+            const tableRows = sizdirmazlikTableBody ? sizdirmazlikTableBody.querySelectorAll('tr') : [];
+            
+            for (let ay = 1; ay <= 12; ay++) {
+                aylikKpiData[ay] = {
+                    kaliteOraniYuzdesi: '-'
+                };
+            }
+            
+            tableRows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length < 8) return; // SIZDIRMAZLIK tablosu minimum 8 sütunlu
+                
+                // İlk sütun ay bilgisi
+                const ayText = cells[0].textContent.trim();
+                const ayIndex = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'].indexOf(ayText);
+                
+                if (ayIndex >= 0) {
+                    const ay = ayIndex + 1;
+                    
+                    // Kalite Oranı (19) - 8. sütun (index 7) - Son sütun
+                    const kaliteOraniCell = cells[7];
+                    if (kaliteOraniCell && kaliteOraniCell.textContent.includes('%')) {
+                        const kaliteOraniText = kaliteOraniCell.textContent.trim();
+                        const kaliteOraniMatch = kaliteOraniText.match(/(\d+\.?\d*)%/);
+                        if (kaliteOraniMatch) {
+                            aylikKpiData[ay].kaliteOraniYuzdesi = kaliteOraniMatch[1];
+                        }
+                    }
+                    
+                    console.log(`SIZDIRMAZLIK ${ay}. ay: Kalite=${aylikKpiData[ay].kaliteOraniYuzdesi}%`);
+                }
+            });
+            
+            return aylikKpiData;
+        }
+        function getLensAADataForKpi() {
+            if (!allSuccessRows.length) return {};
+            const secilenYillar = getAllYears(); // Tüm yılları al
+            const yilData = {};
+            
+            secilenYillar.forEach(yil => {
+                const lensAAData = calculateLensAAAnalysisForYear(yil);
+                yilData[yil] = lensAAData;
+            });
+            
+            return yilData;
+        }
+        function calculateLensAAAnalysisForYear(secilenYil) {
+            // Önce LENS AA tablosunu oluştur (eğer yoksa)
+            createLensAnalysisTable();
+            
+            // Şimdi tablodaki değerleri oku
+            const lensTableBody = document.getElementById('lensAnalyzBody');
+            const aylikKpiData = {};
+            
+            // Tablodan aylık verileri oku
+            const tableRows = lensTableBody ? lensTableBody.querySelectorAll('tr') : [];
+            
+            for (let ay = 1; ay <= 12; ay++) {
+                aylikKpiData[ay] = {
+                    netCalismaYuzdesi: '-',
+                    calismaPerformansiYuzdesi: '-',
+                    arizaKaynakliDurusOraniYuzdesi: '-',
+                    istasyonKaliteOraniYuzdesi: '-'
+                };
+            }
+            
+            tableRows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length < 22) return; // LENS AA tablosu minimum 22 sütunlu
+                
+                // İlk sütun ay bilgisi
+                const ayText = cells[0].textContent.trim();
+                const ayIndex = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'].indexOf(ayText);
+                
+                if (ayIndex >= 0) {
+                    const ay = ayIndex + 1;
+                    
+                    // Net Çalışma Oranı - 19. sütun (index 18)
+                    const netCalismaCell = cells[18];
+                    if (netCalismaCell && netCalismaCell.textContent.includes('%')) {
+                        const netCalismaText = netCalismaCell.textContent.trim();
+                        const netCalismaMatch = netCalismaText.match(/(\d+\.?\d*)%/);
+                        if (netCalismaMatch) {
+                            aylikKpiData[ay].netCalismaYuzdesi = netCalismaMatch[1];
+                        }
+                    }
+                    
+                    // Arıza Kaynaklı Duruş Oranı - 20. sütun (index 19)
+                    const arizaKaynakliCell = cells[19];
+                    if (arizaKaynakliCell && arizaKaynakliCell.textContent.includes('%')) {
+                        const arizaKaynakliText = arizaKaynakliCell.textContent.trim();
+                        const arizaKaynakliMatch = arizaKaynakliText.match(/(\d+\.?\d*)%/);
+                        if (arizaKaynakliMatch) {
+                            aylikKpiData[ay].arizaKaynakliDurusOraniYuzdesi = arizaKaynakliMatch[1];
+                        }
+                    }
+                    
+                    // İstasyon Bazlı Kalite Oranı - 21. sütun (index 20) ✅
+                    const istasyonKaliteCell = cells[20];
+                    if (istasyonKaliteCell && istasyonKaliteCell.textContent.includes('%')) {
+                        const istasyonKaliteText = istasyonKaliteCell.textContent.trim();
+                        const istasyonKaliteMatch = istasyonKaliteText.match(/(\d+\.?\d*)%/);
+                        if (istasyonKaliteMatch) {
+                            aylikKpiData[ay].istasyonKaliteOraniYuzdesi = istasyonKaliteMatch[1];
+                        }
+                    }
+                    
+                    // Çalışma Performans Oranı - 22. sütun (index 21) - Son sütun
+                    const calismaPerformansCell = cells[21];
+                    if (calismaPerformansCell && calismaPerformansCell.textContent.includes('%')) {
+                        const calismaPerformansText = calismaPerformansCell.textContent.trim();
+                        const calismaPerformansMatch = calismaPerformansText.match(/(\d+\.?\d*)%/);
+                        if (calismaPerformansMatch) {
+                            aylikKpiData[ay].calismaPerformansiYuzdesi = calismaPerformansMatch[1];
+                        }
+                    }
+                    
+                    console.log(`LENS AA ${ay}. ay: Net=${aylikKpiData[ay].netCalismaYuzdesi}%, Arıza=${aylikKpiData[ay].arizaKaynakliDurusOraniYuzdesi}%, Kalite=${aylikKpiData[ay].istasyonKaliteOraniYuzdesi}%, Performans=${aylikKpiData[ay].calismaPerformansiYuzdesi}%`);
+                }
+            });
+            
+            return aylikKpiData;
+        }
+        function getSmdDataForKpi() {
+            if (!allSuccessRows.length) return {};
+            const secilenYillar = getAllYears(); // Tüm yılları al
+            const yilData = {};
+            
+            secilenYillar.forEach(yil => {
+                const smdData = calculateSmdAnalysisForYear(yil);
+                yilData[yil] = smdData;
+            });
+            
+            return yilData;
+        }
+        
+        function calculateSmdAnalysisForYear(secilenYil) {
+            createSmdAnalysisTable();
+            
+            const smdTableBody = document.getElementById('smdAnalyzBody');
+            const aylikKpiData = {};
+            const tableRows = smdTableBody ? smdTableBody.querySelectorAll('tr') : [];
+            
+            for (let ay = 1; ay <= 12; ay++) {
+                aylikKpiData[ay] = {
+                    netCalismaYuzdesi: '-',
+                    calismaPerformansiYuzdesi: '-',
+                    setupOraniYuzdesi: '-',
+                    arizaOraniYuzdesi: '-',
+                    istasyonKaliteOraniYuzdesi: '-'
+                };
+            }
+            
+            tableRows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length < 25) return; // SMD tablosu minimum 25 sütunlu
+                
+                // İlk sütun ay bilgisi
+                const ayText = cells[0].textContent.trim();
+                const ayIndex = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'].indexOf(ayText);
+                
+                if (ayIndex >= 0) {
+                    const ay = ayIndex + 1;
+                    
+                    // Net Çalışma Oranı - 20. sütun (index 19)
+                    const netCalismaCell = cells[19];
+                    if (netCalismaCell && netCalismaCell.textContent.includes('%')) {
+                        const netCalismaText = netCalismaCell.textContent.trim();
+                        const netCalismaMatch = netCalismaText.match(/(\d+\.?\d*)%/);
+                        if (netCalismaMatch) {
+                            aylikKpiData[ay].netCalismaYuzdesi = netCalismaMatch[1];
+                        }
+                    }
+                    
+                    // Çalışma Performansı - 21. sütun (index 20)
+                    const calismaPerformansCell = cells[20];
+                    if (calismaPerformansCell && calismaPerformansCell.textContent.includes('%')) {
+                        const calismaPerformansText = calismaPerformansCell.textContent.trim();
+                        const calismaPerformansMatch = calismaPerformansText.match(/(\d+\.?\d*)%/);
+                        if (calismaPerformansMatch) {
+                            aylikKpiData[ay].calismaPerformansiYuzdesi = calismaPerformansMatch[1];
+                        }
+                    }
+                    
+                    // İstasyon Bazlı Kalite Oranı - 22. sütun (index 21) ✅
+                    const istasyonKaliteCell = cells[21];
+                    if (istasyonKaliteCell && istasyonKaliteCell.textContent.includes('%')) {
+                        const istasyonKaliteText = istasyonKaliteCell.textContent.trim();
+                        const istasyonKaliteMatch = istasyonKaliteText.match(/(\d+\.?\d*)%/);
+                        if (istasyonKaliteMatch) {
+                            aylikKpiData[ay].istasyonKaliteOraniYuzdesi = istasyonKaliteMatch[1];
+                        }
+                    }
+                    
+                    // Setup Oranı - 23. sütun (index 22)
+                    const setupOraniCell = cells[22];
+                    if (setupOraniCell && setupOraniCell.textContent.includes('%')) {
+                        const setupOraniText = setupOraniCell.textContent.trim();
+                        const setupOraniMatch = setupOraniText.match(/(\d+\.?\d*)%/);
+                        if (setupOraniMatch) {
+                            aylikKpiData[ay].setupOraniYuzdesi = setupOraniMatch[1];
+                        }
+                    }
+                    
+                    // Arıza Duruşu - 24. sütun (index 23)
+                    const arizaOraniCell = cells[23];
+                    if (arizaOraniCell && arizaOraniCell.textContent.includes('%')) {
+                        const arizaOraniText = arizaOraniCell.textContent.trim();
+                        const arizaOraniMatch = arizaOraniText.match(/(\d+\.?\d*)%/);
+                        if (arizaOraniMatch) {
+                            aylikKpiData[ay].arizaOraniYuzdesi = arizaOraniMatch[1];
+                        }
+                    }
+                    
+                    console.log(`SMD ${ay}. ay: Net=${aylikKpiData[ay].netCalismaYuzdesi}%, Performans=${aylikKpiData[ay].calismaPerformansiYuzdesi}%, Kalite=${aylikKpiData[ay].istasyonKaliteOraniYuzdesi}%, Setup=${aylikKpiData[ay].setupOraniYuzdesi}%, Arıza=${aylikKpiData[ay].arizaOraniYuzdesi}%`);
+                }
+            });
+            
+            return aylikKpiData;
+        }
+        // createKpiTable fonksiyonunu tamamlayın (yaklaşık satır 580-650 arası):
+
+function createKpiTable() {
+    if (!allSuccessRows.length) {
+        console.log('KPI Tablo: Veri yok');
+        return;
+    }
+    
+    const kpiTableBody = document.querySelector('#panel-5 tbody');
+    if (!kpiTableBody) {
+        console.log('KPI Tablo: tbody bulunamadı');
+        return;
+    }
+    
+    console.log('KPI Tablosu oluşturuluyor...');
+    
+    let tableBodyHtml = '';
+    
+    kpiDefinitions.forEach((kpiDef) => {
+        console.log(`KPI işleniyor: ${kpiDef.nameEn}`);
+        
+        let allYearData = {};
+        
+        try {
+            if (kpiDef.calculateFunction === 'getSmdDataForKpi') {
+                allYearData = getSmdDataForKpi();
+            } else if (kpiDef.calculateFunction === 'getLensAADataForKpi') {
+                allYearData = getLensAADataForKpi();
+            } else if (kpiDef.calculateFunction === 'getEOLDataForKpi') {
+                allYearData = getEOLDataForKpi();
+            } else if (kpiDef.calculateFunction === 'getSizdirmazlikDataForKpi') {
+                console.log('SIZDIRMAZLIK KPI hesaplanıyor...');
+                allYearData = getSizdirmazlikDataForKpi();
+            } else if (kpiDef.calculateFunction === 'getPersonelDurusDataForKpi') {
+                console.log('Personel Duruş KPI hesaplanıyor...');
+                allYearData = getPersonelDurusDataForKpi();
+            } else if (kpiDef.calculateFunction === 'getMakineEkipmanDurusDataForKpi') {
+                console.log('Makine Ekipman Duruş KPI hesaplanıyor...');
+                allYearData = getMakineEkipmanDurusDataForKpi();
+            } else if (kpiDef.calculateFunction === 'getGenelOEEDataForKpi') {
+                console.log('Genel OEE KPI hesaplanıyor...');
+                allYearData = getGenelOEEDataForKpi();
+            }
+            
+            console.log(`${kpiDef.nameEn} için yıl verisi:`, allYearData);
+        } catch (error) {
+            console.error(`${kpiDef.nameEn} için hata:`, error);
+            allYearData = {};
+        }
+        
+        // ✅ YIL SEÇİMİNİ 2025'E SABİTLE
+        const yillar = Object.keys(allYearData).sort();
+        let secilenYil = '2025'; // ← HER ZAMAN 2025 KULLAN
+        
+        console.log(`${kpiDef.nameEn} için mevcut yıllar:`, yillar);
+        console.log(`${kpiDef.nameEn} için seçilen yıl: ${secilenYil}`);
+        
+        // Eğer 2025 yılı verisi yoksa, veri bulunamadı mesajı göster
+        if (!allYearData[secilenYil]) {
+            console.log(`${kpiDef.nameEn} için ${secilenYil} yılı verisi bulunamadı!`);
+            tableBodyHtml += `
+                <tr class="row">
+                    <td class="kpi-box">
+                        <div class="kpi-title">${kpiDef.nameEn}</div>
+                        <div class="kpi-sub">${kpiDef.nameTr}</div>
+                    </td>
+                    <td class="td tgt">${kpiDef.target}</td>
+                    <td class="td">${kpiDef.unit}</td>
+                    <td class="td val" colspan="12" style="text-align:center;color:#666;">2025 yılı verisi bulunamadı</td>
+                </tr>`;
+            return;
+        }
+        
+        const kpiData = allYearData[secilenYil];
+        console.log(`${kpiDef.nameEn} - ${secilenYil} yılı verisi:`, kpiData);
+        
+        // Aylık değerleri oluştur
+        let monthCells = '';
+        const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        
+        for (let ay = 1; ay <= 12; ay++) {
+            const ayData = kpiData[ay];
+            let value = '-';
+            let backgroundColor = '';
+            
+            if (ayData && ayData[kpiDef.dataKey] && ayData[kpiDef.dataKey] !== '-') {
+                const numericValue = parseFloat(ayData[kpiDef.dataKey]);
+                value = `${ayData[kpiDef.dataKey]}%`;
+                
+                // Renk kodlaması
+                if (kpiDef.isReverse) {
+                    // Ters mantık: düşük iyi (Setup, Arıza, Duruş KPI'ları)
+                    backgroundColor = numericValue <= kpiDef.targetValue ? '#dcfce7' : '#fecaca';
+                } else {
+                    // Normal mantık: yüksek iyi (diğer KPI'lar)
+                    backgroundColor = numericValue >= kpiDef.targetValue ? '#dcfce7' : '#fecaca';
+                }
+            }
+            
+            monthCells += `<td class="td val" style="background-color:${backgroundColor};">${value}</td>`;
+        }
+        
+        tableBodyHtml += `
+            <tr class="row">
+                <td class="kpi-box">
+                    <div class="kpi-title">${kpiDef.nameEn}</div>
+                    <div class="kpi-sub">${kpiDef.nameTr}</div>
+                </td>
+                <td class="td tgt">${kpiDef.target}</td>
+                <td class="td">${kpiDef.unit}</td>
+                ${monthCells}
+            </tr>`;
+    });
+    
+    kpiTableBody.innerHTML = tableBodyHtml;
+    console.log('KPI Tablosu oluşturuldu');
+}
+
+function getAllYears() {
+    const dateColIndex = currentHeader.findIndex(h => 
+        norm(h).includes('tarih') || norm(h).includes('date')
+    );
+    if (dateColIndex < 0) return [];
+            
+            const yillar = new Set();
+            allSuccessRows.forEach(row => {
+                const cellDate = String(row[dateColIndex] || '').trim();
+                const dateParts = cellDate.split('.');
+                if (dateParts.length === 3) {
+                    yillar.add(dateParts[2]);
+                }
+            });
+            
+            return Array.from(yillar).sort();
+        }
+        
+        window.getEOLDataForKpi = getEOLDataForKpi;
+        window.calculateEOLAnalysisForYear = calculateEOLAnalysisForYear;
+        window.getLensAADataForKpi = getLensAADataForKpi;
+        window.calculateLensAAAnalysisForYear = calculateLensAAAnalysisForYear;
+        window.getSmdDataForKpi = getSmdDataForKpi;
+        window.calculateSmdAnalysisForYear = calculateSmdAnalysisForYear;
+        window.getSizdirmazlikDataForKpi = getSizdirmazlikDataForKpi;
+        window.calculateSizdirmazlikAnalysisForYear = calculateSizdirmazlikAnalysisForYear;
+        window.getPersonelDurusDataForKpi = getPersonelDurusDataForKpi;
+        window.calculatePersonelDurusAnalysisForYear = calculatePersonelDurusAnalysisForYear;
+        window.getMakineEkipmanDurusDataForKpi = getMakineEkipmanDurusDataForKpi;
+        window.calculateMakineEkipmanDurusAnalysisForYear = calculateMakineEkipmanDurusAnalysisForYear;
+        window.getGenelOEEDataForKpi = getGenelOEEDataForKpi;
+        window.calculateGenelOEEAnalysisForYear = calculateGenelOEEAnalysisForYear;
         
         /////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1327,22 +1864,17 @@
             }
             
             let secilenYil = document.getElementById('ekAnalizYilFiltresi').value;
-                if (!secilenYil) {
-                    // Eğer yıl seçilmemişse, verideki ilk yılı kullan
-                    const dateColIndex = currentHeader.findIndex(h => 
-                        norm(h).includes('tarih') || norm(h).includes('date')
-                    );
-                    if (dateColIndex >= 0 && allSuccessRows.length > 0) {
-                        const firstRowDate = String(allSuccessRows[0][dateColIndex] || '').trim();
-                        const dateParts = firstRowDate.split('.');
-                        if (dateParts.length === 3) {
-                            secilenYil = dateParts[2];
-                        }
-                    }
-                    // Hala yıl yoksa 2024 kullan
-                    if (!secilenYil) {
-                        secilenYil = '2024';
-                    }
+            
+            // ✅ YIL FİLTRESİNİ ZORLA 2025 YAP
+            if (!secilenYil || secilenYil === '2024') {
+                secilenYil = '2025';
+                
+                // Dropdown'ı da güncelle
+                const ekAnalizYilFiltresi = document.getElementById('ekAnalizYilFiltresi');
+                if (ekAnalizYilFiltresi) {
+                    ekAnalizYilFiltresi.value = secilenYil;
+                }
+                console.log(`Ek Analiz yılı 2025'e çevrildi: ${secilenYil}`);
             }
             const aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -1518,10 +2050,13 @@
             yilArray.forEach(yil => {
                 ekAnalizYilFiltresi.innerHTML += `<option value="${yil}">${yil}</option>`;
             });
+            
             if (yilArray.length > 0) {
-                // 2025'ü arayalım, yoksa ilk yılı seçelim
+                // ✅ VARSAYILAN YIL OLARAK 2025'İ SEÇ
                 const defaultYear = yilArray.includes('2025') ? '2025' : yilArray[yilArray.length - 1];
                 ekAnalizYilFiltresi.value = defaultYear;
+                
+                console.log(`Ek Analiz varsayılan yıl: ${defaultYear}`);
                 
                 setTimeout(() => {
                     createEkAnalizTablosu();
@@ -2779,7 +3314,8 @@
                         personelDurus: 0,
                         makinaArizasi: 0,
                         setupSuresi: 0,
-                        makineProgramDurus: 0
+                        makineProgramDurus: 0,
+                        arizaSuresi: 0
                     };
                 }
                 
@@ -2796,6 +3332,7 @@
                 product.makinaArizasi += makinaArizasi;
                 product.setupSuresi += kurulumSuresi;
                 product.makineProgramDurus += makineProgramDurus;
+                product.arizaSuresi += makinaArizasi;
             });
             
             let tbody = '';
