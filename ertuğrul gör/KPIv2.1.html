@@ -2709,14 +2709,18 @@ function getAllYears() {
         const lazerYilFiltresi = document.getElementById('lazerYilFiltresi');
         const sonKontrolYilFiltresi = document.getElementById('sonKontrolYilFiltresi');
         let referansTablosu = {
-            'DMS-BOT': { sure: 290, dizilenAdet: 92 },
-            'DMS-TOP': { sure: 245, dizilenAdet: 78 },
-            'SVC-BOT': { sure: 462, dizilenAdet: 75 },
-            'SVC-TOP': { sure: 275, dizilenAdet: 45 },
-            'TOFAŞ BOT': { sure: 815, dizilenAdet: 117 },
-            'TOFAŞ TOP': { sure: 906, dizilenAdet: 102 },
-            'FORD BOT': { sure: 0, dizilenAdet: 0 },
-            'FORD TOP': { sure: 0, dizilenAdet: 0 }
+            'DMS-BOT':         { sure: 290, dizilenAdet: 92,  panelKameraSayisi: 12 },
+            'DMS-TOP':         { sure: 245, dizilenAdet: 78,  panelKameraSayisi: 12 },
+            'SVC-BOT':         { sure: 462, dizilenAdet: 75,  panelKameraSayisi: 21 },
+            'SVC-TOP':         { sure: 275, dizilenAdet: 45,  panelKameraSayisi: 21 },
+            'TOFAŞ BOT':       { sure: 815, dizilenAdet: 117, panelKameraSayisi: 25 },
+            'TOFAŞ TOP':       { sure: 906, dizilenAdet: 102, panelKameraSayisi: 25 },
+            'FORD 123R1 BOT':  { sure: 435, dizilenAdet: 37,  panelKameraSayisi: 42 },
+            'FORD 122R2 TOP':  { sure: 338, dizilenAdet: 58,  panelKameraSayisi: 12 },
+            'FORD 124 BOT':    { sure: 42,  dizilenAdet: 42,  panelKameraSayisi: 42 },
+            'FORD 124 TOP':    { sure: 436, dizilenAdet: 4,   panelKameraSayisi: 42 },
+            'FORD 123R1 TOP':  { sure: 152, dizilenAdet: 9,   panelKameraSayisi: 42 },
+            'FORD 122R2 BOT':  { sure: 276, dizilenAdet: 77,  panelKameraSayisi: 12 }
         };
 
         function showReferansTabloPopup() {
@@ -4742,22 +4746,45 @@ function getAllYears() {
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // TOPLAM
                                 const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
-                                
+
                                 if (productIndex === 0 && weekIndex === 0) {
-                                    let aylikToplamOK = 0;
-                                    let aylikToplamUrun = 0;
-                                    
+                                    // Aylık toplam kalite oranı ve marka bazında oranlar
+                                    let aylikToplamOK = 0, aylikToplamUrun = 0;
+                                    let dmsOK = 0, dmsToplam = 0, svcOK = 0, svcToplam = 0, tofasOK = 0, tofasToplam = 0, fordOK = 0, fordToplam = 0;
+
                                     ayWeeksData.forEach(weekInfo => {
                                         if (weekInfo.weekData && weekInfo.weekData.products) {
                                             weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const upper = productName.toUpperCase();
                                                 aylikToplamOK += prod.okUrun;
                                                 aylikToplamUrun += prod.toplamUrun;
+                                                if (upper.includes('DMS')) {
+                                                    dmsOK += prod.okUrun;
+                                                    dmsToplam += prod.toplamUrun;
+                                                } else if (upper.includes('SVC')) {
+                                                    svcOK += prod.okUrun;
+                                                    svcToplam += prod.toplamUrun;
+                                                } else if (upper.includes('TOFAŞ') || upper.includes('TOFAS')) {
+                                                    tofasOK += prod.okUrun;
+                                                    tofasToplam += prod.toplamUrun;
+                                                } else if (upper.includes('FORD')) {
+                                                    fordOK += prod.okUrun;
+                                                    fordToplam += prod.toplamUrun;
+                                                }
                                             });
                                         }
                                     });
-                                    const aylikKaliteOrani = aylikToplamUrun > 0 ? 
-                                        ((aylikToplamOK / aylikToplamUrun) * 100).toFixed(1) : '0';
-                                    
+                                    const aylikKaliteOrani = aylikToplamUrun > 0 ? ((aylikToplamOK / aylikToplamUrun) * 100).toFixed(1) : '0';
+
+                                    // Marka bazında kalite oranları
+                                    const markaDetaylar = [];
+                                    if (dmsToplam > 0) markaDetaylar.push(`DMS: ${(dmsOK / dmsToplam * 100).toFixed(1)}%`);
+                                    if (svcToplam > 0) markaDetaylar.push(`SVC: ${(svcOK / svcToplam * 100).toFixed(1)}%`);
+                                    if (tofasToplam > 0) markaDetaylar.push(`TOFAŞ: ${(tofasOK / tofasToplam * 100).toFixed(1)}%`);
+                                    if (fordToplam > 0) markaDetaylar.push(`FORD: ${(fordOK / fordToplam * 100).toFixed(1)}%`);
+                                    const markaDetayText = markaDetaylar.length > 0 ? markaDetaylar.join('<br>') : '';
+
                                     const darkerColor = getDarkerColor(ayRengi);
                                     tbody += `<td rowspan="${ayRowspanTotal}" style="
                                         padding:4px;
@@ -4770,50 +4797,64 @@ function getAllYears() {
                                         vertical-align:middle;
                                         border-left:3px solid ${darkerColor};
                                         box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
-                                    ">${aylikKaliteOrani}%</td>`;
+                                    ">${aylikKaliteOrani}%${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText}</span>` : ''}</td>`;
                                 }
                             } else if (tableBodyId === 'lazerAnalyzBody') {
-                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Toplam
-                                
-                                if (productIndex === 0 && weekIndex === 0) {
-                                    let aylikToplam = 0;
-                                    let dmsAylikToplam = 0;
-                                    let svcAylikToplam = 0;
-                                    
-                                    ayWeeksData.forEach(weekInfo => {
-                                        if (weekInfo.weekData && weekInfo.weekData.products) {
-                                            weekInfo.weekData.products.forEach(prod => {
-                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
-                                                const productUpper = productName.toUpperCase();
-                                                
-                                                aylikToplam += prod.toplamUrun;
-                                                if (productUpper.includes('DMS')) {
-                                                    dmsAylikToplam += prod.toplamUrun;
-                                                } else if (productUpper.includes('SVC')) {
-                                                    svcAylikToplam += prod.toplamUrun;
-                                                }
-                                            });
-                                        }
-                                    });
-                                    const darkerColor = getDarkerColor(ayRengi);
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="
-                                        padding:4px;
-                                        border:1px solid #e5e7eb;
-                                        text-align:center;
-                                        font-weight:700;
-                                        color:#000000;
-                                        font-size:12px;
-                                        background:${ayRengi};
-                                        vertical-align:middle;
-                                        border-left:3px solid ${darkerColor};
-                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
-                                        line-height: 1.3;
-                                    ">${aylikToplam}<br><span style="font-size:10px;font-weight:500;color:#555;">(DMS: ${dmsAylikToplam}, SVC: ${svcAylikToplam})</span></td>`; // Aylık Toplam
-                                }
+    const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Toplam
+    
+    if (productIndex === 0 && weekIndex === 0) {
+        let aylikToplam = 0;
+        let dmsAylikToplam = 0;
+        let svcAylikToplam = 0;
+        
+        ayWeeksData.forEach(weekInfo => {
+            if (weekInfo.weekData && weekInfo.weekData.products) {
+                weekInfo.weekData.products.forEach(prod => {
+                    const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                    const productUpper = productName.toUpperCase();
+                    
+                    aylikToplam += prod.toplamUrun;
+                    if (productUpper.includes('DMS')) {
+                        dmsAylikToplam += prod.toplamUrun;
+                    } else if (productUpper.includes('SVC')) {
+                        svcAylikToplam += prod.toplamUrun;
+                    }
+                });
+            }
+        });
+        
+        // Ayın rengine uygun stil
+        const darkerColor = getDarkerColor(ayRengi);
+        const cellStyle = `
+            padding:4px;
+            border:1px solid #e5e7eb;
+            text-align:center;
+            font-weight:700;
+            color:#000000;
+            font-size:12px;
+            background:${ayRengi};
+            vertical-align:middle;
+            border-left:3px solid ${darkerColor};
+            box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+            line-height: 1.3;
+        `;
+        
+        // Marka detaylarını alt alta düzenleme
+        const markaDetaylar = [];
+        if (dmsAylikToplam > 0) markaDetaylar.push(`DMS: ${dmsAylikToplam}`);
+        if (svcAylikToplam > 0) markaDetaylar.push(`SVC: ${svcAylikToplam}`);
+        
+        const markaDetayText = markaDetaylar.length > 0 ? 
+            markaDetaylar.join('<br>') : '';
+        
+        tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">
+            ${aylikToplam}${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText}</span>` : ''}
+        </td>`;
+    }
                             } else if (tableBodyId === 'sonKontrolAnalyzBody') {
                                 const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;

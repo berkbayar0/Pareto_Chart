@@ -253,7 +253,7 @@
     </div>
 </div>
 <div id="panel-4" class="panel hidden">
-    <div class="panel-title">Proses Analizi</div>       <!-- Proses içindeki butonlar -->
+    <div class="panel-title">Proses Analizi</div>
     <div style="display:flex;gap:8px;margin:15px 0;padding:8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;">
         <button class="proses-btn active" id="smd-btn" data-target="smd-section">SMD</button>
         <button class="proses-btn" id="lens-btn" data-target="lens-section">LENS AA</button>
@@ -262,19 +262,34 @@
         <button class="proses-btn" id="lazer-btn" data-target="lazer-section">LAZER</button>
         <button class="proses-btn" id="son-kontrol-btn" data-target="son-kontrol-section">SON KONTROL</button>
     </div>
-    <div id="smd-section" class="proses-section">       <!-- SMD Section (default açık) -->
+    <div id="smd-section" class="proses-section">     
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
-            <span style="font-weight:600;color:#374151;">Yıl Seçimi:</span>
-            <select id="smdYilFiltresi" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:white;cursor:pointer;min-width:100px;">
-                <option value="">Tüm Yıllar</option>
-            </select>
-            <button onclick="showReferansTabloPopup()" style="
-                padding: 6px 12px; background: #2563eb; color: white; border: none; 
-                border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
-                margin-left: auto; display: flex; align-items: center; gap: 6px;
-            ">📋Referans Tablosu
-            </button>
-        </div>
+        <span style="font-weight:600;color:#374151;">Yıl Seçimi:</span>
+        <select id="smdYilFiltresi" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:white;cursor:pointer;min-width:100px;">
+            <option value="">Tüm Yıllar</option>
+        </select>
+        
+        <button onclick="showReferansTabloPopup()" style="
+            padding: 6px 12px; background: #2563eb; color: white; border: none; 
+            border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+            margin-left: auto; display: flex; align-items: center; gap: 6px;
+        ">📋Referans Tablosu
+        </button>
+        
+        <!-- YENİ EKLENEN BUTON -->
+        <button onclick="exportSmdToExcel()" style="
+            padding: 6px 12px; background: #059669; color: white; border: none; 
+            border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Excel'e Aktar
+        </button>
+    </div>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;max-height:70vh;">
             <table id="smdAnalyzTable" style="width:100%;border-collapse:collapse;font-size:11px;white-space: nowrap;">
                 <thead>
@@ -676,6 +691,30 @@
             }
             return hataMap;
         }
+        function exportTableToExcel(tableId, fileName = 'tablo_raporu.xlsx', sheetName = 'Rapor') {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                alert('Tablo bulunamadı!');
+                return;
+            }
+            
+            showLoading('Excel dosyası hazırlanıyor...');
+            
+            setTimeout(() => {
+                try {
+                    const ws = XLSX.utils.table_to_sheet(table);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                    XLSX.writeFile(wb, fileName);
+                    hideLoading();
+                } catch (error) {
+                    console.error('Excel aktarma hatası:', error);
+                    alert('Excel dosyası oluşturulurken bir hata oluştu!');
+                    hideLoading();
+                }
+            }, 100);
+        }
+
         /////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////////
         //KPI Tablosunu oluşturoyurm.////////////////////////////////////////////////////////////////
@@ -2709,14 +2748,18 @@ function getAllYears() {
         const lazerYilFiltresi = document.getElementById('lazerYilFiltresi');
         const sonKontrolYilFiltresi = document.getElementById('sonKontrolYilFiltresi');
         let referansTablosu = {
-            'DMS-BOT': { sure: 290, dizilenAdet: 92 },
-            'DMS-TOP': { sure: 245, dizilenAdet: 78 },
-            'SVC-BOT': { sure: 462, dizilenAdet: 75 },
-            'SVC-TOP': { sure: 275, dizilenAdet: 45 },
-            'TOFAŞ BOT': { sure: 815, dizilenAdet: 117 },
-            'TOFAŞ TOP': { sure: 906, dizilenAdet: 102 },
-            'FORD BOT': { sure: 0, dizilenAdet: 0 },
-            'FORD TOP': { sure: 0, dizilenAdet: 0 }
+            'DMS-BOT':         { sure: 290, dizilenAdet: 92,  panelKameraSayisi: 12 },
+            'DMS-TOP':         { sure: 245, dizilenAdet: 78,  panelKameraSayisi: 12 },
+            'SVC-BOT':         { sure: 462, dizilenAdet: 75,  panelKameraSayisi: 21 },
+            'SVC-TOP':         { sure: 275, dizilenAdet: 45,  panelKameraSayisi: 21 },
+            'TOFAŞ BOT':       { sure: 815, dizilenAdet: 117, panelKameraSayisi: 25 },
+            'TOFAŞ TOP':       { sure: 906, dizilenAdet: 102, panelKameraSayisi: 25 },
+            'FORD 123R1 BOT':  { sure: 435, dizilenAdet: 37,  panelKameraSayisi: 42 },
+            'FORD 122R2 TOP':  { sure: 338, dizilenAdet: 58,  panelKameraSayisi: 12 },
+            'FORD 124 BOT':    { sure: 42,  dizilenAdet: 42,  panelKameraSayisi: 42 },
+            'FORD 124 TOP':    { sure: 436, dizilenAdet: 4,   panelKameraSayisi: 42 },
+            'FORD 123R1 TOP':  { sure: 152, dizilenAdet: 9,   panelKameraSayisi: 42 },
+            'FORD 122R2 BOT':  { sure: 276, dizilenAdet: 77,  panelKameraSayisi: 12 }
         };
 
         function showReferansTabloPopup() {
@@ -4742,22 +4785,45 @@ function getAllYears() {
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // TOPLAM
                                 const okOrani = product.toplamUrun > 0 ? ((product.okUrun / product.toplamUrun) * 100).toFixed(1) : '0';
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;">${okOrani}%</td>`; // OK Oranı
-                                
+
                                 if (productIndex === 0 && weekIndex === 0) {
-                                    let aylikToplamOK = 0;
-                                    let aylikToplamUrun = 0;
-                                    
+                                    // Aylık toplam kalite oranı ve marka bazında oranlar
+                                    let aylikToplamOK = 0, aylikToplamUrun = 0;
+                                    let dmsOK = 0, dmsToplam = 0, svcOK = 0, svcToplam = 0, tofasOK = 0, tofasToplam = 0, fordOK = 0, fordToplam = 0;
+
                                     ayWeeksData.forEach(weekInfo => {
                                         if (weekInfo.weekData && weekInfo.weekData.products) {
                                             weekInfo.weekData.products.forEach(prod => {
+                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                                                const upper = productName.toUpperCase();
                                                 aylikToplamOK += prod.okUrun;
                                                 aylikToplamUrun += prod.toplamUrun;
+                                                if (upper.includes('DMS')) {
+                                                    dmsOK += prod.okUrun;
+                                                    dmsToplam += prod.toplamUrun;
+                                                } else if (upper.includes('SVC')) {
+                                                    svcOK += prod.okUrun;
+                                                    svcToplam += prod.toplamUrun;
+                                                } else if (upper.includes('TOFAŞ') || upper.includes('TOFAS')) {
+                                                    tofasOK += prod.okUrun;
+                                                    tofasToplam += prod.toplamUrun;
+                                                } else if (upper.includes('FORD')) {
+                                                    fordOK += prod.okUrun;
+                                                    fordToplam += prod.toplamUrun;
+                                                }
                                             });
                                         }
                                     });
-                                    const aylikKaliteOrani = aylikToplamUrun > 0 ? 
-                                        ((aylikToplamOK / aylikToplamUrun) * 100).toFixed(1) : '0';
-                                    
+                                    const aylikKaliteOrani = aylikToplamUrun > 0 ? ((aylikToplamOK / aylikToplamUrun) * 100).toFixed(1) : '0';
+
+                                    // Marka bazında kalite oranları
+                                    const markaDetaylar = [];
+                                    if (dmsToplam > 0) markaDetaylar.push(`DMS: ${(dmsOK / dmsToplam * 100).toFixed(1)}%`);
+                                    if (svcToplam > 0) markaDetaylar.push(`SVC: ${(svcOK / svcToplam * 100).toFixed(1)}%`);
+                                    if (tofasToplam > 0) markaDetaylar.push(`TOFAŞ: ${(tofasOK / tofasToplam * 100).toFixed(1)}%`);
+                                    if (fordToplam > 0) markaDetaylar.push(`FORD: ${(fordOK / fordToplam * 100).toFixed(1)}%`);
+                                    const markaDetayText = markaDetaylar.length > 0 ? markaDetaylar.join('<br>') : '';
+
                                     const darkerColor = getDarkerColor(ayRengi);
                                     tbody += `<td rowspan="${ayRowspanTotal}" style="
                                         padding:4px;
@@ -4770,50 +4836,64 @@ function getAllYears() {
                                         vertical-align:middle;
                                         border-left:3px solid ${darkerColor};
                                         box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
-                                    ">${aylikKaliteOrani}%</td>`;
+                                    ">${aylikKaliteOrani}%${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText}</span>` : ''}</td>`;
                                 }
                             } else if (tableBodyId === 'lazerAnalyzBody') {
-                                const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
-                                tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Toplam
-                                
-                                if (productIndex === 0 && weekIndex === 0) {
-                                    let aylikToplam = 0;
-                                    let dmsAylikToplam = 0;
-                                    let svcAylikToplam = 0;
-                                    
-                                    ayWeeksData.forEach(weekInfo => {
-                                        if (weekInfo.weekData && weekInfo.weekData.products) {
-                                            weekInfo.weekData.products.forEach(prod => {
-                                                const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
-                                                const productUpper = productName.toUpperCase();
-                                                
-                                                aylikToplam += prod.toplamUrun;
-                                                if (productUpper.includes('DMS')) {
-                                                    dmsAylikToplam += prod.toplamUrun;
-                                                } else if (productUpper.includes('SVC')) {
-                                                    svcAylikToplam += prod.toplamUrun;
-                                                }
-                                            });
-                                        }
-                                    });
-                                    const darkerColor = getDarkerColor(ayRengi);
-                                    tbody += `<td rowspan="${ayRowspanTotal}" style="
-                                        padding:4px;
-                                        border:1px solid #e5e7eb;
-                                        text-align:center;
-                                        font-weight:700;
-                                        color:#000000;
-                                        font-size:12px;
-                                        background:${ayRengi};
-                                        vertical-align:middle;
-                                        border-left:3px solid ${darkerColor};
-                                        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
-                                        line-height: 1.3;
-                                    ">${aylikToplam}<br><span style="font-size:10px;font-weight:500;color:#555;">(DMS: ${dmsAylikToplam}, SVC: ${svcAylikToplam})</span></td>`; // Aylık Toplam
-                                }
+    const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#059669;">${product.okUrun}</td>`;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#dc2626;">${product.nokUrun}</td>`;
+    tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-weight:600;color:#2563eb;">${product.toplamUrun}</td>`; // Toplam
+    
+    if (productIndex === 0 && weekIndex === 0) {
+        let aylikToplam = 0;
+        let dmsAylikToplam = 0;
+        let svcAylikToplam = 0;
+        
+        ayWeeksData.forEach(weekInfo => {
+            if (weekInfo.weekData && weekInfo.weekData.products) {
+                weekInfo.weekData.products.forEach(prod => {
+                    const productName = prod.prosesAdi ? `${prod.urunAdi} - ${prod.prosesAdi}` : prod.urunAdi;
+                    const productUpper = productName.toUpperCase();
+                    
+                    aylikToplam += prod.toplamUrun;
+                    if (productUpper.includes('DMS')) {
+                        dmsAylikToplam += prod.toplamUrun;
+                    } else if (productUpper.includes('SVC')) {
+                        svcAylikToplam += prod.toplamUrun;
+                    }
+                });
+            }
+        });
+        
+        // Ayın rengine uygun stil
+        const darkerColor = getDarkerColor(ayRengi);
+        const cellStyle = `
+            padding:4px;
+            border:1px solid #e5e7eb;
+            text-align:center;
+            font-weight:700;
+            color:#000000;
+            font-size:12px;
+            background:${ayRengi};
+            vertical-align:middle;
+            border-left:3px solid ${darkerColor};
+            box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+            line-height: 1.3;
+        `;
+        
+        // Marka detaylarını alt alta düzenleme
+        const markaDetaylar = [];
+        if (dmsAylikToplam > 0) markaDetaylar.push(`DMS: ${dmsAylikToplam}`);
+        if (svcAylikToplam > 0) markaDetaylar.push(`SVC: ${svcAylikToplam}`);
+        
+        const markaDetayText = markaDetaylar.length > 0 ? 
+            markaDetaylar.join('<br>') : '';
+        
+        tbody += `<td rowspan="${ayRowspanTotal}" style="${cellStyle}">
+            ${aylikToplam}${markaDetayText ? `<br><span style="font-size:10px;font-weight:500;color:#555;">${markaDetayText}</span>` : ''}
+        </td>`;
+    }
                             } else if (tableBodyId === 'sonKontrolAnalyzBody') {
                                 const fullProductName = product.prosesAdi ? `${product.urunAdi} - ${product.prosesAdi}` : product.urunAdi;
                                 tbody += `<td style="padding:4px;border:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:500;">${esc(fullProductName)}</td>`;
@@ -5493,6 +5573,8 @@ function getAllYears() {
         let detailedErrorRows = [];
         let errorTableVisible = true;
 
+        
+
         function createMainPageErrorTable() {
             const errorSection = document.getElementById('errorSection');
             const errorTableWrap = document.getElementById('errorTableWrap');
@@ -5628,6 +5710,7 @@ function getAllYears() {
                 document.getElementById(tabId).classList.add('active');
             }
         }
+        
         topbar.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-tab');
           if (!btn) return;
@@ -5740,9 +5823,42 @@ function getAllYears() {
         });
         document.getElementById('aylikAnalizBody').innerHTML = tbody;
 
-                // Bu satırları script'in sonuna ekleyin:
         window.calculateSmdNetKapasite = calculateSmdNetKapasite;
         window.getSmdCalismaPerformansFromTable = getSmdCalismaPerformansFromTable;
+
+        function exportSmdToExcel() {
+            const secilenYil = document.getElementById('smdYilFiltresi').value || 'TumYillar';
+            const fileName = `SMD_Proses_Analizi_${secilenYil}_${new Date().toISOString().slice(0,10)}.xlsx`;
+            exportTableToExcel('smdAnalyzTable', fileName, 'SMD Analizi');
+        }
+
+        // Genel Excel export fonksiyonu
+        function exportTableToExcel(tableId, fileName = 'tablo_raporu.xlsx', sheetName = 'Rapor') {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                alert('Tablo bulunamadı!');
+                return;
+            }
+            
+            showLoading('Excel dosyası hazırlanıyor...');
+            
+            setTimeout(() => {
+                try {
+                    const ws = XLSX.utils.table_to_sheet(table);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                    XLSX.writeFile(wb, fileName);
+                    hideLoading();
+                } catch (error) {
+                    console.error('Excel aktarma hatası:', error);
+                    alert('Excel dosyası oluşturulurken bir hata oluştu!');
+                    hideLoading();
+                }
+            }, 100);
+        }
+        window.exportSmdToExcel = exportSmdToExcel;
+        window.exportTableToExcel = exportTableToExcel;
+        
     </script>
 </body>
 </html>

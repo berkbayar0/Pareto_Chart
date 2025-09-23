@@ -253,7 +253,7 @@
         const containsAll = (list, allow) => list.every(x => allow.includes(x));
 
         function isPatternValid(text, validList){
-            if (!text || text === "0") return true;            // boş/0 = sorun yok
+            if (!text || text === "0") return true;            // = sorun yok
             if (!isPatternMatch(text)) return false;
             const codes = extractTextValues(text);
             return containsAll(codes, validList);
