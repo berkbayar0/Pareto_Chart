@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Excel'den Ürün Ağacı - Gelişmiş</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#f0f4f8; --card:#fff; --text:#1e293b; --muted:#64748b;
+    --border:#e2e8f0; --accent:#3b82f6; --accent-50:#eff6ff;
+    --success:#10b981; --warning:#f59e0b; --shadow:rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{padding:12px; background:var(--bg); color:var(--text);
+       font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Arial; font-size:14px;
+       overflow-x:hidden}
+  
+  .wrap{max-width:100%; margin:0 auto; padding:0 8px}
+  
+  /* Header */
+  .header{background:linear-gradient(135deg, #31522c 0%, #79a24b 100%);
+          color:#fff; padding:16px 24px; border-radius:12px; margin-bottom:12px;
+          box-shadow:0 4px 20px var(--shadow)}
+  .header h1{font-size:22px; margin-bottom:6px; font-weight:700}
+  .header .sub{color:rgba(255,255,255,0.9); font-size:13px}
+  
+  /* Drop Zone */
+  .drop{border:3px dashed var(--border); background:var(--card); border-radius:12px;
+        padding:36px 24px; text-align:center; cursor:pointer; transition:.2s ease;
+        box-shadow:0 2px 12px var(--shadow); margin-bottom:12px}
+  .drop:hover{border-color:var(--accent); background:var(--accent-50); transform:translateY(-2px)}
+  .drop.drag-over{border-color:var(--success); border-style:solid; background:#ecfdf5}
+  .drop-icon{font-size:42px; margin-bottom:10px}
+  .drop-text{font-size:15px; font-weight:600; color:var(--text); margin-bottom:4px}
+  .drop-hint{font-size:12px; color:var(--muted)}
+  #status{margin-top:10px; color:var(--muted); font-size:12px; font-weight:500}
+  
+  .hidden{display:none}
+  
+  /* Stats Bar */
+  .stats-bar{background:var(--card); border-radius:10px; padding:14px 18px;
+             box-shadow:0 2px 8px var(--shadow); margin-bottom:12px;
+             display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+             gap:16px}
+  .stat-item{display:flex; align-items:center; gap:10px}
+  .stat-icon{font-size:28px; flex-shrink:0}
+  .stat-content{display:flex; flex-direction:column; min-width:0}
+  .stat-value{font-size:20px; font-weight:700; color:var(--text); line-height:1.2}
+  .stat-label{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px}
+  
+  /* Toolbar */
+  .toolbar{background:var(--card); border-radius:10px; padding:12px 16px;
+           box-shadow:0 2px 8px var(--shadow); margin-bottom:12px;
+           display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .search{flex:1; min-width:200px; border:2px solid var(--border); border-radius:8px;
+          padding:8px 14px; font-size:13px; transition:.2s}
+  .search:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-50)}
+  .btn{background:var(--accent); color:#fff; border:0; border-radius:8px;
+       padding:8px 16px; font-weight:600; cursor:pointer; transition:.2s;
+       font-size:13px; display:inline-flex; align-items:center; gap:6px}
+  .btn:hover{background:#2563eb; transform:translateY(-1px); box-shadow:0 4px 12px rgba(59,130,246,0.3)}
+  .btn-secondary{background:#6b7280; color:#fff}
+  .btn-secondary:hover{background:#4b5563}
+  .hint{font-size:11px; color:var(--muted)}
+  
+  /* Grid Layout */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); 
+        gap:14px; margin-top:12px}
+  @media (max-width: 768px){ .grid{grid-template-columns:1fr} }
+  
+  /* Card */
+  .card{background:var(--card); border:1px solid var(--border); border-radius:12px;
+        padding:16px; box-shadow:0 2px 10px var(--shadow); transition:.2s;
+        display:flex; flex-direction:column; height:100%; min-width:0}
+  .card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.12); transform:translateY(-2px)}
+  .card.highlight{border-color:var(--accent); background:var(--accent-50)}
+  
+  .card-header{display:flex; align-items:center; gap:10px; margin-bottom:12px;
+               padding-bottom:10px; border-bottom:2px solid var(--border)}
+  .card-icon{font-size:28px; flex-shrink:0}
+  .card-title{flex:1; font-size:15px; font-weight:700; color:var(--text); 
+              overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .card-badge{background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:999px;
+              font-size:10px; font-weight:600; white-space:nowrap; flex-shrink:0}
+  
+  /* Tree */
+  .tree{line-height:1.5; flex:1; overflow:auto; max-height:500px}
+  .tree::-webkit-scrollbar{width:6px}
+  .tree::-webkit-scrollbar-track{background:#f1f5f9; border-radius:3px}
+  .tree::-webkit-scrollbar-thumb{background:#cbd5e1; border-radius:3px}
+  .tree::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+  
+  details{border-left:2px solid #e2e8f0; margin:3px 0 3px 8px; padding-left:8px; transition:.15s}
+  details:hover{border-left-color:var(--accent)}
+  details[open]{border-left-color:var(--accent)}
+  
+  summary{list-style:none; cursor:pointer; padding:6px 8px; border-radius:6px;
+          font-weight:600; transition:.15s; user-select:none; display:flex;
+          align-items:center; gap:6px; font-size:13px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:'▶'; font-size:9px; color:var(--muted); transition:.2s}
+  details[open]>summary::before{transform:rotate(90deg)}
+  summary:hover{background:#f8fafc}
+  
+  .node-name{color:var(--text); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .pill{display:inline-flex; align-items:center; gap:4px; padding:2px 8px;
+        border-radius:999px; background:#eef2ff; color:#4f46e5;
+        font-size:10px; font-weight:600; flex-shrink:0}
+  
+  .edge{display:flex; align-items:center; gap:6px; font-size:12px;
+        color:#475569; padding:5px 8px; border-radius:5px; margin:2px 0;
+        transition:.15s}
+  .edge:hover{background:#f8fafc}
+  .qty{display:inline-flex; align-items:center; gap:4px; min-width:60px;
+       padding:3px 8px; border:1.5px solid #e2e8f0; border-radius:999px;
+       font-variant-numeric:tabular-nums; background:#fafafa; font-size:11px;
+       font-weight:600; color:#334155; flex-shrink:0}
+  
+  .leaf{margin:3px 0 3px 24px; color:#475569; font-size:12px; padding:5px 8px;
+        border-radius:5px; display:flex; align-items:center; gap:6px; transition:.15s}
+  .leaf:hover{background:#f1f5f9}
+  .leaf-icon{opacity:0.6; font-size:14px; flex-shrink:0}
+  
+  /* Empty State */
+  .empty{text-align:center; padding:60px 20px; color:var(--muted)}
+  .empty-icon{font-size:64px; margin-bottom:16px; opacity:0.5}
+  .empty-text{font-size:16px; font-weight:600; margin-bottom:8px}
+  .empty-hint{font-size:14px}
+  
+  /* View Controls */
+  .view-controls{display:flex; gap:6px; align-items:center}
+  .toggle-btn{background:#f1f5f9; color:#475569; border:0; padding:7px 12px;
+              border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;
+              transition:.2s; white-space:nowrap}
+  .toggle-btn:hover{background:#e2e8f0}
+  .toggle-btn.active{background:var(--accent); color:#fff}
+  
+  /* Animations */
+  @keyframes fadeIn{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)}}
+  .card{animation:fadeIn 0.3s ease-out forwards}
+  .card:nth-child(1){animation-delay:0.05s}
+  .card:nth-child(2){animation-delay:0.1s}
+  .card:nth-child(3){animation-delay:0.15s}
+  .card:nth-child(4){animation-delay:0.2s}
+  .card:nth-child(5){animation-delay:0.25s}
+  .card:nth-child(6){animation-delay:0.3s}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>🌳 Ürün Ağacı Görselleştirici</h1>
+    <div class="sub">Excel dosyanızı yükleyin. İlk sayfadaki <strong>ANA BOM</strong>, <strong>HAMMADDE</strong>, <strong>ADET</strong>, <strong>UNIT</strong> sütunları otomatik tanınır.</div>
+  </div>
+
+  <div class="drop" id="drop">
+    <input id="file" type="file" accept=".xlsx,.xls" class="hidden" />
+    <div class="drop-icon">📂</div>
+    <div class="drop-text">Excel dosyasını buraya sürükleyin</div>
+    <div class="drop-hint">veya tıklayarak seçin (.xlsx, .xls)</div>
+    <div id="status"></div>
+  </div>
+
+  <div class="stats-bar hidden" id="stats-bar">
+    <div class="stat-item">
+      <span class="stat-icon">🎯</span>
+      <div class="stat-content">
+        <span class="stat-value" id="stat-roots">0</span>
+        <span class="stat-label">Kök BOM</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">🔷</span>
+      <div class="stat-content">
+        <span class="stat-value" id="stat-parents">0</span>
+        <span class="stat-label">Ebeveyn Düğüm</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">📦</span>
+      <div class="stat-content">
+        <span class="stat-value" id="stat-children">0</span>
+        <span class="stat-label">Alt Malzeme</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">📊</span>
+      <div class="stat-content">
+        <span class="stat-value" id="stat-total">0</span>
+        <span class="stat-label">Toplam Satır</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar hidden" id="tools">
+    <input id="search" class="search" placeholder="🔍 Ara: Ürün adı, hammadde, kod..." />
+    <div class="view-controls">
+      <button class="toggle-btn" id="expand-all">📂 Tümünü Aç</button>
+      <button class="toggle-btn" id="collapse-all">📁 Tümünü Kapat</button>
+    </div>
+    <button class="btn btn-secondary" id="reset">🔄 Yeni Dosya</button>
+  </div>
+
+  <div id="trees" class="grid"></div>
+</div>
+
+<script>
+(function(){
+  const fileInput = document.getElementById('file');
+  const drop = document.getElementById('drop');
+  const status = document.getElementById('status');
+  const treesEl = document.getElementById('trees');
+  const tools = document.getElementById('tools');
+  const statsBar = document.getElementById('stats-bar');
+  const searchEl = document.getElementById('search');
+  const expandAllBtn = document.getElementById('expand-all');
+  const collapseAllBtn = document.getElementById('collapse-all');
+  const resetBtn = document.getElementById('reset');
+
+  function normHeader(h){
+    return String(h||'').trim().toLowerCase()
+      .replace(/\s+/g,' ')
+      .replace(/ı/g,'i')
+      .replace(/[^\w ]+/g,'')
+  }
+
+  function headerMap(headers){
+    const map = {};
+    headers.forEach(h=>{
+      const n = normHeader(h);
+      if(/ana ?bom/.test(n)) map.parent = h;
+      else if(/hamm?adde/.test(n) || /material|component/.test(n)) map.child = h;
+      else if(/adet|qty|quantity/.test(n)) map.qty = h;
+      else if(/^unit$|birim/.test(n)) map.unit = h;
+    });
+    return map;
+  }
+
+  const text = v => (v==null ? '' : String(v)).trim();
+
+  function buildGraph(rows, cols){
+    const adj = new Map();
+    const parents = new Set();
+    const children = new Set();
+
+    for(const r of rows){
+      const parent = text(r[cols.parent]);
+      const child  = text(r[cols.child]);
+      if(!parent || !child) continue;
+
+      const qty = text(r[cols.qty]);
+      const unit= text(r[cols.unit]);
+
+      if(!adj.has(parent)) adj.set(parent, []);
+      adj.get(parent).push({ child, qty, unit });
+
+      parents.add(parent);
+      children.add(child);
+    }
+
+    const roots = [...parents].filter(p => !children.has(p));
+    const rootsSafe = roots.length ? roots : [...parents];
+    return { adj, roots: rootsSafe, parents, children };
+  }
+
+  function makeNode(name, adj, seen=new Set()){
+    const node = { name, children: [] };
+    if(seen.has(name)) return node;
+    seen.add(name);
+    const edges = adj.get(name) || [];
+    for(const e of edges){
+      const childNode = makeNode(e.child, adj, new Set(seen));
+      childNode._edge = { qty: e.qty, unit: e.unit };
+      node.children.push(childNode);
+    }
+    return node;
+  }
+
+  function renderTreeCard(rootName, tree){
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.rootName = rootName.toLowerCase();
+
+    const header = document.createElement('div');
+    header.className = 'card-header';
+    
+    const icon = document.createElement('span');
+    icon.className = 'card-icon';
+    icon.textContent = '🎯';
+    
+    const title = document.createElement('div');
+    title.className = 'card-title';
+    title.textContent = rootName;
+    
+    const badge = document.createElement('span');
+    badge.className = 'card-badge';
+    badge.textContent = `${countLeaves(tree)} malzeme`;
+    
+    header.appendChild(icon);
+    header.appendChild(title);
+    header.appendChild(badge);
+    card.appendChild(header);
+
+    const container = document.createElement('div');
+    container.className = 'tree';
+    container.appendChild(renderDetails(tree, true));
+    card.appendChild(container);
+    
+    return card;
+  }
+
+  function countLeaves(node){
+    if(!node.children || !node.children.length) return 1;
+    return node.children.reduce((a,c)=>a+countLeaves(c),0);
+  }
+
+  function renderDetails(node, isRoot=false){
+    const det = document.createElement('details');
+    det.open = isRoot;
+
+    const sum = document.createElement('summary');
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'node-name';
+    nameSpan.textContent = node.name || '(Boş)';
+    sum.appendChild(nameSpan);
+    
+    if(node.children?.length){
+      const pill = document.createElement('span');
+      pill.className = 'pill';
+      pill.textContent = `${node.children.length} ▼`;
+      sum.appendChild(pill);
+    }
+    det.appendChild(sum);
+
+    if(node.children && node.children.length){
+      node.children.forEach(ch=>{
+        if(ch.children && ch.children.length){
+          const line = document.createElement('div');
+          line.className = 'edge';
+          
+          const qty = ch._edge?.qty ?? '';
+          const unit = ch._edge?.unit ?? '';
+          const qtyEl = document.createElement('span');
+          qtyEl.className = 'qty';
+          qtyEl.textContent = `${qty}${unit? ' '+unit:''}`;
+          
+          const label = document.createElement('span');
+          label.innerHTML = `📦 ${escapeHtml(ch.name)}`;
+          
+          line.appendChild(qtyEl);
+          line.appendChild(label);
+          det.appendChild(line);
+          det.appendChild(renderDetails(ch, false));
+        } else {
+          const leaf = document.createElement('div');
+          leaf.className = 'leaf';
+          
+          const qty = ch._edge?.qty ?? '';
+          const unit = ch._edge?.unit ?? '';
+          const qtyEl = document.createElement('span');
+          qtyEl.className = 'qty';
+          qtyEl.textContent = `${qty}${unit? ' '+unit:''}`;
+          
+          const icon = document.createElement('span');
+          icon.className = 'leaf-icon';
+          icon.textContent = '📦';
+          
+          const name = document.createElement('span');
+          name.textContent = ch.name;
+          
+          leaf.appendChild(qtyEl);
+          leaf.appendChild(icon);
+          leaf.appendChild(name);
+          det.appendChild(leaf);
+        }
+      });
+    }
+    return det;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  }
+
+  function enableSearch(){
+    searchEl.addEventListener('input', ()=>{
+      const q = searchEl.value.trim().toLowerCase();
+      const cards = treesEl.querySelectorAll('.card');
+      
+      cards.forEach(card=>{
+        if(!q){ 
+          card.style.display='';
+          card.classList.remove('highlight');
+          return;
+        }
+        
+        const hit = card.textContent.toLowerCase().includes(q);
+        card.style.display = hit ? '' : 'none';
+        
+        if(hit){
+          card.classList.add('highlight');
+        } else {
+          card.classList.remove('highlight');
+        }
+      });
+    });
+  }
+
+  function toggleAll(open){
+    const allDetails = treesEl.querySelectorAll('details');
+    allDetails.forEach(d => d.open = open);
+  }
+
+  expandAllBtn.addEventListener('click', () => toggleAll(true));
+  collapseAllBtn.addEventListener('click', () => toggleAll(false));
+  
+  resetBtn.addEventListener('click', () => {
+    treesEl.innerHTML = '';
+    tools.classList.add('hidden');
+    statsBar.classList.add('hidden');
+    drop.classList.remove('hidden');
+    fileInput.value = '';
+    status.textContent = '';
+  });
+
+  drop.addEventListener('click', (e)=>{
+    if(e.target === fileInput) return;
+    fileInput.click();
+  });
+  drop.addEventListener('dragover', e=>{ 
+    e.preventDefault(); 
+    drop.classList.add('drag-over');
+  });
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', e=>{
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    const f = e.dataTransfer.files?.[0];
+    if(f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e=>{
+    const f = e.target.files?.[0];
+    if(f) handleFile(f);
+  });
+
+  async function handleFile(file){
+    status.textContent = `⏳ Yükleniyor: ${file.name}...`;
+    
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type:'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval:'', raw:false });
+      
+      if(!rows.length){ 
+        status.textContent='❌ Bu sayfada veri yok.'; 
+        return;
+      }
+
+      const headers = Object.keys(rows[0]);
+      const cols = headerMap(headers);
+      
+      if(!cols.parent || !cols.child || !cols.qty || !cols.unit){
+        status.textContent = '❌ Başlıklar bulunamadı. Gerekli: ANA BOM, HAMMADDE, ADET, UNIT';
+        return;
+      }
+
+      const { adj, roots, parents, children } = buildGraph(rows, cols);
+      treesEl.innerHTML = '';
+      
+      roots.forEach(r=>{
+        const tree = makeNode(r, adj);
+        treesEl.appendChild(renderTreeCard(r, tree));
+      });
+
+      // Update stats
+      document.getElementById('stat-roots').textContent = roots.length;
+      document.getElementById('stat-parents').textContent = parents.size;
+      document.getElementById('stat-children').textContent = children.size;
+      document.getElementById('stat-total').textContent = rows.length;
+
+      drop.classList.add('hidden');
+      tools.classList.remove('hidden');
+      statsBar.classList.remove('hidden');
+      status.textContent = '✅ Başarıyla yüklendi!';
+      
+      setTimeout(() => status.textContent = '', 3000);
+      
+      enableSearch();
+    } catch(err) {
+      status.textContent = `❌ Hata: ${err.message}`;
+    }
+  }
+})();
+</script>
+</body>
+</html>

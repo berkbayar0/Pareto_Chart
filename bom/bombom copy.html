@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Odoo Excel → Ürün Ağacı</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{--bg:#f6f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--accent:#2563eb;--hint:#f3f4f6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{padding:12px;background:var(--bg);color:var(--text);font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Arial;overflow-x:hidden}
+  h1{margin:0 0 8px;font-size:20px} .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .wrap{max-width:100%;margin:0 auto;padding:0 4px}
+  .drop{border:2px dashed var(--border);background:#fff;border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:.15s;box-shadow:0 2px 10px rgba(0,0,0,.04);margin-bottom:12px}
+  .drop:hover{border-color:var(--accent);background:#eff6ff}
+  .drop.drag-over{border-color:var(--accent);background:#eff6ff;border-style:solid}
+  .hidden{display:none}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
+  @media(max-width:768px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);min-width:0}
+  .card h3{margin:0 0 8px;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tree{line-height:1.35;overflow:auto;max-height:450px}
+  .tree::-webkit-scrollbar{width:6px}
+  .tree::-webkit-scrollbar-track{background:#f1f5f9;border-radius:3px}
+  .tree::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+  details{border-left:2px solid #e5e7eb;margin:2px 0 2px 8px;padding-left:8px}
+  summary{list-style:none;cursor:pointer;padding:5px 7px;border-radius:6px;font-size:13px;user-select:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:'▶';font-size:9px;color:var(--muted);margin-right:4px;transition:.2s}
+  details[open]>summary::before{transform:rotate(90deg)}
+  summary:hover{background:var(--hint)}
+  .edge{display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;padding:3px 0}
+  .qty{display:inline-block;min-width:60px;padding:2px 7px;border:1px solid #e5e7eb;border-radius:999px;font-variant-numeric:tabular-nums;background:#fafafa;font-size:11px;flex-shrink:0}
+  .leaf{margin:2px 0 2px 24px;color:#374151;font-size:12px;display:flex;align-items:center;gap:6px}
+  .badge{font-size:11px;color:#6b7280;margin-left:6px}
+  .toolbar{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+  .search{flex:1;min-width:200px;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px}
+  .hint{font-size:11px;color:var(--muted)}
+  #status{margin-top:8px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ürün Ağacı Görselleştirici</h1>
+  <div class="sub">Odoo ham export veya "ANA BOM / HAMMADDE / ADET / UNIT" başlıklı csv/xlsx'i sürükleyip bırak.</div>
+
+  <div class="drop" id="drop">
+    <input id="file" type="file" accept=".xlsx,.xls" class="hidden" />
+    <div><strong>Dosyayı buraya sürükle</strong> veya tıkla</div>
+    <div id="status"></div>
+  </div>
+
+  <div class="toolbar hidden" id="tools">
+    <input id="search" class="search" placeholder="Ağaçta ara (parça adı / kodu)" />
+    <span class="hint">İpucu: kök başlığa tıklayarak aç/kapa.</span>
+  </div>
+
+  <div id="summary" class="sub hidden"></div>
+  <div id="trees" class="grid"></div>
+</div>
+
+<script>
+(function(){
+  const fileInput = document.getElementById('file');
+  const drop = document.getElementById('drop');
+  const treesEl = document.getElementById('trees');
+  const tools = document.getElementById('tools');
+  const searchEl = document.getElementById('search');
+  const status = document.getElementById('status');
+  const summaryEl = document.getElementById('summary');
+
+  drop.addEventListener('click', (e)=>{
+    if(e.target === fileInput) return;
+    fileInput.click();
+  });
+  drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', e=>{
+    e.preventDefault(); drop.classList.remove('drag-over');
+    const f = e.dataTransfer.files?.[0]; if(f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e=>{
+    const f = e.target.files?.[0]; if(f) handleFile(f);
+  });
+
+  function n(s){ return String(s||'').trim(); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function norm(h){
+    return n(h).toLowerCase()
+      .replace(/\s+/g,' ')
+      .replace(/ı/g,'i')
+      .replace(/ş/g,'s')
+      .replace(/[^\w /.-]+/g,'');
+  }
+
+  function mapColumns(headers){
+    const by = {};
+    headers.forEach(h=>by[norm(h)]=h);
+
+    if(by['ana bom'] || by['ana bom '] || by['ana bom  ']){
+      return {
+        kind: 'simple',
+        parent: by['ana bom'] || Object.values(by).find((_,k)=>k.includes('ana bom')),
+        child : by['hammadde'] || by['ham madde'] || by['hammedde'] || by['hammadde '],
+        qty   : by['adet'] || by['quantity'] || by['qty'],
+        unit  : by['unit'] || by['birim']
+      };
+    }
+
+    const parentId = by['product/products/id'] || by['product/product/id'] || by['product/id'];
+    const parentName = by['product'] || by['product/products'] || by['product name'];
+    const parentRef = by['reference'] || by['product/reference'];
+
+    const compId = by['bom lines/component/id'] || by['bom lines/component id'];
+    const compName = by['bom lines/component'] || by['bom/component'] || by['component'];
+    const compUom = by['bom lines/component/unit of measure'] || by['bom lines/component/uom'];
+    const compQty = by['bom lines/quantity'] || by['bom quantity'] || by['bom lines/qty'];
+
+    if(compName && compQty){
+      return {
+        kind: 'odoo',
+        parentId, parentName, parentRef,
+        childId: compId, childName: compName,
+        qty: compQty, unit: compUom
+      };
+    }
+    return null;
+  }
+
+  function parseNumberLike(x){
+    const s = n(x);
+    if(!s) return '';
+    return s.replace(/\s+/g,' ');
+  }
+
+  function buildGraphFromRows(rows, cols){
+    const adj = new Map(); const parents = new Set(); const children = new Set(); const parentLabelCache = new Map();
+
+    if(cols.kind==='simple'){
+      let lastParent='';
+      rows.forEach(r=>{
+        const p = n(r[cols.parent]) || lastParent;
+        const c = n(r[cols.child]);
+        if(!p || !c) { if(n(r[cols.parent])) lastParent = n(r[cols.parent]); return; }
+        lastParent = p;
+        const q = parseNumberLike(r[cols.qty]);
+        const u = n(r[cols.unit]);
+        if(!adj.has(p)) adj.set(p,[]);
+        adj.get(p).push({child:c, qty:q, unit:u});
+        parents.add(p); children.add(c);
+      });
+      return {adj, roots:[...parents].filter(x=>!children.has(x)) || [...parents]};
+    }
+
+    let last = {id:'', name:'', ref:''};
+    rows.forEach(r=>{
+      const id  = n(r[cols.parentId]) || last.id;
+      const nm  = n(r[cols.parentName]) || last.name;
+      const ref = n(r[cols.parentRef]) || last.ref;
+
+      if(n(r[cols.parentId])||n(r[cols.parentName])||n(r[cols.parentRef])){
+        last = {id, name:nm, ref};
+      }
+      const parentLabel = nm || ref || id || '(Unnamed)';
+      parentLabelCache.set(id||nm||ref, parentLabel + (ref && nm ? ` — ${ref}` : ''));
+
+      const childName = n(r[cols.childName]);
+      if(!childName) return;
+
+      const q = parseNumberLike(r[cols.qty]);
+      const u = n(r[cols.unit]);
+      const parentKey = id || nm || ref;
+
+      const label = parentLabelCache.get(parentKey) || parentLabel;
+      if(!adj.has(label)) adj.set(label,[]);
+      adj.get(label).push({child: childName, qty:q, unit:u});
+      parents.add(label); children.add(childName);
+    });
+
+    const roots = [...parents].filter(x=>!children.has(x)) || [...parents];
+    return {adj, roots};
+  }
+
+  function makeNode(name, adj, seen=new Set()){
+    const node = {name, children:[]};
+    if(seen.has(name)) return node;
+    seen.add(name);
+    for(const e of (adj.get(name)||[])){
+      const child = makeNode(e.child, adj, new Set(seen));
+      child._edge = {qty:e.qty, unit:e.unit};
+      node.children.push(child);
+    }
+    return node;
+  }
+
+  function renderTreeCard(root, tree){
+    const card = document.createElement('div'); card.className='card';
+    const h = document.createElement('h3'); h.textContent=root; h.title=root;
+    const b = document.createElement('span'); b.className='badge'; b.textContent = `alt malzeme: ${countLeaves(tree)}`;
+    h.appendChild(b); card.appendChild(h);
+    const t = document.createElement('div'); t.className='tree';
+    t.appendChild(renderDetails(tree,true)); card.appendChild(t);
+    return card;
+  }
+  function countLeaves(n){ if(!n.children?.length) return 1; return n.children.reduce((a,c)=>a+countLeaves(c),0); }
+  function renderDetails(node,isRoot=false){
+    const det = document.createElement('details'); det.open = isRoot;
+    const sum = document.createElement('summary');
+    sum.innerHTML = `<strong>${esc(node.name||'(Boş)')}</strong>` + (node.children?.length?` <span style="font-size:11px;color:#6b7280;margin-left:4px">${node.children.length} çocuk</span>`:'');
+    det.appendChild(sum);
+    (node.children||[]).forEach(ch=>{
+      if(ch.children?.length){
+        const row = document.createElement('div'); row.className='edge';
+        const qtyEl = document.createElement('span'); qtyEl.className='qty';
+        const qtyText = (ch._edge?.qty||'') + (ch._edge?.unit? (' '+ch._edge.unit):'');
+        qtyEl.textContent = qtyText; row.appendChild(qtyEl);
+        const name = document.createElement('span'); name.innerHTML = `<em>${esc(ch.name)}</em>`;
+        row.appendChild(name); det.appendChild(row);
+        det.appendChild(renderDetails(ch,false));
+      } else {
+        const leaf = document.createElement('div'); leaf.className='leaf';
+        const qtyEl = document.createElement('span'); qtyEl.className='qty';
+        qtyEl.textContent = (ch._edge?.qty||'') + (ch._edge?.unit? (' '+ch._edge.unit):'');
+        const name = document.createElement('span'); name.textContent = ' ' + (ch.name||'');
+        leaf.appendChild(qtyEl); leaf.appendChild(name); det.appendChild(leaf);
+      }
+    });
+    return det;
+  }
+
+  function enableSearch(){
+    const fn = ()=> {
+      const q = searchEl.value.trim().toLowerCase();
+      treesEl.querySelectorAll('.card').forEach(c=>{
+        if(!q){ c.style.display=''; return; }
+        c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    };
+    searchEl.removeEventListener('input', fn);
+    searchEl.addEventListener('input', fn);
+  }
+
+  async function handleFile(file){
+    status.textContent = `Yükleniyor: ${file.name} …`;
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf,{type:'array'});
+
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rowsAOA = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    if(!rowsAOA.length){ status.textContent='Sayfada veri yok.'; return; }
+
+    const headers = rowsAOA[0];
+    const cols = mapColumns(headers);
+    if(!cols){ status.innerHTML = 'Gerekli sütunlar bulunamadı. <br>Ham Odoo başlıkları veya "ANA BOM / HAMMADDE / ADET / UNIT" bekleniyor.'; return; }
+
+    const rows = rowsAOA.slice(1).map(r=>{
+      const o={}; headers.forEach((h,i)=>o[h]=r[i]); return o;
+    });
+
+    const {adj, roots} = buildGraphFromRows(rows, cols);
+    treesEl.innerHTML=''; roots.forEach(r=>{ const t=makeNode(r,adj); treesEl.appendChild(renderTreeCard(r,t)); });
+
+    tools.classList.remove('hidden');
+    summaryEl.classList.remove('hidden');
+    summaryEl.innerHTML = `Kök sayısı: <b>${roots.length}</b> · Düğüm sayısı: <b>${adj.size}</b>`;
+    status.textContent = 'Hazır.';
+    enableSearch();
+  }
+})();
+</script>
+</body>
+</html>

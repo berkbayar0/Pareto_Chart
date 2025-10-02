@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Hesaplayıcı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .grade-system-selector {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 5px;
+        }
+
+        .grade-system-selector label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .grade-system-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .current-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 5px;
+        }
+
+        .info-box label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .info-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #fafafa;
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        td input, td select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .btn-add {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #2980b9;
+        }
+
+        .btn-calculate {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            background: #229954;
+        }
+
+        .btn-reset {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #7f8c8d;
+        }
+
+        .result {
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .result-gpa {
+            font-size: 48px;
+            color: #27ae60;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .result-details {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .current-info {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPA Hesaplayıcı</h1>
+
+        <div class="grade-system-selector">
+            <label>Not Sistemi Seçin:</label>
+            <select id="gradeSystem" onchange="updateGradeOptions()">
+                <option value="4point">Harf Sistemi (AA, BA, BB...)</option>
+                <option value="100point">100'lük Sistem (A1, A2, B1...)</option>
+            </select>
+        </div>
+
+        <div class="current-info">
+            <div class="info-box">
+                <label>Mevcut Toplam Kredi:</label>
+                <input type="number" id="currentTotalCredit" value="0" min="0" step="1">
+            </div>
+            <div class="info-box">
+                <label>Mevcut GPA:</label>
+                <input type="number" id="currentGPA" value="0" min="0" max="4" step="0.01">
+            </div>
+        </div>
+
+        <h2>Bu Dönem Alınacak Dersler</h2>
+
+        <table id="courseTable">
+            <thead>
+                <tr>
+                    <th>Ders Adı</th>
+                    <th>Kredi</th>
+                    <th>Not</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="courseBody">
+                <tr>
+                    <td><input type="text" placeholder="Ders adı" class="course-name"></td>
+                    <td><input type="number" min="1" max="10" value="3" class="course-credit"></td>
+                    <td><select class="course-grade"></select></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="buttons">
+            <button class="btn btn-add" onclick="addCourse()">+ Ders Ekle</button>
+            <button class="btn btn-calculate" onclick="calculateGPA()">Hesapla</button>
+            <button class="btn btn-reset" onclick="resetAll()">Sıfırla</button>
+        </div>
+
+        <div class="result" id="result">
+            <h3>Dönem Sonu Tahmini</h3>
+            <div class="result-gpa" id="finalGPA">0.00</div>
+            <div class="result-details">
+                <p><strong>Bu Dönem GPA:</strong> <span id="semesterGPA">0.00</span></p>
+                <p><strong>Bu Dönem Kredi:</strong> <span id="semesterCredit">0</span></p>
+                <p><strong>Yeni Toplam Kredi:</strong> <span id="newTotalCredit">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gradeScales = {
+            '4point': [
+                { label: 'AA', value: 4.0 },
+                { label: 'BA', value: 3.5 },
+                { label: 'BB', value: 3.0 },
+                { label: 'CB', value: 2.5 },
+                { label: 'CC', value: 2.0 },
+                { label: 'DC', value: 1.5 },
+                { label: 'DD', value: 1.0 },
+                { label: 'FD', value: 0.5 },
+                { label: 'FF', value: 0.0 }
+            ],
+            '100point': [
+                { label: 'A1 (90-100)', value: 4.0 },
+                { label: 'A2 (85-89)', value: 3.7 },
+                { label: 'A3 (80-84)', value: 3.3 },
+                { label: 'B1 (75-79)', value: 3.0 },
+                { label: 'B2 (70-74)', value: 2.7 },
+                { label: 'B3 (65-69)', value: 2.3 },
+                { label: 'C1 (60-64)', value: 2.0 },
+                { label: 'C2 (55-59)', value: 1.7 },
+                { label: 'C3 (50-54)', value: 1.3 },
+                { label: 'F (0-49)', value: 0.0 }
+            ]
+        };
+
+        function updateGradeOptions() {
+            const system = document.getElementById('gradeSystem').value;
+            const selects = document.querySelectorAll('.course-grade');
+            const grades = gradeScales[system];
+
+            selects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">Seçiniz</option>';
+                grades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade.value;
+                    option.textContent = `${grade.label} (${grade.value})`;
+                    select.appendChild(option);
+                });
+                select.value = currentValue;
+            });
+        }
+
+        function addCourse() {
+            const tbody = document.getElementById('courseBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Ders adı" class="course-name"></td>
+                <td><input type="number" min="1" max="10" value="3" class="course-credit"></td>
+                <td><select class="course-grade"></select></td>
+                <td><button class="remove-btn" onclick="removeCourse(this)">Sil</button></td>
+            `;
+            tbody.appendChild(row);
+            updateGradeOptions();
+        }
+
+        function removeCourse(btn) {
+            btn.closest('tr').remove();
+        }
+
+        function calculateGPA() {
+            const currentTotalCredit = parseFloat(document.getElementById('currentTotalCredit').value) || 0;
+            const currentGPA = parseFloat(document.getElementById('currentGPA').value) || 0;
+            
+            const rows = document.querySelectorAll('#courseBody tr');
+            let semesterPoints = 0;
+            let semesterCredits = 0;
+
+            rows.forEach(row => {
+                const credit = parseFloat(row.querySelector('.course-credit').value);
+                const grade = parseFloat(row.querySelector('.course-grade').value);
+
+                if (credit && !isNaN(grade) && grade !== '') {
+                    semesterPoints += credit * grade;
+                    semesterCredits += credit;
+                }
+            });
+
+            if (semesterCredits === 0) {
+                alert('Lütfen en az bir dersin kredi ve not bilgisini giriniz!');
+                return;
+            }
+
+            const semesterGPA = semesterPoints / semesterCredits;
+            const currentTotalPoints = currentTotalCredit * currentGPA;
+            const newTotalPoints = currentTotalPoints + semesterPoints;
+            const newTotalCredit = currentTotalCredit + semesterCredits;
+            const finalGPA = newTotalPoints / newTotalCredit;
+
+            document.getElementById('semesterGPA').textContent = semesterGPA.toFixed(2);
+            document.getElementById('semesterCredit').textContent = semesterCredits;
+            document.getElementById('newTotalCredit').textContent = newTotalCredit;
+            document.getElementById('finalGPA').textContent = finalGPA.toFixed(2);
+            document.getElementById('result').classList.add('show');
+        }
+
+        function resetAll() {
+            if (confirm('Tüm veriler silinecek. Emin misiniz?')) {
+                document.getElementById('currentTotalCredit').value = 0;
+                document.getElementById('currentGPA').value = 0;
+                document.getElementById('courseBody').innerHTML = `
+                    <tr>
+                        <td><input type="text" placeholder="Ders adı" class="course-name"></td>
+                        <td><input type="number" min="1" max="10" value="3" class="course-credit"></td>
+                        <td><select class="course-grade"></select></td>
+                        <td></td>
+                    </tr>
+                `;
+                updateGradeOptions();
+                document.getElementById('result').classList.remove('show');
+            }
+        }
+
+        // Sayfa yüklendiğinde not seçeneklerini doldur
+        updateGradeOptions();
+    </script>
+</body>
+</html>
