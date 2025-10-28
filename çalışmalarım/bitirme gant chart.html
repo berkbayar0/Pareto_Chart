@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sokak Direkleri Üretim Hattı - Süre Tahmini Projesi Gantt Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .chart-container {
+            position: relative;
+            height: 700px;
+            margin-bottom: 40px;
+        }
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        .notes {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #ffc107;
+        }
+        .notes h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .notes ul {
+            color: #856404;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Sokak Direkleri Üretim Hattı - Süre Tahmini Projesi</h1>
+        <div class="subtitle">Mitaş Poligon Fabrikası | Bitirme Projesi Gantt Chart</div>
+        
+        <div class="chart-container">
+            <canvas id="ganttChart"></canvas>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3498db;"></div>
+                <span><strong>Faz 1:</strong> Veri Toplama ve Analiz</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span><strong>Faz 2:</strong> Model Geliştirme</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span><strong>Faz 3:</strong> Test ve Validasyon</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #27ae60;"></div>
+                <span><strong>Faz 4:</strong> Uygulama</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #9b59b6;"></div>
+                <span><strong>Faz 5:</strong> Dokümantasyon</span>
+            </div>
+        </div>
+
+        <div class="notes">
+            <h3>📋 Kritik Notlar ve Kilometre Taşları</h3>
+            <ul>
+                <li><strong>Hafta 2:</strong> İlk veri seti toplanmalı (en az 50 farklı direk konfigürasyonu)</li>
+                <li><strong>Hafta 4:</strong> Matematiksel model tasarımı tamamlanmalı</li>
+                <li><strong>Hafta 6:</strong> Prototip model test edilmeye hazır</li>
+                <li><strong>Hafta 8:</strong> Validasyon çalışmaları başlamalı</li>
+                <li><strong>Hafta 10:</strong> Pilot uygulama üretim hattında test edilmeli</li>
+                <li><strong>Hafta 12:</strong> Final sunumu ve teslim</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('ganttChart').getContext('2d');
+        
+        // Proje başlangıç tarihi
+        const startDate = new Date('2025-11-01');
+        
+        // Görev verilerini hazırla
+        const tasks = [
+            // FAZ 1: VERİ TOPLAMA VE ANALİZ (Hafta 1-3)
+            {
+                label: '1.1 Üretim süreçlerini gözlemleme',
+                start: new Date('2025-11-01'),
+                end: new Date('2025-11-07'),
+                color: '#3498db'
+            },
+            {
+                label: '1.2 Aksesuar türlerini kataloglama',
+                start: new Date('2025-11-03'),
+                end: new Date('2025-11-10'),
+                color: '#3498db'
+            },
+            {
+                label: '1.3 Geçmiş üretim verilerini toplama',
+                start: new Date('2025-11-08'),
+                end: new Date('2025-11-17'),
+                color: '#3498db'
+            },
+            {
+                label: '1.4 Montaj sürelerini ölçme ve kayıt',
+                start: new Date('2025-11-10'),
+                end: new Date('2025-11-21'),
+                color: '#3498db'
+            },
+            
+            // FAZ 2: MODEL GELİŞTİRME (Hafta 3-6)
+            {
+                label: '2.1 Matematiksel model tasarımı',
+                start: new Date('2025-11-17'),
+                end: new Date('2025-11-28'),
+                color: '#e74c3c'
+            },
+            {
+                label: '2.2 Parametre belirleme',
+                start: new Date('2025-11-22'),
+                end: new Date('2025-12-05'),
+                color: '#e74c3c'
+            },
+            {
+                label: '2.3 Algoritma geliştirme',
+                start: new Date('2025-11-29'),
+                end: new Date('2025-12-12'),
+                color: '#e74c3c'
+            },
+            {
+                label: '2.4 Excel/Python araç geliştirme',
+                start: new Date('2025-12-06'),
+                end: new Date('2025-12-19'),
+                color: '#e74c3c'
+            },
+            
+            // FAZ 3: TEST VE VALİDASYON (Hafta 6-9)
+            {
+                label: '3.1 Model doğruluğunu test etme',
+                start: new Date('2025-12-13'),
+                end: new Date('2025-12-26'),
+                color: '#f39c12'
+            },
+            {
+                label: '3.2 Gerçek verilerle karşılaştırma',
+                start: new Date('2025-12-20'),
+                end: new Date('2026-01-02'),
+                color: '#f39c12'
+            },
+            {
+                label: '3.3 Hata analizi ve düzeltme',
+                start: new Date('2025-12-27'),
+                end: new Date('2026-01-09'),
+                color: '#f39c12'
+            },
+            {
+                label: '3.4 Model optimizasyonu',
+                start: new Date('2026-01-03'),
+                end: new Date('2026-01-16'),
+                color: '#f39c12'
+            },
+            
+            // FAZ 4: UYGULAMA (Hafta 9-11)
+            {
+                label: '4.1 Pilot uygulama hazırlığı',
+                start: new Date('2026-01-10'),
+                end: new Date('2026-01-20'),
+                color: '#27ae60'
+            },
+            {
+                label: '4.2 Üretim personeline eğitim',
+                start: new Date('2026-01-17'),
+                end: new Date('2026-01-27'),
+                color: '#27ae60'
+            },
+            {
+                label: '4.3 Sistem entegrasyonu',
+                start: new Date('2026-01-24'),
+                end: new Date('2026-02-03'),
+                color: '#27ae60'
+            },
+            {
+                label: '4.4 Performans izleme',
+                start: new Date('2026-01-31'),
+                end: new Date('2026-02-10'),
+                color: '#27ae60'
+            },
+            
+            // FAZ 5: DOKÜMANTASYON (Hafta 10-12)
+            {
+                label: '5.1 Teknik rapor yazımı',
+                start: new Date('2026-01-27'),
+                end: new Date('2026-02-10'),
+                color: '#9b59b6'
+            },
+            {
+                label: '5.2 Kullanım kılavuzu hazırlama',
+                start: new Date('2026-02-03'),
+                end: new Date('2026-02-13'),
+                color: '#9b59b6'
+            },
+            {
+                label: '5.3 Sunum hazırlığı',
+                start: new Date('2026-02-07'),
+                end: new Date('2026-02-17'),
+                color: '#9b59b6'
+            },
+            {
+                label: '5.4 Final teslimi',
+                start: new Date('2026-02-14'),
+                end: new Date('2026-02-20'),
+                color: '#9b59b6'
+            }
+        ];
+
+        // Chart.js için veri hazırlama
+        const datasets = tasks.map((task, index) => ({
+            label: task.label,
+            data: [{
+                x: [task.start, task.end],
+                y: task.label
+            }],
+            backgroundColor: task.color,
+            borderColor: task.color,
+            borderWidth: 2,
+            borderRadius: 5,
+            barPercentage: 0.8
+        }));
+
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: tasks.map(t => t.label),
+                datasets: [{
+                    label: 'Görevler',
+                    data: tasks.map((task, i) => ({
+                        x: task.start,
+                        y: i,
+                        width: task.end - task.start
+                    })),
+                    backgroundColor: tasks.map(t => t.color),
+                    borderColor: tasks.map(t => t.color),
+                    borderWidth: 2,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'week',
+                            displayFormats: {
+                                week: 'dd MMM'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Zaman Çizelgesi',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        min: new Date('2025-11-01'),
+                        max: new Date('2026-02-28')
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Proje Görevleri',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const task = tasks[context.dataIndex];
+                                const duration = Math.ceil((task.end - task.start) / (1000 * 60 * 60 * 24));
+                                return [
+                                    `Başlangıç: ${task.start.toLocaleDateString('tr-TR')}`,
+                                    `Bitiş: ${task.end.toLocaleDateString('tr-TR')}`,
+                                    `Süre: ${duration} gün`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gantt çizgileri için custom çizim
+        tasks.forEach((task, index) => {
+            const dataset = {
+                type: 'line',
+                data: [
+                    {x: task.start, y: index},
+                    {x: task.end, y: index}
+                ],
+                borderColor: task.color,
+                borderWidth: 8,
+                pointRadius: 0,
+                fill: false
+            };
+        });
+    </script>
+</body>
+</html>
