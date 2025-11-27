@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direk Üretim Süresi Tahmin Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 1fr 380px;
+            gap: 25px;
+            align-items: start;
+        }
+
+        /* Sol Panel - Eklenti Seçimi */
+        .accessories-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .accessories-panel h2 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .accessory-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .accessory-item:hover {
+            background: #e8f4fc;
+            border-color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .accessory-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .accessory-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .accessory-item span {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        /* Orta Panel - Direk Görselleştirme */
+        .pole-visualization {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            min-height: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pole-visualization h2 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+
+        .pole-container {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pole-wrapper {
+            position: relative;
+            height: 600px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pole {
+            width: 35px;
+            height: 100%;
+            background: linear-gradient(90deg, #95a5a6 0%, #bdc3c7 30%, #ecf0f1 50%, #bdc3c7 70%, #95a5a6 100%);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.2);
+        }
+
+        .pole::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.6);
+        }
+
+        .pole-base {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 25px;
+            background: linear-gradient(180deg, #7f8c8d, #5a6c7d);
+            border-radius: 5px;
+        }
+
+        /* Drop Zones */
+        .drop-zone {
+            position: absolute;
+            left: 50px;
+            width: 200px;
+            height: 70px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .drop-zone.right {
+            left: auto;
+            right: 50px;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .drop-zone .placeholder {
+            color: #bdc3c7;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Mounted Accessories */
+        .mounted-accessory {
+            position: absolute;
+            background: white;
+            border-radius: 10px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .mounted-accessory:hover {
+            transform: scale(1.05);
+            border-color: #3498db;
+        }
+
+        .mounted-accessory.selected {
+            border-color: #e74c3c;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .mounted-accessory .icon {
+            font-size: 1.3rem;
+        }
+
+        .mounted-accessory .info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mounted-accessory .name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .mounted-accessory .time {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+        }
+
+        .mounted-accessory .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mounted-accessory:hover .delete-btn {
+            display: flex;
+        }
+
+        /* Connection Lines */
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transform-origin: left center;
+        }
+
+        /* Sağ Panel - Parametreler ve Sonuçlar */
+        .params-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .params-panel h2 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2ecc71;
+        }
+
+        .global-params {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .global-params h3 {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .param-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .param-row label {
+            font-size: 0.85rem;
+            color: #5a6c7d;
+        }
+
+        .param-row input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .param-row input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .accessory-params {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .accessory-param-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .accessory-param-card h4 {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mini-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .mini-input {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mini-input label {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+        }
+
+        .mini-input input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+
+        /* Sonuç Kartı */
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+        }
+
+        .result-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .total-time {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .time-unit {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .result-breakdown {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        /* Butonlar */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* İstatistikler */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .stat-box .label {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .pole-visualization {
+                order: -1;
+            }
+        }
+
+        /* Animasyonlar */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .mounted-accessory.new {
+            animation: pulse 0.5s ease;
+        }
+
+        /* Custom Scrollbar */
+        .accessory-params::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .accessory-params::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .accessory-params::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .accessory-params::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏭 Direk Üretim Süresi Tahmin Sistemi</h1>
+            <p>Eklentileri sürükleyip direğin üzerine bırakın, parametreleri girin</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Sol Panel -->
+            <div class="accessories-panel">
+                <h2>📦 Eklentiler</h2>
+                <div class="accessory-item" draggable="true" data-type="aydinlatma" data-icon="💡" data-color="#f1c40f">
+                    <div class="accessory-icon" style="background: #fef9e7;">💡</div>
+                    <span>Aydınlatma Armatürü</span>
+                </div>
+                <div class="accessory-item" draggable="true" data-type="kamera" data-icon="📷" data-color="#3498db">
+                    <div class="accessory-icon" style="background: #ebf5fb;">📷</div>
+                    <span>Kamera Konsolu</span>
+                </div>
+                <div class="accessory-item" draggable="true" data-type="bayrak" data-icon="🚩" data-color="#e74c3c">
+                    <div class="accessory-icon" style="background: #fdedec;">🚩</div>
+                    <span>Bayrak Kolu</span>
+                </div>
+                <div class="accessory-item" draggable="true" data-type="sinyal" data-icon="🚦" data-color="#2ecc71">
+                    <div class="accessory-icon" style="background: #eafaf1;">🚦</div>
+                    <span>Sinyal Lambası</span>
+                </div>
+                <div class="accessory-item" draggable="true" data-type="kablo" data-icon="📦" data-color="#9b59b6">
+                    <div class="accessory-icon" style="background: #f5eef8;">📦</div>
+                    <span>Kablo Kutusu</span>
+                </div>
+                <div class="accessory-item" draggable="true" data-type="diger" data-icon="⚙️" data-color="#95a5a6">
+                    <div class="accessory-icon" style="background: #f4f6f6;">⚙️</div>
+                    <span>Diğer</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="value" id="totalAccessories">0</div>
+                        <div class="label">Toplam Eklenti</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="value" id="totalWelds">0</div>
+                        <div class="label">Toplam Kaynak</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orta Panel -->
+            <div class="pole-visualization">
+                <h2>🔧 Direk Görünümü <span style="font-weight: normal; font-size: 0.85rem; color: #7f8c8d;">(Eklentileri buraya sürükleyin)</span></h2>
+                <div class="pole-container">
+                    <div class="pole-wrapper">
+                        <!-- Drop Zones - Sol -->
+                        <div class="drop-zone" style="top: 30px;" data-position="1-left">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone" style="top: 130px;" data-position="2-left">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone" style="top: 230px;" data-position="3-left">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone" style="top: 330px;" data-position="4-left">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone" style="top: 430px;" data-position="5-left">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+
+                        <!-- Drop Zones - Sağ -->
+                        <div class="drop-zone right" style="top: 30px;" data-position="1-right">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone right" style="top: 130px;" data-position="2-right">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone right" style="top: 230px;" data-position="3-right">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone right" style="top: 330px;" data-position="4-right">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+                        <div class="drop-zone right" style="top: 430px;" data-position="5-right">
+                            <span class="placeholder">Eklenti bırakın</span>
+                        </div>
+
+                        <!-- Direk -->
+                        <div class="pole">
+                            <div class="pole-base"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ Panel -->
+            <div class="params-panel">
+                <h2>⚙️ Parametreler</h2>
+                
+                <div class="global-params">
+                    <h3>Genel Ayarlar</h3>
+                    <div class="param-row">
+                        <label>Birim Kaynak Süresi (dk)</label>
+                        <input type="number" id="unitWeldTime" value="5" min="1" step="0.5">
+                    </div>
+                </div>
+
+                <h3 style="font-size: 0.9rem; color: #2c3e50; margin-bottom: 10px;">Eklenen Parçalar</h3>
+                <div class="accessory-params" id="accessoryParams">
+                    <p style="color: #bdc3c7; font-size: 0.85rem; text-align: center; padding: 20px;">
+                        Henüz eklenti eklenmedi.<br>Soldaki listeden sürükleyin.
+                    </p>
+                </div>
+
+                <div class="result-card">
+                    <h3>📊 Tahmini Toplam Süre</h3>
+                    <div class="total-time" id="totalTime">0</div>
+                    <div class="time-unit">dakika</div>
+                    <div class="result-breakdown">
+                        <div class="breakdown-item">
+                            <span>Kaynak Süresi:</span>
+                            <span id="weldTime">0 dk</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Montaj Süresi:</span>
+                            <span id="mountTime">0 dk</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="exportReport()">📄 Rapor</button>
+                    <button class="btn btn-danger" onclick="clearAll()">🗑️ Temizle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Veri yapıları
+        const accessoryNames = {
+            'aydinlatma': 'Aydınlatma Armatürü',
+            'kamera': 'Kamera Konsolu',
+            'bayrak': 'Bayrak Kolu',
+            'sinyal': 'Sinyal Lambası',
+            'kablo': 'Kablo Kutusu',
+            'diger': 'Diğer'
+        };
+
+        const accessoryIcons = {
+            'aydinlatma': '💡',
+            'kamera': '📷',
+            'bayrak': '🚩',
+            'sinyal': '🚦',
+            'kablo': '📦',
+            'diger': '⚙️'
+        };
+
+        const accessoryColors = {
+            'aydinlatma': '#f1c40f',
+            'kamera': '#3498db',
+            'bayrak': '#e74c3c',
+            'sinyal': '#2ecc71',
+            'kablo': '#9b59b6',
+            'diger': '#95a5a6'
+        };
+
+        let mountedAccessories = [];
+        let accessoryIdCounter = 0;
+
+        // Drag & Drop
+        const accessoryItems = document.querySelectorAll('.accessory-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        accessoryItems.forEach(item => {
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('dragend', handleDragEnd);
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', handleDragOver);
+            zone.addEventListener('dragleave', handleDragLeave);
+            zone.addEventListener('drop', handleDrop);
+        });
+
+        let draggedType = null;
+        let draggedIcon = null;
+
+        function handleDragStart(e) {
+            this.classList.add('dragging');
+            draggedType = this.dataset.type;
+            draggedIcon = this.dataset.icon;
+            e.dataTransfer.effectAllowed = 'copy';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const position = this.dataset.position;
+            
+            // Bu pozisyonda zaten eklenti var mı kontrol et
+            const existing = mountedAccessories.find(a => a.position === position);
+            if (existing) {
+                alert('Bu pozisyonda zaten bir eklenti var!');
+                return;
+            }
+
+            const newAccessory = {
+                id: ++accessoryIdCounter,
+                type: draggedType,
+                position: position,
+                weldCount: 2,
+                mountTime: 10
+            };
+
+            mountedAccessories.push(newAccessory);
+            renderMountedAccessory(newAccessory, this);
+            updateParamsPanel();
+            calculateTotal();
+        }
+
+        function renderMountedAccessory(accessory, dropZone) {
+            // Drop zone'u gizle
+            dropZone.style.display = 'none';
+
+            // Yeni element oluştur
+            const elem = document.createElement('div');
+            elem.className = 'mounted-accessory new';
+            elem.dataset.id = accessory.id;
+            elem.style.cssText = dropZone.style.cssText;
+            elem.style.borderLeftColor = accessoryColors[accessory.type];
+            
+            if (dropZone.classList.contains('right')) {
+                elem.style.left = 'auto';
+                elem.style.right = '50px';
+            } else {
+                elem.style.left = '50px';
+            }
+
+            elem.innerHTML = `
+                <span class="icon">${accessoryIcons[accessory.type]}</span>
+                <div class="info">
+                    <span class="name">${accessoryNames[accessory.type]}</span>
+                    <span class="time">${accessory.weldCount} kaynak · ${accessory.mountTime} dk</span>
+                </div>
+                <button class="delete-btn" onclick="removeAccessory(${accessory.id}, '${accessory.position}')">×</button>
+            `;
+
+            elem.addEventListener('click', () => selectAccessory(accessory.id));
+
+            dropZone.parentElement.appendChild(elem);
+
+            // Animasyonu kaldır
+            setTimeout(() => elem.classList.remove('new'), 500);
+        }
+
+        function removeAccessory(id, position) {
+            event.stopPropagation();
+            
+            // Listeden kaldır
+            mountedAccessories = mountedAccessories.filter(a => a.id !== id);
+            
+            // DOM'dan kaldır
+            const elem = document.querySelector(`.mounted-accessory[data-id="${id}"]`);
+            if (elem) elem.remove();
+            
+            // Drop zone'u tekrar göster
+            const dropZone = document.querySelector(`.drop-zone[data-position="${position}"]`);
+            if (dropZone) dropZone.style.display = 'flex';
+            
+            updateParamsPanel();
+            calculateTotal();
+        }
+
+        function selectAccessory(id) {
+            document.querySelectorAll('.mounted-accessory').forEach(el => el.classList.remove('selected'));
+            const elem = document.querySelector(`.mounted-accessory[data-id="${id}"]`);
+            if (elem) elem.classList.add('selected');
+            
+            // İlgili param kartını highlight et
+            document.querySelectorAll('.accessory-param-card').forEach(card => {
+                card.style.borderLeftColor = card.dataset.id == id ? '#e74c3c' : '#3498db';
+            });
+        }
+
+        function updateParamsPanel() {
+            const container = document.getElementById('accessoryParams');
+            
+            if (mountedAccessories.length === 0) {
+                container.innerHTML = `
+                    <p style="color: #bdc3c7; font-size: 0.85rem; text-align: center; padding: 20px;">
+                        Henüz eklenti eklenmedi.<br>Soldaki listeden sürükleyin.
+                    </p>
+                `;
+                return;
+            }
+
+            container.innerHTML = mountedAccessories.map(acc => `
+                <div class="accessory-param-card" data-id="${acc.id}">
+                    <h4>${accessoryIcons[acc.type]} ${accessoryNames[acc.type]}</h4>
+                    <div class="mini-input-group">
+                        <div class="mini-input">
+                            <label>Kaynak Sayısı</label>
+                            <input type="number" value="${acc.weldCount}" min="1" 
+                                   onchange="updateAccessoryParam(${acc.id}, 'weldCount', this.value)">
+                        </div>
+                        <div class="mini-input">
+                            <label>Montaj Süresi (dk)</label>
+                            <input type="number" value="${acc.mountTime}" min="1" step="0.5"
+                                   onchange="updateAccessoryParam(${acc.id}, 'mountTime', this.value)">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // İstatistikleri güncelle
+            document.getElementById('totalAccessories').textContent = mountedAccessories.length;
+            document.getElementById('totalWelds').textContent = mountedAccessories.reduce((sum, a) => sum + a.weldCount, 0);
+        }
+
+        function updateAccessoryParam(id, param, value) {
+            const accessory = mountedAccessories.find(a => a.id === id);
+            if (accessory) {
+                accessory[param] = parseFloat(value) || 0;
+                
+                // Görsel güncelle
+                const elem = document.querySelector(`.mounted-accessory[data-id="${id}"] .time`);
+                if (elem) {
+                    elem.textContent = `${accessory.weldCount} kaynak · ${accessory.mountTime} dk`;
+                }
+                
+                calculateTotal();
+                
+                // İstatistikleri güncelle
+                document.getElementById('totalWelds').textContent = mountedAccessories.reduce((sum, a) => sum + a.weldCount, 0);
+            }
+        }
+
+        function calculateTotal() {
+            const unitWeldTime = parseFloat(document.getElementById('unitWeldTime').value) || 0;
+            
+            let totalWeldTime = 0;
+            let totalMountTime = 0;
+
+            mountedAccessories.forEach(acc => {
+                totalWeldTime += acc.weldCount * unitWeldTime;
+                totalMountTime += acc.mountTime;
+            });
+
+            const total = totalWeldTime + totalMountTime;
+
+            document.getElementById('totalTime').textContent = total.toFixed(1);
+            document.getElementById('weldTime').textContent = totalWeldTime.toFixed(1) + ' dk';
+            document.getElementById('mountTime').textContent = totalMountTime.toFixed(1) + ' dk';
+        }
+
+        // Global param değişikliğinde yeniden hesapla
+        document.getElementById('unitWeldTime').addEventListener('input', calculateTotal);
+
+        function clearAll() {
+            if (mountedAccessories.length === 0) return;
+            
+            if (confirm('Tüm eklentiler silinecek. Emin misiniz?')) {
+                mountedAccessories.forEach(acc => {
+                    const elem = document.querySelector(`.mounted-accessory[data-id="${acc.id}"]`);
+                    if (elem) elem.remove();
+                    
+                    const dropZone = document.querySelector(`.drop-zone[data-position="${acc.position}"]`);
+                    if (dropZone) dropZone.style.display = 'flex';
+                });
+                
+                mountedAccessories = [];
+                accessoryIdCounter = 0;
+                updateParamsPanel();
+                calculateTotal();
+            }
+        }
+
+        function exportReport() {
+            if (mountedAccessories.length === 0) {
+                alert('Rapor oluşturmak için en az bir eklenti ekleyin.');
+                return;
+            }
+
+            const unitWeldTime = parseFloat(document.getElementById('unitWeldTime').value) || 0;
+            let report = '═══════════════════════════════════════\n';
+            report += '     DİREK ÜRETİM SÜRESİ RAPORU\n';
+            report += '═══════════════════════════════════════\n\n';
+            report += `Tarih: ${new Date().toLocaleDateString('tr-TR')}\n`;
+            report += `Birim Kaynak Süresi: ${unitWeldTime} dk\n\n`;
+            report += '───────────────────────────────────────\n';
+            report += 'EKLENTİ DETAYLARI\n';
+            report += '───────────────────────────────────────\n\n';
+
+            let totalWeld = 0;
+            let totalMount = 0;
+
+            mountedAccessories.forEach((acc, i) => {
+                const weldTime = acc.weldCount * unitWeldTime;
+                totalWeld += weldTime;
+                totalMount += acc.mountTime;
+                
+                report += `${i + 1}. ${accessoryNames[acc.type]}\n`;
+                report += `   Kaynak: ${acc.weldCount} adet × ${unitWeldTime} dk = ${weldTime} dk\n`;
+                report += `   Montaj: ${acc.mountTime} dk\n`;
+                report += `   Alt Toplam: ${weldTime + acc.mountTime} dk\n\n`;
+            });
+
+            report += '───────────────────────────────────────\n';
+            report += 'ÖZET\n';
+            report += '───────────────────────────────────────\n';
+            report += `Toplam Eklenti: ${mountedAccessories.length} adet\n`;
+            report += `Toplam Kaynak: ${mountedAccessories.reduce((s, a) => s + a.weldCount, 0)} adet\n`;
+            report += `Kaynak Süresi: ${totalWeld.toFixed(1)} dk\n`;
+            report += `Montaj Süresi: ${totalMount.toFixed(1)} dk\n`;
+            report += '───────────────────────────────────────\n';
+            report += `TOPLAM SÜRE: ${(totalWeld + totalMount).toFixed(1)} DAKİKA\n`;
+            report += '═══════════════════════════════════════\n';
+
+            // İndirilebilir dosya oluştur
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `direk-uretim-raporu-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // İlk hesaplama
+        calculateTotal();
+    </script>
+</body>
+</html>
