@@ -109,7 +109,28 @@
                 <input type="date" id="dateTo" max="" style="border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:12px;" placeholder="Bitiş">
                 <button id="clearFilter" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">Temizle</button>
             </div>
+                <button id="exportMainTableBtn" onclick="exportMainTableToExcel()" style="
+                padding: 6px 12px; 
+                background: #059669; 
+                color: white; 
+                border: none; 
+                border-radius: 6px; 
+                font-size: 13px; 
+                font-weight: 500; 
+                cursor: pointer;
+                display: flex; 
+                align-items: center; 
+                gap: 6px;
+            ">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Excel'e Aktar
+            </button>
         </div>
+
         <div id="mainPagination"></div>
         <div id="tableWrap" class="table-wrap"></div>
         <div id="errorSection" class="hidden" style="margin-top:30px;">     <!-- Hata Raporu Tablosu -->
@@ -580,7 +601,7 @@
         </div>
     </div>
 </div>
-<div id="panel-5" class="panel hidden">
+  <div id="panel-5" class="panel hidden">
     <div class="panel-title">KPI Tablo 2025</div>
     <div style="margin-top:20px">
         <div class="card">
@@ -621,12 +642,12 @@
         </table>
         </div>
     </div>
-    <div id="loadingOverlay" class="loading-overlay hidden">
-            <div class="loading-popup">
-            <div class="spinner">⏳</div>
-            <div id="loadingText">Yükleniyor...</div>
-        </div>
-</div>  
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-popup">
+      <div class="spinner">⏳</div>
+      <div id="loadingText">Yükleniyor...</div>
+    </div>
+  </div>  
     <script>
         const $ = (id) => document.getElementById(id);
         const dropArea = $('dropArea');
@@ -5901,6 +5922,40 @@ function getAllYears() {
         window.calculateSmdNetKapasite = calculateSmdNetKapasite;
         window.getSmdCalismaPerformansFromTable = getSmdCalismaPerformansFromTable;
 
+        function exportMainTableToExcel() {
+            if (!allSuccessRows || allSuccessRows.length === 0) {
+                alert('Aktarılacak veri yok. Lütfen önce dosya yükleyin.');
+                return;
+            }
+            
+            showLoading('Ana Tablo Excel dosyası hazırlanıyor...');
+            
+            setTimeout(() => {
+                try {
+                    const wb = XLSX.utils.book_new();
+                    const exportData = [currentHeader, ...allSuccessRows];
+                    const ws = XLSX.utils.aoa_to_sheet(exportData);
+                    const colWidths = currentHeader.map(() => ({ wch: 15 }));
+                    ws['!cols'] = colWidths;
+                    
+                    XLSX.utils.book_append_sheet(wb, ws, 'Başarılı Kayıtlar');
+                    
+                    const today = new Date();
+                    const dateStr = today.toISOString().slice(0, 10);
+                    const fileName = `Başarılı Kayıtlar-${dateStr}.xlsx`;
+                    
+                    XLSX.writeFile(wb, fileName);
+                    
+                    hideLoading();
+                    console.log(`Ana tablo Excel'e aktarıldı: ${fileName}`);
+                } catch (error) {
+                    hideLoading();
+                    console.error('Excel export hatası:', error);
+                    alert('Excel dosyası oluşturulurken bir hata oluştu: ' + error.message);
+                }
+            }, 100);
+        }
+
         function exportSmdToExcel() {
             const secilenYil = document.getElementById('smdYilFiltresi').value || 'TumYillar';
             const fileName = `SMD_Proses_Analizi_${secilenYil}_${new Date().toISOString().slice(0,10)}.xlsx`;
@@ -5938,7 +5993,6 @@ function getAllYears() {
             exportTableToExcel('aylikAnalizTable', fileName, 'Aylık OEE Analizi');
         }
 
-        // Ek Analiz tablosunu Excel'e aktar
         function exportEkAnalizToExcel() {
             const secilenYil = document.getElementById('ekAnalizYilFiltresi').value || 'TumYillar';
             const fileName = `OEE_Genel_Analiz_${secilenYil}_${new Date().toISOString().slice(0,10)}.xlsx`;
@@ -5959,12 +6013,11 @@ function getAllYears() {
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, sheetName);
                     XLSX.writeFile(wb, fileName);
-                    hideLoading();
                 } catch (error) {
                     console.error('Excel aktarma hatası:', error);
                     alert('Excel dosyası oluşturulurken bir hata oluştu!');
-                    hideLoading();
                 }
+                setTimeout(hideLoading, 300);
             }, 100);
         }
         window.exportSmdToExcel = exportSmdToExcel;
@@ -5977,6 +6030,7 @@ function getAllYears() {
 
         window.exportAylikAnalizToExcel = exportAylikAnalizToExcel;
         window.exportEkAnalizToExcel = exportEkAnalizToExcel;
+        window.exportMainTableToExcel = exportMainTableToExcel;
         
     </script>
 </body>

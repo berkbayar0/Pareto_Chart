@@ -1195,11 +1195,37 @@
                   }
 
                   // 🔗 Olay dinleyicileri: HEM hafta HEM marka değişince render et
-                  weekSelect.addEventListener('change', renderWeeklyReportTables);
-                  tableTypeSelect.addEventListener('change', renderWeeklyReportTables);
+                  weekSelect.addEventListener('change', function() {
+                      const selectedWeek = this.value;
+                      
+                      // Seçili haftaya göre mevcut markaları filtrele
+                      let availableMarks = [];
+                      if (selectedWeek) {
+                          const weekData = window.processedSuccessRows.filter(row => 
+                              getWeekFromDate(row[6]) === selectedWeek
+                          );
+                          availableMarks = [...new Set(weekData.map(row => row[7]).filter(Boolean))].map(m => m.toUpperCase());
+                      } else {
+                          availableMarks = getUniqueMarks();
+                      }
+                      
+                      // Dropdown'ı güncelle
+                      tableTypeSelect.innerHTML = `
+                          <option value="ALL">Tümü</option>
+                          ${availableMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
+                      `;
+                      
+                      // Eğer daha önce seçili bir marka varsa ve hala mevcutsa onu seç
+                      const previousSelection = tableTypeSelect.value;
+                      if (availableMarks.includes(previousSelection)) {
+                          tableTypeSelect.value = previousSelection;
+                      }
+                      
+                      renderWeeklyReportTables();
+                  });
 
-                  // İlk yükleme
-                  renderWeeklyReportTables();
+                  // tableTypeSelect değiştiğinde de tabloları yeniden oluştur
+                  tableTypeSelect.addEventListener('change', renderWeeklyReportTables);
             } else if (this.dataset.type === 'monthly') {
               if (!window.processedSuccessRows || window.processedSuccessRows.length === 0) {
                   reportsContainer.innerHTML = '';
@@ -1474,10 +1500,37 @@
                     reportsContainer.appendChild(table);
                   });
                 }
-                monthSelect.addEventListener('change', renderMonthlyReportTables);
-                tableTypeSelect.addEventListener('change', renderMonthlyReportTables);
+                monthSelect.addEventListener('change', function() {
+                    const selectedMonth = this.value;
+                    
+                    // Seçili aya göre mevcut markaları filtrele
+                    let availableMarks = [];
+                    if (selectedMonth) {
+                        const monthData = window.processedSuccessRows.filter(row => 
+                            getMonthYear(row[6]) === selectedMonth
+                        );
+                        availableMarks = [...new Set(monthData.map(row => row[7]).filter(Boolean))].map(m => m.toUpperCase());
+                    } else {
+                        availableMarks = getUniqueMarks();
+                    }
+                    
+                    // Dropdown'ı güncelle
+                    tableTypeSelect.innerHTML = `
+                        <option value="ALL">Tümü</option>
+                        ${availableMarks.map(mark => `<option value="${mark}">${mark}</option>`).join('')}
+                    `;
+                    
+                    // Eğer daha önce seçili bir marka varsa ve hala mevcutsa onu seç
+                    const previousSelection = tableTypeSelect.value;
+                    if (availableMarks.includes(previousSelection)) {
+                        tableTypeSelect.value = previousSelection;
+                    }
+                    
+                    renderMonthlyReportTables();
+                });
 
-                renderMonthlyReportTables();
+                // tableTypeSelect değiştiğinde de tabloları yeniden oluştur
+                tableTypeSelect.addEventListener('change', renderMonthlyReportTables);
               }
           });
           reportsGrid.appendChild(card);
